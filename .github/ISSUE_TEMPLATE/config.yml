@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🚀 DailyQ 프로젝트 가이드
+    url: https://github.com/kakao-tech-campus-3rd-step3/Team5_BE
+    about: 프로젝트 개요와 가이드를 확인하세요
+  - name: 📚 개발 가이드
+    url: https://github.com/kakao-tech-campus-3rd-step3/Team5_BE
+    about: 개발 환경 설정과 가이드를 확인하세요
+  - name: 📝 커밋 컨벤션
+    url: https://github.com/kakao-tech-campus-3rd-step3/Team5_BE/blob/main/COMMIT_CONVENTION.md
+    about: 커밋 메시지 작성 규칙을 확인하세요
