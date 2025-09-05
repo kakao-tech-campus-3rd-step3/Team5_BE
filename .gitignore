@@ -31,6 +31,7 @@ logs/
 # Application specific
 **/application-dev.properties
 **/application-prod.properties
+**/application.properties
 
 # Temporary files
 *.tmp
