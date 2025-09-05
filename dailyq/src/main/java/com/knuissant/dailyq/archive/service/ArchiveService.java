@@ -6,6 +6,8 @@ import com.knuissant.dailyq.archive.repository.ArchiveRepository;
 import com.knuissant.dailyq.user.User;
 import com.knuissant.dailyq.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +25,21 @@ public class ArchiveService {
     //  .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
   }
 
-  public ArchiveResponse getArchiveDetail(Long userId, Long answerId) {
+  public Page<ArchiveResponse.Summary> getArchiveList(Long userId, Pageable pageable) {
+    User user = findUserById(userId);
+    Page<Answer> answers = archiveRepository.findByUser(user, pageable);
+
+    return answers.map(ArchiveResponse.Summary::from);
+  }
+
+  public ArchiveResponse.Detail getArchiveDetail(Long userId, Long answerId) {
     User user = findUserById(userId);
 
     Answer answer = archiveRepository.findByIdAndUser(answerId, user);
     // GlobalErrorHandler Merge 후 수정
     //    .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
 
-    return ArchiveResponse.from(answer);
+    return ArchiveResponse.Detail.from(answer);
   }
 
 }
