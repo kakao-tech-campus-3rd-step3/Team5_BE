@@ -14,7 +14,6 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalTime;
 
-import com.knuissant.dailyq.domain.answers.AnswerType;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 
@@ -50,7 +49,7 @@ public class UserPreferences {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "answer_type", nullable = false, length = 10)
-    private AnswerType answerType;
+    private UserResponseType answerType;
 
     @Column(name = "time_limit_seconds")
     private Integer timeLimitSeconds;
