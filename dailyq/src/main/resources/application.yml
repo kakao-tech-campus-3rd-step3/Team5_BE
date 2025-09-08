@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: DailyQ
+
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:${MYSQL_HOST}}:${DB_PORT:${MYSQL_PORT}}/${DB_NAME:${MYSQL_DATABASE}}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=utf8
+    username: ${DB_USERNAME:${MYSQL_USER}}
+    password: ${DB_PASSWORD:${MYSQL_PASSWORD}}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
