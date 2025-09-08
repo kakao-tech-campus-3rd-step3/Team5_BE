@@ -1,7 +1,6 @@
 package com.knuissant.dailyq.exception;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 public class BusinessException extends RuntimeException {

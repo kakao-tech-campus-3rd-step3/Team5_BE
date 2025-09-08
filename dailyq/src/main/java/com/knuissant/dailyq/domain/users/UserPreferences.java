@@ -48,7 +48,7 @@ public class UserPreferences {
     private QuestionMode questionMode;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "answer_type", nullable = false, length = 10)
+    @Column(name = "user_response_type", nullable = false, length = 10)
     private UserResponseType answerType;
 
     @Column(name = "time_limit_seconds")
