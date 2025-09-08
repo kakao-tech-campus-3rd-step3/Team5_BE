@@ -30,7 +30,7 @@ VALUES
     (5, '그로스 마케터', 4);
 
 /* USER PREFERENCES (5) — 대표 직군 매칭 */
-INSERT INTO user_preferences (user_id, daily_question_limit, question_mode, answer_type, time_limit_seconds, notify_time, allow_push, user_job)
+INSERT INTO user_preferences (user_id, daily_question_limit, question_mode, user_response_type, time_limit_seconds, notify_time, allow_push, user_job)
 VALUES
     ( 1, 1, 'TECH', 'TEXT', 180, '09:00:00', 1, 1),
     (2, 10, 'FLOW', 'VOICE', 120, '08:30:00', 1, 2),

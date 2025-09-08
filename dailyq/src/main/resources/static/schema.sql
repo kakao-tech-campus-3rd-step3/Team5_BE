@@ -31,7 +31,7 @@ CREATE TABLE user_preferences (
                                   user_id BIGINT PRIMARY KEY,
                                   daily_question_limit INT NOT NULL DEFAULT 1,
                                   question_mode ENUM('TECH','FLOW') NOT NULL DEFAULT 'TECH',
-                                  answer_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
+                                  user_response_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
                                   time_limit_seconds INT DEFAULT 180,
                                   notify_time TIME NULL,
                                   allow_push TINYINT(1) NOT NULL DEFAULT 0,
