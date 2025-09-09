@@ -11,7 +11,8 @@ public record RandomQuestionResponse(
     @NotNull QuestionType questionType,
     FlowPhase flowPhase,
     @NotBlank String questionText,
-    Long jobId
+    Long jobId,
+    Integer timeLimitSeconds
 ) {
 
     @AssertTrue(message = "flowPhase must be consistent with questionType")

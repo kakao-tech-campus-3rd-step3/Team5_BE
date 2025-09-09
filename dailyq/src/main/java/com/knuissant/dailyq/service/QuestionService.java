@@ -69,7 +69,8 @@ public class QuestionService {
             q.getQuestionType(),
             mode == QuestionMode.FLOW ? phase : null,
             q.getQuestionText(),
-            jobId
+            jobId,
+            prefs.getTimeLimitSeconds()
         );
     }
 
