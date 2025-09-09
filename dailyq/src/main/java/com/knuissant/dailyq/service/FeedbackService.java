@@ -1,8 +1,8 @@
-package com.knuissant.dailyq.feedback.service;
+package com.knuissant.dailyq.service;
 
-import com.knuissant.dailyq.feedback.client.GptClient;
-import com.knuissant.dailyq.feedback.dto.FeedbackRequest;
-import com.knuissant.dailyq.feedback.dto.FeedbackResponse;
+import com.knuissant.dailyq.dto.FeedbackRequest;
+import com.knuissant.dailyq.dto.FeedbackResponse;
+import com.knuissant.dailyq.external.gpt.GptClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

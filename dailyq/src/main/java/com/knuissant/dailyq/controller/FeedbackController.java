@@ -1,8 +1,8 @@
-package com.knuissant.dailyq.feedback.controller;
+package com.knuissant.dailyq.controller;
 
-import com.knuissant.dailyq.feedback.dto.FeedbackRequest;
-import com.knuissant.dailyq.feedback.dto.FeedbackResponse;
-import com.knuissant.dailyq.feedback.service.FeedbackService;
+import com.knuissant.dailyq.dto.FeedbackRequest;
+import com.knuissant.dailyq.dto.FeedbackResponse;
+import com.knuissant.dailyq.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

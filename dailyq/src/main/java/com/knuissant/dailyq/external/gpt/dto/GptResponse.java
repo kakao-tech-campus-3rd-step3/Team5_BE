@@ -1,4 +1,4 @@
-package com.knuissant.dailyq.feedback.client.dto;
+package com.knuissant.dailyq.external.gpt.dto;
 
 import java.util.List;
 import java.util.Optional;

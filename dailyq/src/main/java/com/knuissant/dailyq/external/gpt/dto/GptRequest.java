@@ -1,4 +1,4 @@
-package com.knuissant.dailyq.feedback.client.dto;
+package com.knuissant.dailyq.external.gpt.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

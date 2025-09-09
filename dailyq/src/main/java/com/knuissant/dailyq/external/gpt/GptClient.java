@@ -1,12 +1,12 @@
-package com.knuissant.dailyq.feedback.client;
+package com.knuissant.dailyq.external.gpt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.knuissant.dailyq.feedback.client.dto.GptRequest;
-import com.knuissant.dailyq.feedback.client.dto.GptRequest.Message;
-import com.knuissant.dailyq.feedback.client.dto.GptRequest.ResponseFormat;
-import com.knuissant.dailyq.feedback.client.dto.GptResponse;
-import com.knuissant.dailyq.feedback.dto.FeedbackResponse;
+import com.knuissant.dailyq.dto.FeedbackResponse;
+import com.knuissant.dailyq.external.gpt.dto.GptRequest;
+import com.knuissant.dailyq.external.gpt.dto.GptRequest.Message;
+import com.knuissant.dailyq.external.gpt.dto.GptRequest.ResponseFormat;
+import com.knuissant.dailyq.external.gpt.dto.GptResponse;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
