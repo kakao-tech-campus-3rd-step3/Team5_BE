@@ -1,5 +1,6 @@
 package com.knuissant.dailyq.domain.users;
 
+import com.knuissant.dailyq.dto.UserPreferencesUpdateRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -63,6 +64,18 @@ public class UserPreferences {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_job", nullable = false)
     private Job userJob;
+
+    public void updatePreferences(UserPreferencesUpdateRequest request) {
+        this.dailyQuestionLimit = request.dailyQuestionLimit();
+        this.questionMode = request.questionMode();
+        this.userResponseType = request.answerType();
+        this.timeLimitSeconds = request.timeLimitSeconds();
+        this.allowPush = request.allowPush();
+    }
+
+    public void changeJob(Job newJob) {
+        this.userJob = newJob;
+    }
 }
 
 
