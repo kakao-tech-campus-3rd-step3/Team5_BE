@@ -1,5 +1,7 @@
 package com.knuissant.dailyq.domain.answers;
 
+import com.knuissant.dailyq.domain.questions.Question;
+import com.knuissant.dailyq.domain.users.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -10,12 +12,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import com.knuissant.dailyq.domain.questions.Question;
-import com.knuissant.dailyq.domain.users.User;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,8 +25,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "answers", indexes = {
-    @Index(name = "idx_answers_user_time", columnList = "user_id, answered_time DESC"),
-    @Index(name = "idx_answers_q_time", columnList = "question_id, answered_time DESC")
+        @Index(name = "idx_answers_user_time", columnList = "user_id, answered_time DESC"),
+        @Index(name = "idx_answers_q_time", columnList = "question_id, answered_time DESC")
 })
 public class Answer {
 
@@ -52,15 +49,17 @@ public class Answer {
     @Column
     private Integer level;
 
-    @Column(nullable = false)
+    @Column(nullable = false, insertable = false)
     private Boolean starred;
 
-    @Column(name = "answered_time", nullable = false)
+    @Column(name = "answered_time", nullable = false, insertable = false, updatable = false)
     private LocalDateTime answeredTime;
 
-    // 생성 칼럼 (DB 계산) — 읽기 전용
-    @Column(name = "answered_date", insertable = false, updatable = false)
-    private LocalDate answeredDate;
+    public Answer(User user, Question question, String answerText) {
+        this.user = user;
+        this.question = question;
+        this.answerText = answerText;
+    }
 }
 
 

@@ -11,6 +11,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부에 에러가 발생하였습니다.",
             HttpStatus.INTERNAL_SERVER_ERROR),
     USER_NOT_FOUND("USER_NOT_FOUND", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    QUESTION_NOT_FOUND("QUESTION_NOT_FOUND", "해당 질문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     FEEDBACK_NOT_FOUND("FEEDBACK_NOT_FOUND", "해당 피드백을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     JSON_PROCESSING_ERROR("JSON_PROCESSING_ERROR", "데이터를 처리하는 중 에러가 발생하였습니다.",
             HttpStatus.INTERNAL_SERVER_ERROR),

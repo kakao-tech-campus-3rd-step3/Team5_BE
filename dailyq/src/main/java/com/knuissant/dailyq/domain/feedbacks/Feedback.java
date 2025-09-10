@@ -49,11 +49,16 @@ public class Feedback {
     @Column(name = "latency_ms")
     private Long latencyMs;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false, insertable = false)
     private LocalDateTime updatedAt;
+
+    public Feedback(Answer answer, FeedbackStatus status) {
+        this.answer = answer;
+        this.status = status;
+    }
 
     public void updateStatus(FeedbackStatus status) {
         this.status = status;
