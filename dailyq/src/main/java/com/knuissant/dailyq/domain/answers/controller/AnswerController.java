@@ -1,5 +1,6 @@
 package com.knuissant.dailyq.domain.answers.controller;
 
+import com.knuissant.dailyq.domain.answers.dto.response.AnswerDetailResponse;
 import com.knuissant.dailyq.domain.answers.dto.response.AnswerGetResponse;
 import com.knuissant.dailyq.domain.answers.dto.request.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.domain.answers.service.AnswerService;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,6 +57,17 @@ public class AnswerController {
     }
 
     AnswerGetResponse.CursorResult<AnswerGetResponse.Summary> result = answerService.getArchives(userId, condition, cursor, limit);
+    return ResponseEntity.ok(result);
+  }
+
+  @Operation(summary = "아카이브 질문 상세 조회", description = "사용자의 질문,답변,피드백 정보를 상세 조회")
+  @GetMapping("/answers/{answerId}")
+  public ResponseEntity<AnswerDetailResponse> getAnswerDetail(
+      @Parameter(description = "답변 ID", required = true, example = "1")
+      @PathVariable Long answerId) {
+
+    AnswerDetailResponse result = answerService.getAnswerDetail(answerId);
+
     return ResponseEntity.ok(result);
   }
 }

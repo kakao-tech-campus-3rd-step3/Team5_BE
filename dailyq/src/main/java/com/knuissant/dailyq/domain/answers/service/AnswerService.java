@@ -4,10 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.knuissant.dailyq.domain.answers.Answer;
+import com.knuissant.dailyq.domain.answers.dto.response.AnswerDetailResponse;
 import com.knuissant.dailyq.domain.answers.dto.response.AnswerGetResponse.CursorResult;
 import com.knuissant.dailyq.domain.answers.dto.response.AnswerGetResponse.Summary;
 import com.knuissant.dailyq.domain.answers.dto.request.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.domain.answers.repository.AnswerRepository;
+import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.exception.BusinessException;
@@ -34,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AnswerService {
 
   private final AnswerRepository answerRepository;
+  //private final FeedbackRepository feedbackRepository;
 
   //커서 생성/파싱
   private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -165,5 +168,13 @@ public class AnswerService {
     } catch (IOException | IllegalArgumentException e) {
         throw new BusinessException(ErrorCode.INVALID_CURSOR);
     }
+  }
+
+  public AnswerDetailResponse getAnswerDetail(Long answerId) {
+    Answer answer = answerRepository.findById(answerId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+    //Feedback feedback = feedbackRepository.findByAnswerId(answerId).orElse(null);
+    Feedback feedback = null;
+    return AnswerDetailResponse.of(answer, feedback);
   }
 }
