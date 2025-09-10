@@ -60,6 +60,10 @@ public class Answer {
         this.question = question;
         this.answerText = answerText;
     }
+
+    public void updateLevel(Integer level) {
+        this.level = level;
+    }
 }
 
 
