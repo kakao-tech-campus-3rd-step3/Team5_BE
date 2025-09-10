@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
 
-public class AnswerGetResponse {
+public class AnswerListResponse {
 
   @Getter
   @Schema(description = "아카이브 목록의 각 아이템 DTO")

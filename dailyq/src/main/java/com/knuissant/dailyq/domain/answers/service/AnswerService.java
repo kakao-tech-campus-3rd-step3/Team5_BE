@@ -4,9 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.knuissant.dailyq.domain.answers.Answer;
+import com.knuissant.dailyq.domain.answers.dto.request.AnswerUpdateRequest;
 import com.knuissant.dailyq.domain.answers.dto.response.AnswerDetailResponse;
-import com.knuissant.dailyq.domain.answers.dto.response.AnswerGetResponse.CursorResult;
-import com.knuissant.dailyq.domain.answers.dto.response.AnswerGetResponse.Summary;
+import com.knuissant.dailyq.domain.answers.dto.response.AnswerListResponse.CursorResult;
+import com.knuissant.dailyq.domain.answers.dto.response.AnswerListResponse.Summary;
 import com.knuissant.dailyq.domain.answers.dto.request.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.domain.answers.repository.AnswerRepository;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
@@ -176,5 +177,26 @@ public class AnswerService {
     //Feedback feedback = feedbackRepository.findByAnswerId(answerId).orElse(null);
     Feedback feedback = null;
     return AnswerDetailResponse.of(answer, feedback);
+  }
+
+  @Transactional
+  public void updateAnswer(Long userId, Long answerId, AnswerUpdateRequest request) {
+
+    Answer answer = answerRepository.findById(answerId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+
+    // 인가
+    if (!answer.getUser().getId().equals(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
+    }
+
+    // 2. DTO에 들어온 값이 null이 아닌 경우에만 엔티티의 값을 수정
+    if (request.getMemo() != null) {
+      answer.updateMemo(request.getMemo()); // (Answer 엔티티에 updateMemo 메서드 필요)
+    }
+
+    if (request.getStarred() != null) {
+      answer.updateStarred(request.getStarred()); // (Answer 엔티티에 updateStarred 메서드 필요)
+    }
   }
 }

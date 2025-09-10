@@ -1,7 +1,8 @@
 package com.knuissant.dailyq.domain.answers.controller;
 
+import com.knuissant.dailyq.domain.answers.dto.request.AnswerUpdateRequest;
 import com.knuissant.dailyq.domain.answers.dto.response.AnswerDetailResponse;
-import com.knuissant.dailyq.domain.answers.dto.response.AnswerGetResponse;
+import com.knuissant.dailyq.domain.answers.dto.response.AnswerListResponse;
 import com.knuissant.dailyq.domain.answers.dto.request.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.domain.answers.service.AnswerService;
 import com.knuissant.dailyq.exception.BusinessException;
@@ -15,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,7 +33,7 @@ public class AnswerController {
 
   @Operation(summary = "아카이브 조회", description = "사용자의 답변(질문) 목록을 커서 기반 조회")
   @GetMapping("/answers")
-  public ResponseEntity<AnswerGetResponse.CursorResult<AnswerGetResponse.Summary>> getAnswers(
+  public ResponseEntity<AnswerListResponse.CursorResult<AnswerListResponse.Summary>> getAnswers(
 
       @Parameter(description = "사용자 ID(임시)", required = true, example = "1")
       @RequestParam Long userId,
@@ -56,7 +59,7 @@ public class AnswerController {
       throw new BusinessException(ErrorCode.MULTIPLE_FILTER_NOT_ALLOWED);
     }
 
-    AnswerGetResponse.CursorResult<AnswerGetResponse.Summary> result = answerService.getArchives(userId, condition, cursor, limit);
+    AnswerListResponse.CursorResult<AnswerListResponse.Summary> result = answerService.getArchives(userId, condition, cursor, limit);
     return ResponseEntity.ok(result);
   }
 
@@ -69,5 +72,19 @@ public class AnswerController {
     AnswerDetailResponse result = answerService.getAnswerDetail(answerId);
 
     return ResponseEntity.ok(result);
+  }
+
+  @Operation(summary = "즐겨찾기 혹은 메모 수정", description = "특정 답변의 메모 또는 즐겨찾기 상태를 수정합니다.")
+  @PatchMapping("/answers/{answerId}")
+  public ResponseEntity<Void> updateAnswerDetail(
+      @Parameter(description = "답변 ID", required = true, example = "1")
+      @PathVariable Long answerId,
+
+      @RequestBody AnswerUpdateRequest request) {
+
+    Long userId = 1L; // 임시
+
+    answerService.updateAnswer(userId, answerId, request);
+    return ResponseEntity.ok().build();
   }
 }
