@@ -7,13 +7,13 @@ import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.domain.users.UserResponseType;
 import com.knuissant.dailyq.dto.UserJobsUpdateRequest;
 import com.knuissant.dailyq.dto.UserPreferencesUpdateRequest;
+import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.JobRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +29,7 @@ public class UserPreferencesService {
      */
     public void createDefaultPreferences(User user) {
         Job defaultJob = jobRepository.findById(1L)
-                .orElseThrow(() -> new EntityNotFoundException("Default Job with ID 1 not found."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
 
         UserPreferences defaultPreferences = UserPreferences.builder()
                 .user(user)
@@ -48,10 +48,14 @@ public class UserPreferencesService {
      * Updates a user's preferences.
      * @param userId The ID of the user
      * @param request The preference update request DTO
+     * @return The updated UserPreferences entity
      */
-    public void updateUserPreferences(Long userId, UserPreferencesUpdateRequest request) {
+    public UserPreferences updateUserPreferences(Long userId, UserPreferencesUpdateRequest request) {
         UserPreferences preferences = findUserPreferencesByUserId(userId);
+
+        // UserPreferencesUpdateRequest DTO 객체 자체를 인자로 전달합니다.
         preferences.updatePreferences(request);
+        return preferences;
     }
 
     /**
@@ -60,21 +64,17 @@ public class UserPreferencesService {
      * @param request The job update request DTO
      */
     public void updateUserJob(Long userId, UserJobsUpdateRequest request) {
-        if (CollectionUtils.isEmpty(request.jobIds())) {
-            return;
-        }
-
         UserPreferences preferences = findUserPreferencesByUserId(userId);
-        Long representativeJobId = request.jobIds().get(0);
-        Job job = jobRepository.findById(representativeJobId)
-                .orElseThrow(() -> new EntityNotFoundException("Job not found with id: " + representativeJobId));
+        Job job = jobRepository.findById(request.jobId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
 
         preferences.changeJob(job);
     }
 
+    @Transactional(readOnly = true)
     public UserPreferences findUserPreferencesByUserId(Long userId) {
         return userPreferencesRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("UserPreferences not found for user id: " + userId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 }
 
