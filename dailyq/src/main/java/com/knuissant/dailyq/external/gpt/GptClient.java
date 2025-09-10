@@ -3,6 +3,8 @@ package com.knuissant.dailyq.external.gpt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuissant.dailyq.dto.FeedbackResponse;
+import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.external.gpt.dto.GptRequest;
 import com.knuissant.dailyq.external.gpt.dto.GptRequest.Message;
 import com.knuissant.dailyq.external.gpt.dto.GptRequest.ResponseFormat;
@@ -63,21 +65,35 @@ public class GptClient {
                 new ResponseFormat("json_object")
         );
 
-        GptResponse gptResponse = webClient.post()
-                                           .bodyValue(gptRequest)
-                                           .retrieve()
-                                           .bodyToMono(GptResponse.class)
-                                           .block();
+        String jsonContent = callGptApi(gptRequest);
 
-        String jsonContent = Optional.ofNullable(gptResponse)
-                                     .flatMap(GptResponse::getFirstMessageContent)
-                                     .filter(a -> !a.isEmpty())
-                                     .orElseThrow(() -> new RuntimeException("답변 생성 실패"));
+        return parseContent(jsonContent);
+    }
 
+    private String callGptApi(GptRequest gptRequest) {
+        try {
+            GptResponse gptResponse = webClient.post()
+                                               .bodyValue(gptRequest)
+                                               .retrieve()
+                                               .bodyToMono(GptResponse.class)
+                                               .block();
+
+            return Optional.ofNullable(gptResponse)
+                           .flatMap(GptResponse::getFirstMessageContent)
+                           .filter(a -> !a.isEmpty())
+                           .orElseThrow(
+                                   () -> new BusinessException(ErrorCode.INVALID_GPT_RESPONSE));
+
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.GPT_API_COMMUNICATION_ERROR);
+        }
+    }
+
+    private FeedbackResponse parseContent(String jsonContent) {
         try {
             return objectMapper.readValue(jsonContent, FeedbackResponse.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("AI 응답을 파싱 실패", e);
+            throw new BusinessException(ErrorCode.GPT_RESPONSE_PARSING_FAILED);
         }
     }
 
