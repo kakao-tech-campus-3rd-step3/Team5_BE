@@ -89,10 +89,7 @@ public class UserService {
      */
     public void updateUserName(Long userId, String newName) {
         User user = findUserById(userId);
-        // User 엔티티에 이름 변경을 위한 메서드 (예: user.updateName(newName)) 호출 또는 Setter 사용
-        // user.setName(newName); -> User 엔티티에 Setter가 필요합니다.
-        // 아래는 User 엔티티에 updateName 메서드가 있다는 가정 하에 작성되었습니다.
-        // user.updateName(newName);
+        user.updateName(newName);
         userRepository.save(user);
     }
 

@@ -15,6 +15,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
+
+import static java.util.prefs.Preferences.MAX_NAME_LENGTH;
 
 @Getter
 @Builder
@@ -50,6 +53,20 @@ public class User {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public void updateName(String newName) {
+        this.name = newName;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    private void validateName(String name) {
+        if (!StringUtils.hasText(name)) {
+            throw new IllegalArgumentException("이름은 비어있을 수 없습니다.");
+        }
+        if (name.length() > MAX_NAME_LENGTH) {
+            throw new IllegalArgumentException("이름은 " + MAX_NAME_LENGTH + "자를 초과할 수 없습니다.");
+        }
+    }
 }
 
 

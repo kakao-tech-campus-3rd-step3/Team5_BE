@@ -51,9 +51,7 @@ public class UserPreferencesService {
      */
     public void updateUserPreferences(Long userId, UserPreferencesUpdateRequest request) {
         UserPreferences preferences = findUserPreferencesByUserId(userId);
-        // Delegates state changes to the entity's internal business method.
         preferences.updatePreferences(request);
-        // No need to call save() due to dirty checking by @Transactional.
     }
 
     /**
@@ -71,7 +69,6 @@ public class UserPreferencesService {
         Job job = jobRepository.findById(representativeJobId)
                 .orElseThrow(() -> new EntityNotFoundException("Job not found with id: " + representativeJobId));
 
-        // Delegates state changes to the entity's internal business method.
         preferences.changeJob(job);
     }
 
