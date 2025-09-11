@@ -72,6 +72,10 @@ public class Answer {
     public void updateStarred(Boolean starred) {
         this.starred = starred;
     }
+
+    public void updateLevel(Integer level) {
+        this.level = level;
+    }
 }
 
 

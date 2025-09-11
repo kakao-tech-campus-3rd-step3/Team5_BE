@@ -1,9 +1,11 @@
 package com.knuissant.dailyq.domain.answers.controller;
 
+import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.answers.dto.request.AnswerUpdateRequest;
 import com.knuissant.dailyq.domain.answers.dto.response.AnswerDetailResponse;
 import com.knuissant.dailyq.domain.answers.dto.response.AnswerListResponse;
 import com.knuissant.dailyq.domain.answers.dto.request.AnswerSearchConditionRequest;
+import com.knuissant.dailyq.domain.answers.dto.response.AnswerUpdateResponse;
 import com.knuissant.dailyq.domain.answers.service.AnswerService;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
@@ -75,9 +77,9 @@ public class AnswerController {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "즐겨찾기 혹은 메모 수정", description = "특정 답변의 메모 또는 즐겨찾기 상태를 수정합니다.")
+    @Operation(summary = "즐겨찾기 혹은 메모 혹은 난이도 수정", description = "특정 답변의 메모 또는 즐겨찾기 상태 또는 난이도를 수정합니다.")
     @PatchMapping("/answers/{answerId}")
-    public ResponseEntity<Void> updateAnswerDetail(
+    public ResponseEntity<AnswerUpdateResponse> updateAnswerDetail(
             @Parameter(description = "답변 ID", required = true, example = "1")
             @PathVariable Long answerId,
 
@@ -85,7 +87,7 @@ public class AnswerController {
 
         Long userId = 1L; // 임시
 
-        answerService.updateAnswer(userId, answerId, request);
-        return ResponseEntity.ok().build();
+        Answer updatedAnswer = answerService.updateAnswer(userId, answerId, request);
+        return ResponseEntity.ok(AnswerUpdateResponse.from(updatedAnswer));
     }
 }

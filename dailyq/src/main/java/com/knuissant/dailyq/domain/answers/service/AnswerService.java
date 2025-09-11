@@ -186,7 +186,7 @@ public class AnswerService {
     }
 
     @Transactional
-    public void updateAnswer(Long userId, Long answerId, AnswerUpdateRequest request) {
+    public Answer updateAnswer(Long userId, Long answerId, AnswerUpdateRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
@@ -196,13 +196,18 @@ public class AnswerService {
             throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
         }
 
-        // 2. DTO에 들어온 값이 null이 아닌 경우에만 엔티티의 값을 수정
         if (request.getMemo() != null) {
-            answer.updateMemo(request.getMemo()); // (Answer 엔티티에 updateMemo 메서드 필요)
+            answer.updateMemo(request.getMemo());
         }
 
         if (request.getStarred() != null) {
-            answer.updateStarred(request.getStarred()); // (Answer 엔티티에 updateStarred 메서드 필요)
+            answer.updateStarred(request.getStarred());
         }
+
+        if(request.getLevel() != null) {
+            answer.updateLevel(request.getLevel());
+        }
+
+        return answer;
     }
 }
