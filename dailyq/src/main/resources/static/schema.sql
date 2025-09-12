@@ -110,7 +110,7 @@ CREATE TABLE answers (
                          level TINYINT NULL,
                          starred TINYINT(1) NOT NULL DEFAULT 0, -- default 0
                          answered_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                         answered_date DATE AS (DATE(answered_time)) STORED, -- time으로 통합?
+                         memo MEDIUMTEXT NULL, -- 메모 필드 추가
                          CONSTRAINT ck_answers_level CHECK (level IS NULL OR (level BETWEEN 1 AND 5)),
     CONSTRAINT fk_answers_user
         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
