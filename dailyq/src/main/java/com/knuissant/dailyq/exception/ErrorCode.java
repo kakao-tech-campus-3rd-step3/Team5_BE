@@ -27,6 +27,8 @@ public enum ErrorCode {
             HttpStatus.INTERNAL_SERVER_ERROR),
   GPT_RESPONSE_PARSING_FAILED("GPT_RESPONSE_PARSING_FAILED", "AI 응답을 처리하는 중 오류가 발생했습니다.",
             HttpStatus.INTERNAL_SERVER_ERROR);
+  DAILY_LIMIT_REACHED("DAILY_LIMIT_REACHED", "오늘 가능한 질문을 모두 소진했습니다.", HttpStatus.TOO_MANY_REQUESTS),
+  NO_QUESTION_AVAILABLE("NO_QUESTION_AVAILABLE", "조건에 맞는 질문이 없습니다.", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;
