@@ -1,5 +1,6 @@
 package com.knuissant.dailyq.domain.answers.dto.response;
 
+import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.QuestionType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,45 +10,44 @@ import lombok.Getter;
 
 public class AnswerListResponse {
 
-    @Getter
     @Schema(description = "아카이브 목록의 각 아이템 DTO")
-    public static class Summary {
+    public record Summary(
+            @Schema(description = "답변 ID", example = "1")
+            Long answerId,
 
-        @Schema(description = "답변 ID", example = "1")
-        private final Long answerId;
+            @Schema(description = "질문 ID", example = "1")
+            Long questionId,
 
-        @Schema(description = "질문 ID", example = "1")
-        private final Long questionId;
+            @Schema(description = "질문 내용", example = "React의 Virtual DOM을 설명해 주세요.")
+            String questionText,
 
-        @Schema(description = "질문 내용", example = "React의 Virtual DOM을 설명해 주세요.")
-        private final String questionText;
+            @Schema(description = "질문 유형", example = "TECH")
+            QuestionType questionType,
 
-        @Schema(description = "질문 유형", example = "TECH")
-        private final QuestionType questionType;
+            @Schema(description = "면접 플로우 단계", example = "TECH1")
+            FlowPhase flowPhase,
 
-        @Schema(description = "면접 플로우 단계", example = "TECH1")
-        private final FlowPhase flowPhase;
+            @Schema(description = "사용자가 매긴 난이도", example = "4")
+            Integer level,
 
-        @Schema(description = "사용자가 매긴 난이도", example = "4")
-        private final Integer level;
+            @Schema(description = "즐겨찾기 여부", example = "true")
+            Boolean starred,
 
-        @Schema(description = "즐겨찾기 여부", example = "true")
-        private final Boolean starred;
+            @Schema(description = "답변 시간", example = "2025-09-05T07:30:00")
+            LocalDateTime answeredTime
+    ) {
 
-        @Schema(description = "답변 시간", example = "2025-09-05T07:30:00")
-        private final LocalDateTime answeredTime;
-
-        public Summary(Long answerId, Long questionId, String questionText,
-                QuestionType questionType,
-                FlowPhase flowPhase, Integer level, Boolean starred, LocalDateTime answeredTime) {
-            this.answerId = answerId;
-            this.questionId = questionId;
-            this.questionText = questionText;
-            this.questionType = questionType;
-            this.flowPhase = flowPhase;
-            this.level = level;
-            this.starred = starred;
-            this.answeredTime = answeredTime;
+        public static Summary from(Answer answer) {
+            return new Summary(
+                    answer.getId(),
+                    answer.getQuestion().getId(),
+                    answer.getQuestion().getQuestionText(),
+                    answer.getQuestion().getQuestionType(),
+                    null, // flow_phase는 보류
+                    answer.getLevel(),
+                    answer.getStarred(),
+                    answer.getAnsweredTime()
+            );
         }
     }
 

@@ -9,6 +9,7 @@ import com.knuissant.dailyq.domain.answers.dto.response.AnswerDetailResponse;
 import com.knuissant.dailyq.domain.answers.dto.response.AnswerListResponse.CursorResult;
 import com.knuissant.dailyq.domain.answers.dto.response.AnswerListResponse.Summary;
 import com.knuissant.dailyq.domain.answers.dto.request.AnswerSearchConditionRequest;
+import com.knuissant.dailyq.domain.answers.dto.response.AnswerUpdateResponse;
 import com.knuissant.dailyq.domain.answers.repository.AnswerRepository;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.jobs.Job;
@@ -38,10 +39,8 @@ public class AnswerService {
 
     private final AnswerRepository answerRepository;
     //private final FeedbackRepository feedbackRepository;
-
     //커서 생성/파싱
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(
-            new JavaTimeModule());
+    private final ObjectMapper objectMapper;
 
     // 커서 내용 담을 DTO
     public record CursorRequest(LocalDateTime answeredTime, Long id) {
@@ -54,78 +53,63 @@ public class AnswerService {
         //커서 파싱
         CursorRequest cursorRequest = parseCursor(cursor);
 
+        String actualSortOrder = (condition.sortOrder() != null) ? condition.sortOrder() : "DESC";
+        boolean isDesc = !"ASC".equalsIgnoreCase(actualSortOrder);
+
         // answeredTime + answerId를 통한 유니크 순서 보장
-        boolean isDesc = !"ASC".equalsIgnoreCase(condition.getSortOrder());
         Sort.Direction direction = isDesc ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort = Sort.by(direction, "answeredTime").and(Sort.by(direction, "id"));
 
         Pageable pageable = PageRequest.of(0, limit + 1, sort);
 
-        //Predicate : SQL의 WHERE 조건을 나타내는 객체
-        // root: 테이블의 별칭 역할 (ex FROM ANSWER a에서 a)
-        // query: 기준 쿼리 객체 (SELECT, GROUP BY)
-        // cb: 기준 빌더 (WHERE 조건식 생성 AND, OR)
-        Specification<Answer> spec = (root, query, cb) -> {
+        Specification<Answer> spec = createSpecification(userId, condition, cursorRequest, isDesc);
+
+        List<Answer> answers = answerRepository.findAll(spec, pageable).getContent();
+        return convertToCursorResult(answers, limit);
+    }
+
+    private Specification<Answer> createSpecification(Long userId, AnswerSearchConditionRequest condition, CursorRequest cursorRequest, boolean isDesc) {
+        return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             predicates.add(cb.equal(root.get("user").get("id"), userId));
 
             if (cursorRequest != null) {
-                //우선 답변 시간 기준 정렬
                 Predicate timePredicate = isDesc ?
                         cb.lessThan(root.get("answeredTime"), cursorRequest.answeredTime()) :
                         cb.greaterThan(root.get("answeredTime"), cursorRequest.answeredTime());
 
-                //동일 답변 시간일 때 answerId로 구분
                 Predicate tieBreaker = cb.and(
                         cb.equal(root.get("answeredTime"), cursorRequest.answeredTime()),
                         isDesc ? cb.lessThan(root.get("id"), cursorRequest.id())
                                 : cb.greaterThan(root.get("id"), cursorRequest.id())
                 );
-
                 predicates.add(cb.or(timePredicate, tieBreaker));
             }
-            // question 테이블 조인 중복 문제 해결
+
             Join<Answer, Question> questionJoin = null;
 
-            // 필터 조건 : 날짜
-            if (condition.getDate() != null) {
-                predicates.add(cb.equal(root.get("answeredDate"), condition.getDate()));
+            if (condition.date() != null) {
+                predicates.add(cb.equal(root.get("answeredDate"), condition.date()));
             }
-
-            // 필터 조건 : 직군 Id
-            if (condition.getJobId() != null) {
-                if (questionJoin == null) {
-                    questionJoin = root.join("question", JoinType.INNER);
-                }
+            if (condition.jobId() != null) {
+                if (questionJoin == null) questionJoin = root.join("question", JoinType.INNER);
                 Join<Question, Job> jobsJoin = questionJoin.join("jobs", JoinType.INNER);
-                predicates.add(cb.equal(jobsJoin.get("id"), condition.getJobId()));
+                predicates.add(cb.equal(jobsJoin.get("id"), condition.jobId()));
             }
-
-            // 필터 조건 : 질문 유형
-            if (condition.getQuestionType() != null) {
-                if (questionJoin == null) {
-                    questionJoin = root.join("question", JoinType.INNER);
-                }
-                predicates.add(
-                        cb.equal(questionJoin.get("questionType"), condition.getQuestionType()));
+            if (condition.questionType() != null) {
+                if (questionJoin == null) questionJoin = root.join("question", JoinType.INNER);
+                predicates.add(cb.equal(questionJoin.get("questionType"), condition.questionType()));
             }
-
-            // 필터 조건 : 즐겨찾기 여부
-            if (condition.getStarred() != null) {
-                predicates.add(cb.equal(root.get("starred"), condition.getStarred()));
+            if (condition.starred() != null) {
+                predicates.add(cb.equal(root.get("starred"), condition.starred()));
             }
-
-            // 필터 조건 : 난이도
-            if (condition.getLevel() != null) {
-                predicates.add(cb.equal(root.get("level"), condition.getLevel()));
+            if (condition.level() != null) {
+                predicates.add(cb.equal(root.get("level"), condition.level()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-
-        List<Answer> answers = answerRepository.findAll(spec, pageable).getContent();
-        return convertToCursorResult(answers, limit);
     }
 
     private CursorResult<Summary> convertToCursorResult(List<Answer> answers, int limit) {
@@ -133,25 +117,12 @@ public class AnswerService {
         List<Answer> content = hasNext ? answers.subList(0, limit) : answers;
 
         List<Summary> summaries = content.stream()
-                .map(this::convertToSummary)
+                .map(Summary::from)
                 .toList();
 
         String nextCursor = hasNext ? createCursor(content.get(content.size() - 1)) : null;
 
         return new CursorResult<>(summaries, nextCursor, hasNext);
-    }
-
-    private Summary convertToSummary(Answer answer) {
-        return new Summary(
-                answer.getId(),
-                answer.getQuestion().getId(),
-                answer.getQuestion().getQuestionText(),
-                answer.getQuestion().getQuestionType(),
-                null, // flow_phase는 보류
-                answer.getLevel(),
-                answer.getStarred(),
-                answer.getAnsweredTime()
-        );
     }
 
     // 커서 생성/파싱 로직
@@ -186,7 +157,7 @@ public class AnswerService {
     }
 
     @Transactional
-    public Answer updateAnswer(Long userId, Long answerId, AnswerUpdateRequest request) {
+    public AnswerUpdateResponse updateAnswer(Long userId, Long answerId, AnswerUpdateRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
@@ -196,18 +167,18 @@ public class AnswerService {
             throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
         }
 
-        if (request.getMemo() != null) {
-            answer.updateMemo(request.getMemo());
+        if (request.memo() != null) {
+            answer.updateMemo(request.memo());
         }
 
-        if (request.getStarred() != null) {
-            answer.updateStarred(request.getStarred());
+        if (request.starred() != null) {
+            answer.updateStarred(request.starred());
         }
 
-        if(request.getLevel() != null) {
-            answer.updateLevel(request.getLevel());
+        if(request.level() != null) {
+            answer.updateLevel(request.level());
         }
 
-        return answer;
+        return AnswerUpdateResponse.from(answer);
     }
 }

@@ -50,11 +50,11 @@ public class AnswerController {
 
         //정렬 조건 단일 파라미터 검증
         long filterCount = Stream.of(
-                condition.getDate(),
-                condition.getJobId(),
-                condition.getQuestionType(),
-                condition.getLevel(),
-                condition.getStarred()
+                condition.date(),
+                condition.jobId(),
+                condition.questionType(),
+                condition.level(),
+                condition.starred()
         ).filter(Objects::nonNull).count();
 
         if (filterCount > 1) {
@@ -87,7 +87,8 @@ public class AnswerController {
 
         Long userId = 1L; // 임시
 
-        Answer updatedAnswer = answerService.updateAnswer(userId, answerId, request);
-        return ResponseEntity.ok(AnswerUpdateResponse.from(updatedAnswer));
+        AnswerUpdateResponse responseDto = answerService.updateAnswer(userId, answerId, request);
+
+        return ResponseEntity.ok(responseDto);
     }
 }
