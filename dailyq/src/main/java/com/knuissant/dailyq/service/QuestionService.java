@@ -1,5 +1,11 @@
 package com.knuissant.dailyq.service;
 
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.knuissant.dailyq.constants.QuestionConstants;
 import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
@@ -13,10 +19,8 @@ import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
-import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +32,7 @@ public class QuestionService {
     private final UserFlowProgressRepository userFlowProgressRepository;
 
     @Transactional(readOnly = true)
-    public RandomQuestionResponse getRandomQuestion(Long userId, String overrideMode, String overridePhase, Long overrideJobId) {
+    public RandomQuestionResponse getRandomQuestion(Long userId) {
         UserPreferences prefs = userPreferencesRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
@@ -38,28 +42,26 @@ public class QuestionService {
             throw new BusinessException(ErrorCode.DAILY_LIMIT_REACHED);
         }
 
-        // Resolve mode
-        QuestionMode mode = resolveMode(overrideMode, prefs.getQuestionMode());
-
-        // Resolve job override when TECH
-        Long jobId = overrideJobId != null ? overrideJobId : (prefs.getUserJob() != null ? prefs.getUserJob().getId() : null);
+        // Use user preferences
+        QuestionMode mode = prefs.getQuestionMode();
+        Long jobId = prefs.getUserJob() != null ? prefs.getUserJob().getId() : null;
 
         // Resolve phase when FLOW
         FlowPhase phase = null;
         if (mode == QuestionMode.FLOW) {
-            phase = resolvePhase(userId, overridePhase);
+            phase = resolvePhase(userId);
         }
 
         Optional<Question> picked;
         if (mode == QuestionMode.TECH) {
             if (jobId != null) {
-                picked = questionRepository.findRandomTechByJobIdExcludingTodayAnswers(jobId, userId);
+                picked = questionRepository.findRandomTechByJobId(jobId, userId);
             } else {
-                picked = questionRepository.findRandomByTypeExcludingTodayAnswers(QuestionType.TECH.name(), userId);
+                picked = questionRepository.findRandomByType(QuestionConstants.QUESTION_TYPE_TECH, userId);
             }
         } else { // FLOW
             QuestionType typeForPhase = mapPhaseToType(phase);
-            picked = questionRepository.findRandomByTypeExcludingTodayAnswers(typeForPhase.name(), userId);
+            picked = questionRepository.findRandomByType(typeForPhase.name(), userId);
         }
 
         Question q = picked.orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE));
@@ -74,15 +76,7 @@ public class QuestionService {
         );
     }
 
-    private QuestionMode resolveMode(String overrideMode, QuestionMode defaultMode) {
-        if (overrideMode == null) return defaultMode;
-        return QuestionMode.valueOf(overrideMode.toUpperCase());
-    }
-
-    private FlowPhase resolvePhase(Long userId, String overridePhase) {
-        if (overridePhase != null) {
-            return FlowPhase.valueOf(overridePhase.toUpperCase());
-        }
+    private FlowPhase resolvePhase(Long userId) {
         UserFlowProgress progress = userFlowProgressRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         return progress.getNextPhase();

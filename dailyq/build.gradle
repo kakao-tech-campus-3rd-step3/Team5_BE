@@ -31,6 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.hibernate.validator:hibernate-validator'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+    implementation 'io.netty:netty-resolver-dns-native-macos:4.1.100.Final:osx-aarch_64'
     runtimeOnly 'com.mysql:mysql-connector-j:8.3.0'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface AnswerRepository extends JpaRepository<Answer, Long> {
 
-    @Query(value = "SELECT COUNT(*) FROM answers WHERE user_id = :userId AND answered_date = CURDATE()", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM answers WHERE user_id = :userId AND DATE(answered_time) = CURDATE()", nativeQuery = true)
     long countTodayByUserId(@Param("userId") Long userId);
 }
 

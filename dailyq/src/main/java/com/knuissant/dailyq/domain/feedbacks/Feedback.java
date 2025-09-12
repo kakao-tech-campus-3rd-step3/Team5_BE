@@ -55,9 +55,11 @@ public class Feedback {
     @Column(name = "updated_at", nullable = false, insertable = false)
     private LocalDateTime updatedAt;
 
-    public Feedback(Answer answer, FeedbackStatus status) {
-        this.answer = answer;
-        this.status = status;
+    public static Feedback create(Answer answer, FeedbackStatus status) {
+        return Feedback.builder()
+                .answer(answer)
+                .status(status)
+                .build();
     }
 
     public void updateStatus(FeedbackStatus status) {
