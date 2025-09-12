@@ -28,8 +28,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "answers", indexes = {
-    @Index(name = "idx_answers_user_time", columnList = "user_id, answered_time DESC"),
-    @Index(name = "idx_answers_q_time", columnList = "question_id, answered_time DESC")
+        @Index(name = "idx_answers_user_time", columnList = "user_id, answered_time DESC"),
+        @Index(name = "idx_answers_q_time", columnList = "question_id, answered_time DESC")
 })
 public class Answer {
 
@@ -61,6 +61,21 @@ public class Answer {
     // 생성 칼럼 (DB 계산) — 읽기 전용
     @Column(name = "answered_date", insertable = false, updatable = false)
     private LocalDate answeredDate;
+
+    @Column(name = "memo", columnDefinition = "MEDIUMTEXT")
+    private String memo;
+
+    public void updateMemo(String memo) {
+        this.memo = memo;
+    }
+
+    public void updateStarred(Boolean starred) {
+        this.starred = starred;
+    }
+
+    public void updateLevel(Integer level) {
+        this.level = level;
+    }
 }
 
 
