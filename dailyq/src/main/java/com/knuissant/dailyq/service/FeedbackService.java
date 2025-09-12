@@ -1,5 +1,8 @@
 package com.knuissant.dailyq.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
@@ -9,9 +12,8 @@ import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.external.gpt.GptClient;
 import com.knuissant.dailyq.repository.FeedbackRepository;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +27,7 @@ public class FeedbackService {
     public FeedbackResponse generateFeedback(Long feedbackId) {
 
         Feedback feedback = feedbackRepository.findById(feedbackId)
-                                              .orElseThrow(() -> new BusinessException(
-                                                      ErrorCode.FEEDBACK_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
         String question = feedback.getAnswer().getQuestion().getQuestionText();
         String answer = feedback.getAnswer().getAnswerText();
 

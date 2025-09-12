@@ -1,12 +1,5 @@
 package com.knuissant.dailyq.controller;
 
-import com.knuissant.dailyq.dto.AnswerCreateRequest;
-import com.knuissant.dailyq.dto.AnswerCreateResponse;
-import com.knuissant.dailyq.dto.AnswerLevelUpdateRequest;
-import com.knuissant.dailyq.dto.AnswerLevelUpdateResponse;
-import com.knuissant.dailyq.service.AnswerService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,6 +9,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.knuissant.dailyq.dto.AnswerCreateRequest;
+import com.knuissant.dailyq.dto.AnswerCreateResponse;
+import com.knuissant.dailyq.dto.AnswerLevelUpdateRequest;
+import com.knuissant.dailyq.dto.AnswerLevelUpdateResponse;
+import com.knuissant.dailyq.service.AnswerService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/answers")
