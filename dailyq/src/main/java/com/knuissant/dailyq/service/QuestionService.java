@@ -53,13 +53,13 @@ public class QuestionService {
         Optional<Question> picked;
         if (mode == QuestionMode.TECH) {
             if (jobId != null) {
-                picked = questionRepository.findRandomTechByJobId(jobId);
+                picked = questionRepository.findRandomTechByJobIdExcludingTodayAnswers(jobId, userId);
             } else {
-                picked = questionRepository.findRandomByType(QuestionType.TECH.name());
+                picked = questionRepository.findRandomByTypeExcludingTodayAnswers(QuestionType.TECH.name(), userId);
             }
         } else { // FLOW
             QuestionType typeForPhase = mapPhaseToType(phase);
-            picked = questionRepository.findRandomByType(typeForPhase.name());
+            picked = questionRepository.findRandomByTypeExcludingTodayAnswers(typeForPhase.name(), userId);
         }
 
         Question q = picked.orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE));
