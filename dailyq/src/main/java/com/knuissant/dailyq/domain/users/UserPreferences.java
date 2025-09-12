@@ -1,5 +1,7 @@
 package com.knuissant.dailyq.domain.users;
 
+import com.knuissant.dailyq.domain.jobs.Job;
+import com.knuissant.dailyq.domain.questions.QuestionMode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,15 +10,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalTime;
-
-import com.knuissant.dailyq.domain.jobs.Job;
-import com.knuissant.dailyq.domain.questions.QuestionMode;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,7 +47,7 @@ public class UserPreferences {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_response_type", nullable = false, length = 10)
-    private UserResponseType answerType;
+    private UserResponseType userResponseType;
 
     @Column(name = "time_limit_seconds")
     private Integer timeLimitSeconds;

@@ -27,5 +27,3 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
         "ORDER BY RAND() LIMIT 1", nativeQuery = true)
     Optional<Question> findRandomTechByJobIdExcludingTodayAnswers(@Param("jobId") Long jobId, @Param("userId") Long userId);
 }
-
-

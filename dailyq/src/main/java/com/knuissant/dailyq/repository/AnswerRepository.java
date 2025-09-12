@@ -11,4 +11,3 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     long countTodayByUserId(@Param("userId") Long userId);
 }
 
-

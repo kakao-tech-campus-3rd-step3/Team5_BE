@@ -109,8 +109,7 @@ CREATE TABLE answers (
                          answer_text MEDIUMTEXT NOT NULL, -- 오디오 변환 후 answer 생성
                          level TINYINT NULL,
                          starred TINYINT(1) NOT NULL DEFAULT 0, -- default 0
-                         answered_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                         answered_date DATE AS (DATE(answered_time)) STORED, -- time으로 통합?
+                         answered_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
                          CONSTRAINT ck_answers_level CHECK (level IS NULL OR (level BETWEEN 1 AND 5)),
     CONSTRAINT fk_answers_user
         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -127,8 +126,8 @@ CREATE TABLE feedbacks (
                            feedback_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                            answer_id BIGINT NOT NULL,
                            status ENUM('PENDING','DONE','FAILED') NOT NULL DEFAULT 'PENDING',
-                           feedback MEDIUMTEXT NULL, -- entity 생성 후
-                           latency_ms INT NULL, -- entity 생성 후, 지연 시간 측정 필요
+                           content MEDIUMTEXT NULL, -- entity 생성 후
+                           latency_ms BIGINT NULL, -- entity 생성 후, 지연 시간 측정 필요
                                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                            CONSTRAINT fk_feedback_answer
