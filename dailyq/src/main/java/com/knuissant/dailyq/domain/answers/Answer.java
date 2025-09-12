@@ -61,10 +61,6 @@ public class Answer {
         this.question = question;
         this.answerText = answerText;
     }
-  
-    // 생성 칼럼 (DB 계산) — 읽기 전용
-    @Column(name = "answered_date", insertable = false, updatable = false)
-    private LocalDate answeredDate;
 
     @Column(name = "memo", columnDefinition = "MEDIUMTEXT")
     private String memo;
