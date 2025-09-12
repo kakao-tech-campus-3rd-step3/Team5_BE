@@ -53,8 +53,9 @@ public class AnswerService {
             AnswerLevelUpdateRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
-
+                        .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+            
+        // 답변의 user와 현재 user가 같은지 확인 추가
         answer.updateLevel(request.level());
 
         return new AnswerLevelUpdateResponse(answer.getId(), answer.getLevel());
