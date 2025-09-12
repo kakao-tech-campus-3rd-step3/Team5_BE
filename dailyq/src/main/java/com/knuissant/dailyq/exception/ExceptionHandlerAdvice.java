@@ -31,11 +31,14 @@ public class ExceptionHandlerAdvice {
 
     List<ValidationError> validationErrors = ex.getBindingResult().getFieldErrors()
         .stream()
-        .map(error -> new ValidationError(
-            error.getField(),
-            error.getRejectedValue() == null ? "" : error.getRejectedValue().toString(),
-            error.getDefaultMessage()
-        ))
+        .map(error -> {
+          Object rejected = error.getRejectedValue();
+          return new ValidationError(
+              error.getField(),
+              rejected == null ? "" : rejected.toString(),
+              error.getDefaultMessage()
+          );
+        })
         .collect(Collectors.toList());
 
     problemDetail.setProperty("validationErrors", validationErrors);

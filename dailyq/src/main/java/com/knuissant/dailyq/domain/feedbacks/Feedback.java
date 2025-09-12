@@ -1,5 +1,6 @@
 package com.knuissant.dailyq.domain.feedbacks;
 
+import com.knuissant.dailyq.domain.answers.Answer;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,9 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-
-import com.knuissant.dailyq.domain.answers.Answer;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +26,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "feedbacks", indexes = {
-    @Index(name = "idx_feedback_answer_status", columnList = "answer_id, status")
+        @Index(name = "idx_feedback_answer_status", columnList = "answer_id, status")
 })
 public class Feedback {
 
@@ -46,16 +44,35 @@ public class Feedback {
     private FeedbackStatus status;
 
     @Column(columnDefinition = "MEDIUMTEXT")
-    private String feedback;
+    private String content;
 
     @Column(name = "latency_ms")
-    private Integer latencyMs;
+    private Long latencyMs;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false, insertable = false)
     private LocalDateTime updatedAt;
+
+    public static Feedback create(Answer answer, FeedbackStatus status) {
+        return Feedback.builder()
+                .answer(answer)
+                .status(status)
+                .build();
+    }
+
+    public void updateStatus(FeedbackStatus status) {
+        this.status = status;
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public void updateLatencyMs(Long latencyMs) {
+        this.latencyMs = latencyMs;
+    }
 }
 
 

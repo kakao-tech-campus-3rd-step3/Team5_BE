@@ -88,7 +88,7 @@ VALUES
     (5, 5, 5, 'answer', NULL, 0, '2025-09-05 07:50:00');
 
 /* ANSWER FEEDBACKS (5) */
-INSERT INTO feedbacks (feedback_id, answer_id, status, feedback, latency_ms, created_at)
+INSERT INTO feedbacks (feedback_id, answer_id, status, content, latency_ms, created_at)
 VALUES
     (1, 1, 'DONE', '핵심 단계(TCP 핸드셰이크 vs TLS 핸드셰이크) 구분이 명확합니다. 예시 하나만 더 추가하세요.', 820, '2025-09-01 09:13:00'),
     (2, 2, 'DONE', '클러스터드/넌클러스터드 인덱스 차이를 짚은 점이 좋습니다. B+트리 재밸런싱 언급 추가 추천.', 1040, '2025-09-02 08:47:00'),
