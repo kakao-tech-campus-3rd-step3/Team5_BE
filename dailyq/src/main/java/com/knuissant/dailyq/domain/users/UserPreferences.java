@@ -1,28 +1,11 @@
 package com.knuissant.dailyq.domain.users;
 
-import com.knuissant.dailyq.dto.UserPreferencesUpdateRequest;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import java.time.LocalTime;
-
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
+import jakarta.persistence.*;
+import lombok.*;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.time.LocalTime;
 
 @Getter
 @Builder
@@ -65,17 +48,15 @@ public class UserPreferences {
     @JoinColumn(name = "user_job", nullable = false)
     private Job userJob;
 
-    public void updatePreferences(UserPreferencesUpdateRequest request) {
-        this.dailyQuestionLimit = request.dailyQuestionLimit();
-        this.questionMode = request.questionMode();
-        this.userResponseType = request.answerType();
-        this.timeLimitSeconds = request.timeLimitSeconds();
-        this.allowPush = request.allowPush();
+    public void updatePreferences(Integer dailyQuestionLimit, QuestionMode questionMode, UserResponseType answerType, Integer timeLimitSeconds, Boolean allowPush) {
+        this.dailyQuestionLimit = dailyQuestionLimit;
+        this.questionMode = questionMode;
+        this.userResponseType = answerType;
+        this.timeLimitSeconds = timeLimitSeconds;
+        this.allowPush = allowPush;
     }
 
     public void changeJob(Job newJob) {
         this.userJob = newJob;
     }
 }
-
-

@@ -23,10 +23,6 @@ public class UserPreferencesService {
     private final UserPreferencesRepository userPreferencesRepository;
     private final JobRepository jobRepository;
 
-    /**
-     * Creates default preferences for a new user.
-     * @param user The new user entity
-     */
     public void createDefaultPreferences(User user) {
         Job defaultJob = jobRepository.findById(1L)
                 .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
@@ -44,30 +40,22 @@ public class UserPreferencesService {
         userPreferencesRepository.save(defaultPreferences);
     }
 
-    /**
-     * Updates a user's preferences.
-     * @param userId The ID of the user
-     * @param request The preference update request DTO
-     * @return The updated UserPreferences entity
-     */
     public UserPreferences updateUserPreferences(Long userId, UserPreferencesUpdateRequest request) {
         UserPreferences preferences = findUserPreferencesByUserId(userId);
-
-        // UserPreferencesUpdateRequest DTO 객체 자체를 인자로 전달합니다.
-        preferences.updatePreferences(request);
+        preferences.updatePreferences(
+                request.dailyQuestionLimit(),
+                request.questionMode(),
+                request.answerType(),
+                request.timeLimitSeconds(),
+                request.allowPush()
+        );
         return preferences;
     }
 
-    /**
-     * Updates a user's representative job.
-     * @param userId The ID of the user
-     * @param request The job update request DTO
-     */
     public void updateUserJob(Long userId, UserJobsUpdateRequest request) {
         UserPreferences preferences = findUserPreferencesByUserId(userId);
         Job job = jobRepository.findById(request.jobId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
-
         preferences.changeJob(job);
     }
 

@@ -17,8 +17,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import static java.util.prefs.Preferences.MAX_NAME_LENGTH;
-
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,6 +24,7 @@ import static java.util.prefs.Preferences.MAX_NAME_LENGTH;
 @Entity
 @Table(name = "users")
 public class User {
+    private static final int MAX_NAME_LENGTH = 100;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,8 +54,8 @@ public class User {
     private LocalDateTime updatedAt;
 
     public void updateName(String newName) {
+        validateName(newName);
         this.name = newName;
-        this.updatedAt = LocalDateTime.now();
     }
 
     private void validateName(String name) {
