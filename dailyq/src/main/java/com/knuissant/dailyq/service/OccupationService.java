@@ -16,10 +16,6 @@ public class OccupationService {
 
     private final OccupationRepository occupationRepository;
 
-    /**
-     * 모든 상위 직군 목록을 조회합니다.
-     * @return 상위 직군 목록
-     */
     public List<OccupationResponse> findAllOccupations() {
         return occupationRepository.findAll().stream()
                 .map(o -> new OccupationResponse(o.getId(), o.getName()))
