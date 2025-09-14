@@ -6,6 +6,7 @@ import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.domain.users.UserResponseType;
 import com.knuissant.dailyq.dto.UserJobsUpdateRequest;
+import com.knuissant.dailyq.dto.UserPreferencesResponse;
 import com.knuissant.dailyq.dto.UserPreferencesUpdateRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
@@ -40,7 +41,7 @@ public class UserPreferencesService {
         userPreferencesRepository.save(defaultPreferences);
     }
 
-    public UserPreferences updateUserPreferences(Long userId, UserPreferencesUpdateRequest request) {
+    public UserPreferencesResponse updateUserPreferences(Long userId, UserPreferencesUpdateRequest request) {
         UserPreferences preferences = findUserPreferencesByUserId(userId);
         preferences.updatePreferences(
                 request.dailyQuestionLimit(),
@@ -49,7 +50,16 @@ public class UserPreferencesService {
                 request.timeLimitSeconds(),
                 request.allowPush()
         );
-        return preferences;
+
+        return new UserPreferencesResponse(
+                preferences.getDailyQuestionLimit(),
+                preferences.getQuestionMode(),
+                preferences.getUserResponseType(),
+                preferences.getTimeLimitSeconds(),
+                preferences.getNotifyTime(),
+                preferences.getAllowPush(),
+                preferences.getUserJob() != null ? preferences.getUserJob().getId() : null
+        );
     }
 
     public void updateUserJob(Long userId, UserJobsUpdateRequest request) {

@@ -31,8 +31,8 @@ public class UserController {
 
     @PutMapping("/preferences")
     public ResponseEntity<UserPreferencesResponse> updateUserPreferences(@RequestParam Long userId, @RequestBody UserPreferencesUpdateRequest request) {
-        var updatedPreferences = userPreferencesService.updateUserPreferences(userId, request);
-        return ResponseEntity.ok(UserPreferencesResponse.from(updatedPreferences));
+        UserPreferencesResponse response = userPreferencesService.updateUserPreferences(userId, request);
+        return ResponseEntity.ok(response);
     }
 
 
