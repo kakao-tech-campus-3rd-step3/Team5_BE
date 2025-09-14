@@ -1,9 +1,9 @@
 package com.knuissant.dailyq.dto;
 
-import lombok.Builder;
+import jakarta.validation.constraints.NotNull;
 
 // 사용자 직군 선택/수정 요청에 사용되는 DTO
-@Builder
 public record UserJobsUpdateRequest(
+        @NotNull(message = "직군 ID는 필수입니다.")
         Long jobId
-) {}
+) { }

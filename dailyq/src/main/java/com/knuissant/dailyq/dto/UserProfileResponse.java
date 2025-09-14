@@ -4,15 +4,11 @@ import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.domain.users.UserResponseType;
-import lombok.Builder;
 
 import java.util.Collections;
 import java.util.List;
 
-import java.util.List;
-
 // 사용자 프로필 응답에 사용되는 DTO
-@Builder
 public record UserProfileResponse(
         Long userId,
         String email,

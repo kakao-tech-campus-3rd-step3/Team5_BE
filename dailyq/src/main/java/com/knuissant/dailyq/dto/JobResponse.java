@@ -1,9 +1,7 @@
 package com.knuissant.dailyq.dto;
 
 import com.knuissant.dailyq.domain.jobs.Job;
-import lombok.Builder;
 
-@Builder
 public record JobResponse(
         Long jobId,
         String jobName,
