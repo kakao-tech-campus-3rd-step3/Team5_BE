@@ -1,11 +1,14 @@
 package com.knuissant.dailyq.service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.knuissant.dailyq.constants.QuestionConstants;
 import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
@@ -36,35 +39,19 @@ public class QuestionService {
         UserPreferences prefs = userPreferencesRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        long answeredToday = answerRepository.countTodayByUserId(userId);
-        int remain = prefs.getDailyQuestionLimit() - (int) answeredToday;
-        if (remain <= 0) {
-            throw new BusinessException(ErrorCode.DAILY_LIMIT_REACHED);
-        }
+        // 일일 질문 제한 확인
+        validateDailyQuestionLimit(userId, prefs);
 
-        // Use user preferences
+        // 사용자 설정 정보
         QuestionMode mode = prefs.getQuestionMode();
         Long jobId = prefs.getUserJob() != null ? prefs.getUserJob().getId() : null;
-
-        // Resolve phase when FLOW
         FlowPhase phase = null;
         if (mode == QuestionMode.FLOW) {
             phase = resolvePhase(userId);
         }
 
-        Optional<Question> picked;
-        if (mode == QuestionMode.TECH) {
-            if (jobId != null) {
-                picked = questionRepository.findRandomTechByJobId(jobId, userId);
-            } else {
-                picked = questionRepository.findRandomByType(QuestionConstants.QUESTION_TYPE_TECH, userId);
-            }
-        } else { // FLOW
-            QuestionType typeForPhase = mapPhaseToType(phase);
-            picked = questionRepository.findRandomByType(typeForPhase.name(), userId);
-        }
-
-        Question q = picked.orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE));
+        Question q = getRandomQuestionOptimized(mode, phase, jobId, userId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE));
 
         return new RandomQuestionResponse(
             q.getId(),
@@ -82,6 +69,63 @@ public class QuestionService {
         return progress.getNextPhase();
     }
 
+    private Optional<Question> getRandomQuestionOptimized(QuestionMode mode, FlowPhase phase, Long jobId, Long userId) {
+        // 사용자가 답변한 질문들을 조회
+        Set<Long> answeredQuestionIds = answerRepository.findByUserId(userId)
+            .stream()
+            .map(answer -> answer.getQuestion().getId())
+            .collect(Collectors.toSet());
+
+        // 질문 모드에 따라 질문 조회
+        List<Question> availableQuestions = findAvailableQuestions(mode, jobId, phase);
+
+        // 답변하지 않은 질문들만 필터링
+        List<Question> unansweredQuestions = availableQuestions.stream()
+            .filter(question -> !answeredQuestionIds.contains(question.getId()))
+            .collect(Collectors.toList());
+
+        if (unansweredQuestions.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // 애플리케이션 레벨에서 랜덤 선택
+        Random random = new Random();
+        return Optional.of(unansweredQuestions.get(random.nextInt(unansweredQuestions.size())));
+    }
+
+    private void validateDailyQuestionLimit(Long userId, UserPreferences userPreferences) {
+        long answeredToday = answerRepository.countTodayByUserId(userId);
+        int remain = userPreferences.getDailyQuestionLimit() - (int) answeredToday;
+        
+        if (remain <= 0) {
+            throw new BusinessException(ErrorCode.DAILY_LIMIT_REACHED);
+        }
+    }
+
+    // 질문 모드에 따라 사용 가능한 질문 목록을 조회
+    private List<Question> findAvailableQuestions(QuestionMode mode, Long jobId, FlowPhase phase) {
+        return switch (mode) {
+            case TECH -> findTechQuestions(jobId);
+            case FLOW -> findFlowQuestions(phase);
+        };
+    }
+
+    // TECH 모드에 맞는 질문들을 조회
+    private List<Question> findTechQuestions(Long jobId) {
+        if (jobId != null) {
+            return questionRepository.findByEnabledTrueAndQuestionTypeAndJobsId(QuestionType.TECH, jobId);
+        } else {
+            return questionRepository.findByEnabledTrueAndQuestionType(QuestionType.TECH);
+        }
+    }
+
+    // FLOW 모드에 맞는 질문들을 조회
+    private List<Question> findFlowQuestions(FlowPhase phase) {
+        QuestionType typeForPhase = mapPhaseToType(phase);
+        return questionRepository.findByEnabledTrueAndQuestionType(typeForPhase);
+    }
+
+    // 플로우 단계를 질문 타입으로 매핑
     private QuestionType mapPhaseToType(FlowPhase phase) {
         return switch (phase) {
             case INTRO -> QuestionType.INTRO;
