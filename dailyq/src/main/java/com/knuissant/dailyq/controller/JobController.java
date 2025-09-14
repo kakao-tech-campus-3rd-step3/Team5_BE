@@ -11,20 +11,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/occupations")
 @RequiredArgsConstructor
 public class JobController {
 
     private final JobService jobService;
     private final OccupationService occupationService;
 
-    @GetMapping("/occupations")
+    @GetMapping
     public ResponseEntity<List<OccupationResponse>> getOccupations() {
         List<OccupationResponse> response = occupationService.findAllOccupations();
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/occupations/{occupationId}/jobs")
+    @GetMapping("/{occupationId}/jobs")
     public ResponseEntity<List<JobResponse>> getJobsByOccupation(@PathVariable Long occupationId) {
         List<JobResponse> response = jobService.findJobsByOccupation(occupationId);
         return ResponseEntity.ok(response);
