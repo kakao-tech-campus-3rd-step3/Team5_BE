@@ -2,8 +2,8 @@ package com.knuissant.dailyq.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -89,8 +89,7 @@ public class QuestionService {
         }
 
         // 애플리케이션 레벨에서 랜덤 선택
-        Random random = new Random();
-        return Optional.of(unansweredQuestions.get(random.nextInt(unansweredQuestions.size())));
+        return Optional.of(unansweredQuestions.get(ThreadLocalRandom.current().nextInt(unansweredQuestions.size())));
     }
 
     private void validateDailyQuestionLimit(Long userId, UserPreferences userPreferences) {
