@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.knuissant.dailyq.domain.answers.Answer;
+
 public interface AnswerRepository extends JpaRepository<Answer, Long>,
         JpaSpecificationExecutor<Answer> {
 
