@@ -26,3 +26,7 @@ springdoc:
     path: /swagger-ui.html
     operationsSorter: method
     tagsSorter: alpha
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY}

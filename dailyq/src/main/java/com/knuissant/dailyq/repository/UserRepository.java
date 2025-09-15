@@ -1,8 +1,9 @@
 package com.knuissant.dailyq.repository;
 
-import com.knuissant.dailyq.domain.users.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.knuissant.dailyq.domain.users.User;
 
 import java.time.LocalDateTime;
 import java.util.Optional;

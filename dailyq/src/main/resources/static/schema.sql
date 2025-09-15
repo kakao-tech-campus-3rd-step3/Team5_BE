@@ -28,16 +28,16 @@ CREATE TABLE users (
    - 사용자 대표 직군 1개 선택 (FK: jobs)
    ========================= */
 CREATE TABLE user_preferences (
-                                  user_id BIGINT PRIMARY KEY,
-                                  daily_question_limit INT NOT NULL DEFAULT 1,
-                                  question_mode ENUM('TECH','FLOW') NOT NULL DEFAULT 'TECH',
-                                  user_response_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
-                                  time_limit_seconds INT DEFAULT 180,
-                                  notify_time TIME NULL,
-                                  allow_push TINYINT(1) NOT NULL DEFAULT 0,
-                                  user_job BIGINT NOT NULL,
-                                  CONSTRAINT fk_user_prefs_user
-                                      FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+                              user_id BIGINT PRIMARY KEY,
+                              daily_question_limit INT NOT NULL DEFAULT 1,
+                              question_mode ENUM('TECH','FLOW') NOT NULL DEFAULT 'TECH',
+                              user_response_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
+                              time_limit_seconds INT DEFAULT 180,
+                              notify_time TIME NULL,
+                              allow_push TINYINT(1) NOT NULL DEFAULT 0,
+                              user_job BIGINT NOT NULL,
+                              CONSTRAINT fk_user_prefs_user
+                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
@@ -110,7 +110,7 @@ CREATE TABLE answers (
                          level TINYINT NULL,
                          starred TINYINT(1) NOT NULL DEFAULT 0, -- default 0
                          answered_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                         answered_date DATE AS (DATE(answered_time)) STORED, -- time으로 통합?
+                         memo MEDIUMTEXT NULL, -- 메모 필드 추가
                          CONSTRAINT ck_answers_level CHECK (level IS NULL OR (level BETWEEN 1 AND 5)),
     CONSTRAINT fk_answers_user
         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -127,8 +127,8 @@ CREATE TABLE feedbacks (
                            feedback_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                            answer_id BIGINT NOT NULL,
                            status ENUM('PENDING','DONE','FAILED') NOT NULL DEFAULT 'PENDING',
-                           feedback MEDIUMTEXT NULL, -- entity 생성 후
-                           latency_ms INT NULL, -- entity 생성 후, 지연 시간 측정 필요
+                           content MEDIUMTEXT NULL, -- entity 생성 후
+                           latency_ms BIGINT NULL, -- entity 생성 후, 지연 시간 측정 필요
                                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                            CONSTRAINT fk_feedback_answer
