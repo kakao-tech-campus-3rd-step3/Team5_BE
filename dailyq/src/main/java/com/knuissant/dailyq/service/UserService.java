@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserPreferences;
-import com.knuissant.dailyq.dto.UserProfileResponse;
+import com.knuissant.dailyq.dto.users.UserProfileResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.UserRepository;

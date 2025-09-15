@@ -1,4 +1,4 @@
-package com.knuissant.dailyq.dto;
+package com.knuissant.dailyq.dto.feedbacks;
 
 import java.util.List;
 

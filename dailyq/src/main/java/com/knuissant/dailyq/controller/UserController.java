@@ -3,7 +3,11 @@ package com.knuissant.dailyq.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.knuissant.dailyq.dto.*;
+import com.knuissant.dailyq.dto.users.UserJobsUpdateRequest;
+import com.knuissant.dailyq.dto.users.UserPreferencesResponse;
+import com.knuissant.dailyq.dto.users.UserPreferencesUpdateRequest;
+import com.knuissant.dailyq.dto.users.UserProfileResponse;
+import com.knuissant.dailyq.dto.users.UserUpdateRequest;
 import com.knuissant.dailyq.service.UserPreferencesService;
 import com.knuissant.dailyq.service.UserService;
 

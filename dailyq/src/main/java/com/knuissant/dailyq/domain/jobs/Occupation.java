@@ -28,6 +28,6 @@ public class Occupation {
     private String name;
 
     @OneToMany(mappedBy = "occupation", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Job> jobs = new ArrayList<>();
 }
-

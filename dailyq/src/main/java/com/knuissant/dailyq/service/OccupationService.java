@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.knuissant.dailyq.dto.OccupationResponse;
+import com.knuissant.dailyq.dto.users.OccupationResponse;
 import com.knuissant.dailyq.repository.OccupationRepository;
 
 import lombok.RequiredArgsConstructor;

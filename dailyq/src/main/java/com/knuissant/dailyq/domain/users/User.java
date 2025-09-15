@@ -11,9 +11,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-import com.knuissant.dailyq.dto.UserCreateRequest;
-
 import org.springframework.util.StringUtils;
+
+import com.knuissant.dailyq.dto.users.UserCreateRequest;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

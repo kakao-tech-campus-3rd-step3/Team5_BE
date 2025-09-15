@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.knuissant.dailyq.dto.JobResponse;
-import com.knuissant.dailyq.dto.OccupationResponse;
+import com.knuissant.dailyq.dto.users.JobResponse;
+import com.knuissant.dailyq.dto.users.OccupationResponse;
 import com.knuissant.dailyq.service.JobService;
 import com.knuissant.dailyq.service.OccupationService;
 

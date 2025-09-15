@@ -1,4 +1,4 @@
-package com.knuissant.dailyq.dto;
+package com.knuissant.dailyq.dto.answers;
 
 import java.time.LocalDateTime;
 
