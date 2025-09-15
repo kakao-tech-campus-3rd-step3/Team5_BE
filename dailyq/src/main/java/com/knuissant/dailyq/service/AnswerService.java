@@ -18,6 +18,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
@@ -40,9 +43,6 @@ import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.FeedbackRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserRepository;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
