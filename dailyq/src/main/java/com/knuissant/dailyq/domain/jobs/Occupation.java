@@ -1,16 +1,14 @@
 package com.knuissant.dailyq.domain.jobs;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
@@ -27,6 +25,8 @@ public class Occupation {
 
     @Column(name = "occupation_name", nullable = false, unique = true, length = 100)
     private String name;
-}
 
+    @OneToMany(mappedBy = "occupation", fetch = FetchType.LAZY)
+    private List<Job> jobs = new ArrayList<>();
+}
 

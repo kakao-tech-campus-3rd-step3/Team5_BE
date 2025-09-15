@@ -1,7 +1,7 @@
 package com.knuissant.dailyq.domain.users;
 
-import com.knuissant.dailyq.domain.jobs.Job;
-import com.knuissant.dailyq.domain.questions.QuestionMode;
+import java.time.LocalTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,7 +14,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.time.LocalTime;
+
+import com.knuissant.dailyq.domain.jobs.Job;
+import com.knuissant.dailyq.domain.questions.QuestionMode;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -61,6 +64,16 @@ public class UserPreferences {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_job", nullable = false)
     private Job userJob;
+
+    public void updatePreferences(Integer dailyQuestionLimit, QuestionMode questionMode, UserResponseType answerType, Integer timeLimitSeconds, Boolean allowPush) {
+        this.dailyQuestionLimit = dailyQuestionLimit;
+        this.questionMode = questionMode;
+        this.userResponseType = answerType;
+        this.timeLimitSeconds = timeLimitSeconds;
+        this.allowPush = allowPush;
+    }
+
+    public void changeJob(Job newJob) {
+        this.userJob = newJob;
+    }
 }
-
-
