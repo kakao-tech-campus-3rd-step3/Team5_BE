@@ -1,11 +1,13 @@
 package com.knuissant.dailyq.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.knuissant.dailyq.dto.*;
 import com.knuissant.dailyq.service.UserPreferencesService;
 import com.knuissant.dailyq.service.UserService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")

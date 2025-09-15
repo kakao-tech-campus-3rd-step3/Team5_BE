@@ -1,6 +1,7 @@
 package com.knuissant.dailyq.domain.users;
 
-import com.knuissant.dailyq.dto.UserCreateRequest;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,14 +10,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+
+import com.knuissant.dailyq.dto.UserCreateRequest;
+
+import org.springframework.util.StringUtils;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.util.StringUtils;
 
 @Getter
 @Builder

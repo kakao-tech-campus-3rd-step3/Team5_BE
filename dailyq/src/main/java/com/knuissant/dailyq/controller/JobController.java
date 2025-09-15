@@ -1,14 +1,16 @@
 package com.knuissant.dailyq.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.knuissant.dailyq.dto.JobResponse;
 import com.knuissant.dailyq.dto.OccupationResponse;
 import com.knuissant.dailyq.service.JobService;
 import com.knuissant.dailyq.service.OccupationService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/occupations")
