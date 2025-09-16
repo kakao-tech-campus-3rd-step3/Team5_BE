@@ -1,11 +1,11 @@
 package com.knuissant.dailyq.dto.questions;
 
-import com.knuissant.dailyq.domain.questions.FlowPhase;
-import com.knuissant.dailyq.domain.questions.QuestionType;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import com.knuissant.dailyq.domain.questions.FlowPhase;
+import com.knuissant.dailyq.domain.questions.QuestionType;
 public record RandomQuestionResponse(
     @NotNull Long questionId,
     @NotNull QuestionType questionType,

@@ -1,11 +1,13 @@
 package com.knuissant.dailyq.repository;
 
-import com.knuissant.dailyq.constants.QuestionConstants;
-import com.knuissant.dailyq.domain.questions.Question;
 import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import com.knuissant.dailyq.constants.QuestionConstants;
+import com.knuissant.dailyq.domain.questions.Question;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 

@@ -1,19 +1,22 @@
 package com.knuissant.dailyq.external.gpt;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.knuissant.dailyq.dto.FeedbackResponse;
+import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.external.gpt.dto.GptRequest;
 import com.knuissant.dailyq.external.gpt.dto.GptRequest.Message;
 import com.knuissant.dailyq.external.gpt.dto.GptRequest.ResponseFormat;
 import com.knuissant.dailyq.external.gpt.dto.GptResponse;
-import java.util.List;
-import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 @RequiredArgsConstructor

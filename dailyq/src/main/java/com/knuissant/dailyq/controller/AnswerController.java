@@ -1,15 +1,11 @@
 package com.knuissant.dailyq.controller;
 
-import com.knuissant.dailyq.dto.AnswerArchiveUpdateRequest;
-import com.knuissant.dailyq.dto.AnswerArchiveUpdateResponse;
-import com.knuissant.dailyq.dto.AnswerDetailResponse;
-import com.knuissant.dailyq.dto.AnswerListResponse;
-import com.knuissant.dailyq.dto.AnswerSearchConditionRequest;
-import com.knuissant.dailyq.exception.BusinessException;
-import com.knuissant.dailyq.exception.ErrorCode;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,14 +18,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.knuissant.dailyq.dto.AnswerCreateRequest;
-import com.knuissant.dailyq.dto.AnswerCreateResponse;
-import com.knuissant.dailyq.dto.AnswerLevelUpdateRequest;
-import com.knuissant.dailyq.dto.AnswerLevelUpdateResponse;
-import com.knuissant.dailyq.service.AnswerService;
-
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
+import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
+import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
+import com.knuissant.dailyq.dto.answers.AnswerCreateResponse;
+import com.knuissant.dailyq.dto.answers.AnswerDetailResponse;
+import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateRequest;
+import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
+import com.knuissant.dailyq.dto.answers.AnswerListResponse;
+import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
+import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.service.AnswerService;
 
 @RestController
 @RequestMapping("/api/answers")

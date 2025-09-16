@@ -1,12 +1,12 @@
-package com.knuissant.dailyq.dto;
+package com.knuissant.dailyq.dto.users;
+
+import java.util.Collections;
+import java.util.List;
 
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.domain.users.UserResponseType;
-
-import java.util.Collections;
-import java.util.List;
 
 // 사용자 프로필 응답에 사용되는 DTO
 public record UserProfileResponse(

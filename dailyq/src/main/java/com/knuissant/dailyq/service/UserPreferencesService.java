@@ -1,20 +1,23 @@
 package com.knuissant.dailyq.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.domain.users.UserResponseType;
-import com.knuissant.dailyq.dto.UserJobsUpdateRequest;
-import com.knuissant.dailyq.dto.UserPreferencesResponse;
-import com.knuissant.dailyq.dto.UserPreferencesUpdateRequest;
+import com.knuissant.dailyq.dto.users.UserJobsUpdateRequest;
+import com.knuissant.dailyq.dto.users.UserPreferencesResponse;
+import com.knuissant.dailyq.dto.users.UserPreferencesUpdateRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.JobRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 
 @Service
 @RequiredArgsConstructor
