@@ -67,8 +67,8 @@ public class ExceptionHandlerAdvice {
         return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
     }
 
-    @ExceptionHandler(SystemException.class)
-    public ResponseEntity<ProblemDetail> handleSystemException(SystemException ex, HttpServletRequest request) {
+    @ExceptionHandler(InfraException.class)
+    public ResponseEntity<ProblemDetail> handleSystemException(InfraException ex, HttpServletRequest request) {
         ErrorCode errorCode = ex.getErrorCode();
         ProblemDetail problemDetail = errorCode.toProblemDetail();
 

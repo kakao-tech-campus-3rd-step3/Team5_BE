@@ -12,6 +12,7 @@ import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.external.gpt.GptClient;
 import com.knuissant.dailyq.repository.FeedbackRepository;
 
@@ -47,7 +48,7 @@ public class FeedbackService {
             feedback.updateStatus(FeedbackStatus.DONE);
         } catch (JsonProcessingException e) {
             feedback.updateStatus(FeedbackStatus.FAILED);
-            throw new BusinessException(ErrorCode.JSON_PROCESSING_ERROR);
+            throw new InfraException(ErrorCode.JSON_PROCESSING_ERROR);
         }
 
         return response;
