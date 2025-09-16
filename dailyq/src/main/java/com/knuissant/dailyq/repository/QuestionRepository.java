@@ -7,9 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionType;
 
-import com.knuissant.dailyq.constants.QuestionConstants;
-import com.knuissant.dailyq.domain.questions.Question;
-
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     /**
