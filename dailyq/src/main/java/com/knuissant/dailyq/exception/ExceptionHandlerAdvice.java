@@ -12,52 +12,83 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @RestControllerAdvice
 public class ExceptionHandlerAdvice {
 
-  @ExceptionHandler(BusinessException.class)
-  public ResponseEntity<ProblemDetail> handleBusinessException(BusinessException ex, HttpServletRequest request) {
-    ErrorCode errorCode = ex.getErrorCode();
-    ProblemDetail problemDetail = errorCode.toProblemDetail();
-    log.warn("BusinessException URI : {}, Code : {}, Message : {}", request.getRequestURI(),errorCode.getCode(),errorCode.getMessage());
-    return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
-  }
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ProblemDetail> handleBusinessException(BusinessException ex, HttpServletRequest request) {
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ProblemDetail> handleMethodArgumentNotValidException(
-      MethodArgumentNotValidException ex, HttpServletRequest request) {
+        ErrorCode errorCode = ex.getErrorCode();
+        ProblemDetail problemDetail = errorCode.toProblemDetail();
 
-    ErrorCode errorCode = ErrorCode.VALIDATION_FAILED;
-    ProblemDetail problemDetail = errorCode.toProblemDetail();
+        String logMessage = String.format(
+                "BusinessException URI : %s, Code : %s, Message : %s",
+                request.getRequestURI(),
+                errorCode.getCode(),
+                errorCode.getMessage());
 
-    List<ValidationError> validationErrors = ex.getBindingResult().getFieldErrors()
-        .stream()
-        .map(error -> {
-          Object rejected = error.getRejectedValue();
-          return new ValidationError(
-              error.getField(),
-              rejected == null ? "" : rejected.toString(),
-              error.getDefaultMessage()
-          );
-        })
-        .collect(Collectors.toList());
+        if (ex.getArgs() != null && ex.getArgs().length > 0) {
+            log.warn(logMessage, ex.getArgs());
+        } else {
+            log.warn(logMessage);
+        }
+        return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
+    }
 
-    problemDetail.setProperty("validationErrors", validationErrors);
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ProblemDetail> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex, HttpServletRequest request) {
 
-    log.warn("Validation Fail URI : {}, Code : {}, Message : {}", request.getRequestURI(),errorCode.getCode(),errorCode.getMessage());
+        ErrorCode errorCode = ErrorCode.VALIDATION_FAILED;
+        ProblemDetail problemDetail = errorCode.toProblemDetail();
 
-    return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
-  }
+        List<ValidationError> validationErrors = ex.getBindingResult().getFieldErrors()
+                .stream()
+                .map(error -> {
+                    Object rejected = error.getRejectedValue();
+                    return new ValidationError(
+                            error.getField(),
+                            rejected == null ? "" : rejected.toString(),
+                            error.getDefaultMessage()
+                    );
+                })
+                .collect(Collectors.toList());
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ProblemDetail> handleUncaughtException(Exception ex,HttpServletRequest request) {
-    ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
-    ProblemDetail problemDetail = errorCode.toProblemDetail();
+        problemDetail.setProperty("validationErrors", validationErrors);
 
-    log.error("Unpredicted Error URI : {}, Method : {} ", request.getRequestURI(), request.getRequestURI(), ex);
+        log.warn("Validation Fail URI : {}, Code : {}, Message : {}, Errors : {}",
+                request.getRequestURI(),
+                errorCode.getCode(),
+                errorCode.getMessage(),
+                validationErrors);
 
-    return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
-  }
+        return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
+    }
+
+    @ExceptionHandler(SystemException.class)
+    public ResponseEntity<ProblemDetail> handleSystemException(SystemException ex, HttpServletRequest request) {
+        ErrorCode errorCode = ex.getErrorCode();
+        ProblemDetail problemDetail = errorCode.toProblemDetail();
+
+        log.error("SystemException URI : {}, Code : {}, Message : {}",
+                request.getRequestURI(),
+                errorCode.getCode(),
+                errorCode.getMessage(),
+                ex);
+
+        return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ProblemDetail> handleUncaughtException(Exception ex, HttpServletRequest request) {
+        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+        ProblemDetail problemDetail = errorCode.toProblemDetail();
+
+        log.error("Unpredicted Error URI : {}, Method : {} ", request.getRequestURI(), request.getRequestURI(), ex);
+
+        return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
+    }
 }
 
