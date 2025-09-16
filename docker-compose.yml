@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: dailyq-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      # MYSQL_USER/MYSQL_PASSWORD는 일반 계정용입니다. root를 쓰면 안 됩니다.
+      TZ: Asia/Seoul
+    command: [
+      "mysqld",
+      "--default-authentication-plugin=mysql_native_password",
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+      "--init-connect=SET NAMES utf8mb4",
+      "--skip-character-set-client-handshake"
+    ]
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./dailyq/src/main/resources/static/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./dailyq/src/main/resources/static/02_mock.sql:/docker-entrypoint-initdb.d/02_mock.sql:ro
+    networks:
+      - dailyq-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  app:
+    build: ./dailyq
+    container_name: dailyq-app
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SPRING_PROFILES_ACTIVE=prod
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dailyq-network
+    # 앱 헬스체크는 생략합니다 (Actuator 미사용)
+
+volumes:
+  mysql_data:
+
+networks:
+  dailyq-network:
+    driver: bridge

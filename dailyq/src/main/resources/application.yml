@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: DailyQ
+
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:${MYSQL_HOST}}:${DB_PORT:${MYSQL_PORT}}/${DB_NAME:${MYSQL_DATABASE}}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=utf8
+    username: ${DB_USERNAME:${MYSQL_USER}}
+    password: ${DB_PASSWORD:${MYSQL_PASSWORD}}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    # HTTPS 환경에서 Mixed Content 오류 방지
+    use-root-path: true
+    # 서버 URL을 명시적으로 설정하지 않으면 OpenAPI Configuration에서 설정한 서버 정보 사용
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
