@@ -39,6 +39,7 @@ import com.knuissant.dailyq.dto.answers.AnswerListResponse.Summary;
 import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.FeedbackRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
@@ -218,7 +219,7 @@ public class AnswerService {
             String json = objectMapper.writeValueAsString(cursorData);
             return Base64.getEncoder().encodeToString(json.getBytes());
         } catch (JsonProcessingException e) {
-            throw new BusinessException(ErrorCode.CURSOR_GENERATION_FAILED);
+            throw new InfraException(ErrorCode.CURSOR_GENERATION_FAILED);
         }
     }
 
