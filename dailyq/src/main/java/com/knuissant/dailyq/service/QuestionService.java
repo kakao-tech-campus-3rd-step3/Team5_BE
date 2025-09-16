@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
+import com.knuissant.dailyq.constants.QuestionConstants;
 import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
@@ -22,8 +25,6 @@ import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

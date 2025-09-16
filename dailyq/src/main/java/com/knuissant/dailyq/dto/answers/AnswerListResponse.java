@@ -1,10 +1,11 @@
-package com.knuissant.dailyq.dto;
+package com.knuissant.dailyq.dto.answers;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.QuestionType;
-import java.time.LocalDateTime;
-import java.util.List;
 
 public record AnswerListResponse(List<Summary> summaries) {
 

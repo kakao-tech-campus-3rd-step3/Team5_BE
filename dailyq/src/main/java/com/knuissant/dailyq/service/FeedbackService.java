@@ -3,17 +3,17 @@ package com.knuissant.dailyq.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
-import com.knuissant.dailyq.dto.FeedbackResponse;
+import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.external.gpt.GptClient;
 import com.knuissant.dailyq.repository.FeedbackRepository;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

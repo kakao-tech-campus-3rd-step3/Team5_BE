@@ -1,22 +1,15 @@
 package com.knuissant.dailyq.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.knuissant.dailyq.domain.jobs.Job;
-import com.knuissant.dailyq.dto.AnswerArchiveUpdateRequest;
-import com.knuissant.dailyq.dto.AnswerArchiveUpdateResponse;
-import com.knuissant.dailyq.dto.AnswerDetailResponse;
-import com.knuissant.dailyq.dto.AnswerListResponse.CursorResult;
-import com.knuissant.dailyq.dto.AnswerListResponse.Summary;
-import com.knuissant.dailyq.dto.AnswerSearchConditionRequest;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -24,23 +17,32 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
+import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
-import com.knuissant.dailyq.dto.AnswerCreateRequest;
-import com.knuissant.dailyq.dto.AnswerCreateResponse;
-import com.knuissant.dailyq.dto.AnswerLevelUpdateRequest;
-import com.knuissant.dailyq.dto.AnswerLevelUpdateResponse;
+import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
+import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
+import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
+import com.knuissant.dailyq.dto.answers.AnswerCreateResponse;
+import com.knuissant.dailyq.dto.answers.AnswerDetailResponse;
+import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateRequest;
+import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
+import com.knuissant.dailyq.dto.answers.AnswerListResponse.CursorResult;
+import com.knuissant.dailyq.dto.answers.AnswerListResponse.Summary;
+import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.FeedbackRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserRepository;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
