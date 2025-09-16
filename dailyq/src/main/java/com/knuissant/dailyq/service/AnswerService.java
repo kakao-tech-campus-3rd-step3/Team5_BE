@@ -17,9 +17,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
@@ -33,17 +34,15 @@ import com.knuissant.dailyq.dto.answers.AnswerCreateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerDetailResponse;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
-import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.dto.answers.AnswerListResponse.CursorResult;
 import com.knuissant.dailyq.dto.answers.AnswerListResponse.Summary;
+import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.FeedbackRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserRepository;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

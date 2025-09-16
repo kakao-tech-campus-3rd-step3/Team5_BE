@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.knuissant.dailyq.service.AnswerService;
+import lombok.RequiredArgsConstructor;
+
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
@@ -30,8 +31,7 @@ import com.knuissant.dailyq.dto.answers.AnswerListResponse;
 import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
-
-import lombok.RequiredArgsConstructor;
+import com.knuissant.dailyq.service.AnswerService;
 
 @RestController
 @RequestMapping("/api/answers")

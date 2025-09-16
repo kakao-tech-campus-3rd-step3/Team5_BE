@@ -13,15 +13,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import com.knuissant.dailyq.constants.AnswerConstants;
-import com.knuissant.dailyq.domain.questions.Question;
-import com.knuissant.dailyq.domain.users.User;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import com.knuissant.dailyq.constants.AnswerConstants;
+import com.knuissant.dailyq.domain.questions.Question;
+import com.knuissant.dailyq.domain.users.User;
 
 @Getter
 @Builder

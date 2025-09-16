@@ -14,13 +14,13 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-import com.knuissant.dailyq.domain.questions.FlowPhase;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import com.knuissant.dailyq.domain.questions.FlowPhase;
 
 @Getter
 @Builder
