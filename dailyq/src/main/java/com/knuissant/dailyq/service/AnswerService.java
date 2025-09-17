@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
@@ -121,9 +122,9 @@ public class AnswerService {
     public AnswerCreateResponse createAnswerAndFeedback(AnswerCreateRequest request, Long userId) {
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         Question question = questionRepository.findById(request.questionId())
-            .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
 
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
         Answer answer = Answer.create(user, question, request.answerText());
@@ -132,7 +133,7 @@ public class AnswerService {
         Feedback feedback = Feedback.create(savedAnswer, FeedbackStatus.PENDING);
         Feedback savedFeedback = feedbackRepository.save(feedback);
 
-        return new AnswerCreateResponse(savedAnswer.getId(), savedFeedback.getId());
+        return AnswerCreateResponse.from(savedAnswer, savedFeedback);
     }
 
     @Transactional
@@ -140,12 +141,12 @@ public class AnswerService {
             AnswerLevelUpdateRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
-                        .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
-            
+                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+
         // 답변의 user와 현재 user가 같은지 확인 추가
         answer.updateLevel(request.level());
 
-        return new AnswerLevelUpdateResponse(answer.getId(), answer.getLevel());
+        return AnswerLevelUpdateResponse.from(answer);
     }
 
     private Specification<Answer> createSpecification(Long userId,
