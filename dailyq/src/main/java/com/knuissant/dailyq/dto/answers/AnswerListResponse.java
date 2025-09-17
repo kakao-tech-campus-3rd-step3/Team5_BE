@@ -17,7 +17,7 @@ public record AnswerListResponse(List<Summary> summaries) {
             FlowPhase flowPhase,
             Integer level,
             Boolean starred,
-            LocalDateTime answeredTime
+            LocalDateTime createdAt
     ) {
 
         public static Summary from(Answer answer) {
@@ -29,7 +29,7 @@ public record AnswerListResponse(List<Summary> summaries) {
                     null, // flow_phase는 FE와 협의 필요
                     answer.getLevel(),
                     answer.getStarred(),
-                    answer.getAnsweredTime()
+                    answer.getCreatedAt()
             );
         }
     }

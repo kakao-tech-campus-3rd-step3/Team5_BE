@@ -57,7 +57,7 @@ public class AnswerService {
     private final ObjectMapper objectMapper;
 
     //API 스펙과 무관하며(오로지,내부사용) 재사용 가능성이 없다고 생각하여 따로 DTO를 만들지 않았습니다.
-    private record CursorRequest(LocalDateTime answeredTime, Long id) {
+    private record CursorRequest(LocalDateTime createdAt, Long id) {
 
     }
 
@@ -70,9 +70,9 @@ public class AnswerService {
         String actualSortOrder = (condition.sortOrder() != null) ? condition.sortOrder() : "DESC";
         boolean isDesc = !"ASC".equalsIgnoreCase(actualSortOrder);
 
-        // answeredTime + answerId를 통한 유니크 순서 보장
+        // createdAt + answerId를 통한 유니크 순서 보장
         Sort.Direction direction = isDesc ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Sort sort = Sort.by(direction, "answeredTime").and(Sort.by(direction, "id"));
+        Sort sort = Sort.by(direction, "createdAt").and(Sort.by(direction, "id"));
 
         Pageable pageable = PageRequest.of(0, limit + 1, sort);
 
@@ -159,11 +159,11 @@ public class AnswerService {
 
             if (cursorRequest != null) {
                 Predicate timePredicate = isDesc ?
-                        cb.lessThan(root.get("answeredTime"), cursorRequest.answeredTime()) :
-                        cb.greaterThan(root.get("answeredTime"), cursorRequest.answeredTime());
+                        cb.lessThan(root.get("createdAt"), cursorRequest.createdAt()) :
+                        cb.greaterThan(root.get("createdAt"), cursorRequest.createdAt());
 
                 Predicate tieBreaker = cb.and(
-                        cb.equal(root.get("answeredTime"), cursorRequest.answeredTime()),
+                        cb.equal(root.get("createdAt"), cursorRequest.createdAt()),
                         isDesc ? cb.lessThan(root.get("id"), cursorRequest.id())
                                 : cb.greaterThan(root.get("id"), cursorRequest.id())
                 );
@@ -216,7 +216,7 @@ public class AnswerService {
     // 커서 생성/파싱 로직
     private String createCursor(Answer answer) {
         try {
-            CursorRequest cursorData = new CursorRequest(answer.getAnsweredTime(), answer.getId());
+            CursorRequest cursorData = new CursorRequest(answer.getCreatedAt(), answer.getId());
             String json = objectMapper.writeValueAsString(cursorData);
             return Base64.getEncoder().encodeToString(json.getBytes());
         } catch (JsonProcessingException e) {
