@@ -15,19 +15,17 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE) // 팩토리 메서드에서 사용할 private 생성자
 @Entity
 @Table(name = "user_preferences")
 public class UserPreferences {
@@ -64,6 +62,18 @@ public class UserPreferences {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_job", nullable = false)
     private Job userJob;
+
+    public static UserPreferences createDefault(User user, Job defaultJob) {
+        UserPreferences preferences = new UserPreferences();
+        preferences.user = user;
+        preferences.dailyQuestionLimit = 1;
+        preferences.questionMode = QuestionMode.TECH;
+        preferences.userResponseType = UserResponseType.TEXT;
+        preferences.timeLimitSeconds = 180;
+        preferences.allowPush = false;
+        preferences.userJob = defaultJob;
+        return preferences;
+    }
 
     public void updatePreferences(Integer dailyQuestionLimit, QuestionMode questionMode, UserResponseType answerType, Integer timeLimitSeconds, Boolean allowPush) {
         this.dailyQuestionLimit = dailyQuestionLimit;
