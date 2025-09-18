@@ -50,7 +50,7 @@ public class QuestionService {
             phase = resolvePhase(userId);
         }
 
-        Question q = getRandomQuestion(mode, phase, jobId, userId)
+        Question q = selectRandomQuestion(mode, phase, jobId, userId)
             .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE));
 
         return new RandomQuestionResponse(
@@ -69,7 +69,7 @@ public class QuestionService {
         return progress.getNextPhase();
     }
 
-    private Optional<Question> getRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId) {
+    private Optional<Question> selectRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId) {
         return switch (mode) {
             case TECH -> findRandomTechQuestion(jobId, userId);
             case FLOW -> findRandomFlowQuestion(phase, userId);
