@@ -2,8 +2,10 @@ package com.knuissant.dailyq.controller;
 
 import java.util.List;
 
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,5 +55,15 @@ public class RivalController {
         RivalResponse response = rivalService.acceptRivalRequest(senderId, receiverId);
 
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/requests/reject/{senderId}")
+    public ResponseEntity<Void> rejectRivalRequest(@PathVariable Long senderId) {
+
+        Long receiverId = 2L; //임시
+
+        rivalService.rejectRivalRequest(senderId, receiverId);
+
+        return ResponseEntity.noContent().build();
     }
 }

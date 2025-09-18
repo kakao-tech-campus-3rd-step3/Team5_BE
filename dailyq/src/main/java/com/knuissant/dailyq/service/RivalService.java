@@ -53,16 +53,20 @@ public class RivalService {
     }
 
     public RivalResponse acceptRivalRequest(Long senderId, Long receiverId) {
-        Rival rivalRequest = rivalRepository.findBySenderIdAndReceiverId(senderId, receiverId)
-                .filter(r -> r.getStatus() == RivalStatus.WAITING)
-                .orElseThrow(
-                        () -> new BusinessException(ErrorCode.RIVAL_REQUEST_NOT_FOUND, senderId,
-                                receiverId));
+
+        Rival rivalRequest = findWaitingRivalRequest(senderId, receiverId);
 
         rivalRequest.accept();
         createMutualRival(receiverId, senderId);
 
         return RivalResponse.from(rivalRequest);
+    }
+
+    public void rejectRivalRequest(Long senderId, Long receiverId) {
+
+        Rival rivalRequest = findWaitingRivalRequest(senderId, receiverId);
+
+        rivalRepository.delete(rivalRequest);
     }
 
     private User findUserById(Long userId) {
@@ -94,5 +98,13 @@ public class RivalService {
 
             rivalRepository.save(mutualRival);
         }
+    }
+
+    private Rival findWaitingRivalRequest(Long senderId, Long receiverId) {
+        return rivalRepository.findBySenderIdAndReceiverId(senderId, receiverId)
+                .filter(r -> r.getStatus() == RivalStatus.WAITING)
+                .orElseThrow(
+                        () -> new BusinessException(ErrorCode.RIVAL_REQUEST_NOT_FOUND, senderId,
+                                receiverId));
     }
 }
