@@ -42,16 +42,44 @@ fi
 echo "🧹 기존 컨테이너/네트워크 정리..."
 $COMPOSE_CMD down --remove-orphans || true
 
+echo "🗑️  오래된 Docker 이미지 정리..."
+# 사용하지 않는 이미지 정리 (dangling images)
+docker image prune -f || true
+# 7일 이상 된 빌드 캐시 정리
+docker builder prune -f --filter until=168h || true
+
 echo "🏗️  빌드 및 기동..."
-$COMPOSE_CMD up --build -d
+if ! $COMPOSE_CMD up --build -d; then
+    echo "❌ Docker Compose 빌드/기동 실패"
+    echo "📋 컨테이너 상태 확인:"
+    $COMPOSE_CMD ps -a || true
+    echo "📋 최근 로그:"
+    $COMPOSE_CMD logs --tail=50 || true
+    exit 1
+fi
 
 echo "⏳ MySQL 헬스체크 대기..."
 set +e
+MYSQL_HEALTHY=false
 for i in {1..60}; do
-  $COMPOSE_CMD ps | grep -q "(healthy)" && break
+  if $COMPOSE_CMD ps | grep -q "(healthy)"; then
+    MYSQL_HEALTHY=true
+    break
+  fi
+  echo "⏳ MySQL 헬스체크 대기 중... ($i/60)"
   sleep 2
 done
 set -e
+
+if [ "$MYSQL_HEALTHY" = false ]; then
+    echo "❌ MySQL 헬스체크 실패 (2분 타임아웃)"
+    echo "📋 컨테이너 상태:"
+    $COMPOSE_CMD ps -a
+    echo "📋 MySQL 로그:"
+    $COMPOSE_CMD logs mysql --tail=50
+    exit 1
+fi
+echo "✅ MySQL 헬스체크 성공"
 
 echo "📝 스키마 상태 확인 및 초기화(비어있으면 import)"
 if ! $COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" -N -e \"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${DB_NAME}';\"" | grep -qE '^[1-9]'; then
@@ -59,9 +87,40 @@ if ! $COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" -N -e \"
   $COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" ${DB_NAME} < /docker-entrypoint-initdb.d/schema.sql" || true
 fi
 
-echo "🌐 애플리케이션을 기동했습니다. (헬스체크 생략)"
-echo "로그 일부를 출력합니다."
-$COMPOSE_CMD logs --no-log-prefix app | tail -n 100 || true
+echo "🔍 애플리케이션 헬스체크..."
+APP_HEALTHY=false
+for i in {1..30}; do
+  if $COMPOSE_CMD ps app | grep -q "(healthy)"; then
+    APP_HEALTHY=true
+    break
+  elif curl -f http://localhost:8080/actuator/health &>/dev/null; then
+    APP_HEALTHY=true
+    break
+  fi
+  echo "🔍 애플리케이션 헬스체크 대기 중... ($i/30)"
+  sleep 2
+done
+
+if [ "$APP_HEALTHY" = false ]; then
+    echo "❌ 애플리케이션 헬스체크 실패"
+    echo "📋 컨테이너 상태:"
+    $COMPOSE_CMD ps -a
+    echo "📋 애플리케이션 로그:"
+    $COMPOSE_CMD logs app --tail=100
+    exit 1
+fi
+
+echo "✅ 애플리케이션 헬스체크 성공"
+echo "📋 최종 컨테이너 상태:"
+$COMPOSE_CMD ps
+
+echo "📊 디스크 사용량:"
+df -h / | tail -1
+
+echo "🗑️  배포 후 정리..."
+# 더 이상 사용하지 않는 이미지 정리
+docker image prune -f || true
 
 echo "✅ 배포 완료"
 echo "📱 http://localhost:8080"
+echo "📱 http://localhost:8080/swagger-ui.html"
