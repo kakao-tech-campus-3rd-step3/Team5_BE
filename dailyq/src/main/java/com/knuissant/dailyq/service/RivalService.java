@@ -28,8 +28,8 @@ public class RivalService {
 
     public RivalResponse sendRivalRequest(Long senderId, Long receiverId) {
 
-        User sender = findUserById(senderId);
-        User receiver = findUserById(receiverId);
+        User sender = findUserByIdOrThrow(senderId);
+        User receiver = findUserByIdOrThrow(receiverId);
 
         validateRivalRequestNotExists(senderId, receiverId);
 
@@ -68,7 +68,7 @@ public class RivalService {
         rivalRepository.delete(rivalRequest);
     }
 
-    private User findUserById(Long userId) {
+    private User findUserByIdOrThrow(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
     }
