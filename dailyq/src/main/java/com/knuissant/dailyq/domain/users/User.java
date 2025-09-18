@@ -13,16 +13,14 @@ import jakarta.persistence.Table;
 
 import org.springframework.util.StringUtils;
 
+import com.knuissant.dailyq.dto.users.UserCreateRequest;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import com.knuissant.dailyq.dto.users.UserCreateRequest;
-
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
@@ -38,6 +36,9 @@ public class User {
 
     @Column(nullable = false, unique = true, length = 255)
     private String email;
+
+    @Column(nullable = false)
+    private String password;
 
     @Column(length = 100)
     private String name;
@@ -58,14 +59,18 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public static User create(UserCreateRequest request) {
-        return User.builder()
-                .email(request.email())
-                .name(request.name())
-                .role(UserRole.FREE)
-                .streak(0)
-                .solvedToday(false)
-                .build();
+    public static User create(UserCreateRequest request, String encodedPassword) {
+        return new User(
+                null,
+                request.email(),
+                encodedPassword,
+                request.name(),
+                UserRole.FREE,
+                0,
+                false,
+                null, // createdAt은 DB 기본값 사용
+                null  // updatedAt은 DB 기본값 사용
+        );
     }
 
     public void updateName(String newName) {
