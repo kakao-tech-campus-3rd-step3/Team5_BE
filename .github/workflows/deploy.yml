@@ -1,0 +1,30 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [ main, develop, feat#5 ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.PRIVATE_KEY }}
+        port: ${{ secrets.PORT || '22' }}
+        timeout: 30s
+        command_timeout: 10m
+        script: |
+          echo "=== 배포 시작 ==="
+          cd ${{ secrets.PROJECT_PATH }}
+          echo "=== Git pull 실행 ==="
+          git pull origin ${{ github.ref_name }}
+          echo "=== deploy.sh 실행 ==="
+          chmod +x ./deploy.sh
+          ./deploy.sh
+          echo "=== 배포 완료 ==="
