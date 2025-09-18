@@ -28,16 +28,16 @@ CREATE TABLE users (
    - 사용자 대표 직군 1개 선택 (FK: jobs)
    ========================= */
 CREATE TABLE user_preferences (
-                              user_id BIGINT PRIMARY KEY,
-                              daily_question_limit INT NOT NULL DEFAULT 1,
-                              question_mode ENUM('TECH','FLOW') NOT NULL DEFAULT 'TECH',
-                              user_response_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
-                              time_limit_seconds INT DEFAULT 180,
-                              notify_time TIME NULL,
-                              allow_push TINYINT(1) NOT NULL DEFAULT 0,
-                              user_job BIGINT NOT NULL,
-                              CONSTRAINT fk_user_prefs_user
-                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+                                  user_id BIGINT PRIMARY KEY,
+                                  daily_question_limit INT NOT NULL DEFAULT 1,
+                                  question_mode ENUM('TECH','FLOW') NOT NULL DEFAULT 'TECH',
+                                  user_response_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
+                                  time_limit_seconds INT DEFAULT 180,
+                                  notify_time TIME NULL,
+                                  allow_push TINYINT(1) NOT NULL DEFAULT 0,
+                                  user_job BIGINT NOT NULL,
+                                  CONSTRAINT fk_user_prefs_user
+                                      FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
@@ -79,7 +79,7 @@ CREATE TABLE questions (
    ========================= */
 CREATE TABLE question_jobs (
                                question_jobs_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                                question_id BIGINT NOT NULL,
+                               question_id BIGINT NOT NULL,
                                job_id BIGINT NOT NULL,
                                CONSTRAINT fk_qjobs_question
                                    FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE CASCADE,
@@ -112,13 +112,13 @@ CREATE TABLE answers (
                          answered_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                          memo MEDIUMTEXT NULL, -- 메모 필드 추가
                          CONSTRAINT ck_answers_level CHECK (level IS NULL OR (level BETWEEN 1 AND 5)),
-    CONSTRAINT fk_answers_user
-        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    CONSTRAINT fk_answers_question
-        FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE RESTRICT,
-    INDEX idx_answers_user_time (user_id, answered_time DESC),
-    INDEX idx_answers_q_time (question_id, answered_time DESC)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                         CONSTRAINT fk_answers_user
+                             FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                         CONSTRAINT fk_answers_question
+                             FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE RESTRICT,
+                         INDEX idx_answers_user_time (user_id, answered_time DESC),
+                         INDEX idx_answers_q_time (question_id, answered_time DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
    ANSWER FEEDBACKS (LLM/STT 비동기)
@@ -129,9 +129,27 @@ CREATE TABLE feedbacks (
                            status ENUM('PENDING','DONE','FAILED') NOT NULL DEFAULT 'PENDING',
                            content MEDIUMTEXT NULL, -- entity 생성 후
                            latency_ms BIGINT NULL, -- entity 생성 후, 지연 시간 측정 필요
-                               created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                           created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                            CONSTRAINT fk_feedback_answer
                                FOREIGN KEY (answer_id) REFERENCES answers(answer_id) ON DELETE CASCADE,
                            INDEX idx_feedback_answer_status (answer_id, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*
+ RIVALS
+ - USERS TABLE과 USERS TABLE 사이의 다대다 관계를 나타내는 매핑 테이블
+ - 단방향 라이벌 기록
+ */
+CREATE TABLE rivals (
+                        rival_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                        sender_id BIGINT NOT NULL,
+                        receiver_id BIGINT NOT NULL,
+                        status ENUM('WAITING', 'ACCEPTED', 'REJECTED') NOT NULL DEFAULT 'WAITING',
+
+                        CONSTRAINT fk_rival_sender FOREIGN KEY (sender_id)
+                            REFERENCES users(user_id) ON DELETE CASCADE,
+                        CONSTRAINT fk_rival_receiver FOREIGN KEY (receiver_id)
+                            REFERENCES users(user_id) ON DELETE CASCADE,
+                        CONSTRAINT uq_rival_pair UNIQUE (sender_id, receiver_id)
+);
