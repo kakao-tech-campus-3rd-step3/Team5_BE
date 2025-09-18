@@ -22,7 +22,11 @@ jobs:
         script: |
           echo "=== 배포 시작 ==="
           cd ${{ secrets.PROJECT_PATH }}
-          echo "=== Git pull 실행 ==="
+          echo "=== 현재 브랜치: $(git branch --show-current) ==="
+          echo "=== 배포 브랜치: ${{ github.ref_name }} ==="
+          echo "=== 브랜치 변경 및 Git pull 실행 ==="
+          git stash || true
+          git checkout ${{ github.ref_name }} || git checkout -b ${{ github.ref_name }} origin/${{ github.ref_name }}
           git pull origin ${{ github.ref_name }}
           echo "=== deploy.sh 실행 ==="
           chmod +x ./deploy.sh
