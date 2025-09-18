@@ -15,4 +15,6 @@ public interface RivalRepository extends JpaRepository<Rival, Long> {
 
     boolean existsBySenderIdAndReceiverId(Long senderId, Long receiverId);
 
+    Optional<Rival> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
+
 }

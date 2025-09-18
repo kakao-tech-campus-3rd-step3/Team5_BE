@@ -20,6 +20,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import com.knuissant.dailyq.domain.users.User;
+import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.ErrorCode;
 
 @Getter
 @Builder
@@ -60,4 +62,20 @@ public class Rival {
                 .status(RivalStatus.WAITING)
                 .build();
     }
+
+    public static Rival createAccepted(User sender, User receiver) {
+        return Rival.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .status(RivalStatus.ACCEPTED)
+                .build();
+    }
+
+    public void accept() {
+        if (this.status != RivalStatus.WAITING) {
+            throw new BusinessException(ErrorCode.RIVAL_REQUEST_ALREADY_EXIST);
+        }
+        this.status = RivalStatus.ACCEPTED;
+    }
+
 }

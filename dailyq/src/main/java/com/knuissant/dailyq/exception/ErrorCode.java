@@ -21,6 +21,7 @@ public enum ErrorCode {
   NO_QUESTION_AVAILABLE("NO_QUESTION_AVAILABLE", "조건에 맞는 질문이 없습니다.", HttpStatus.NOT_FOUND),
   OCCUPATION_NOT_FOUND("OCCUPATION_NOT_FOUND", "직군을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   JOB_NOT_FOUND("JOB_NOT_FOUND", "직업을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  RIVAL_REQUEST_NOT_FOUND("RIVAL_REQUEST_NOT_FOUND","라이벌 요청을 찾을 수 없습니다.",HttpStatus.NOT_FOUND),
   // etc 4xx
   FORBIDDEN_ACCESS("FORBIDDEN_ACCESS", "리소스에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
   DAILY_LIMIT_REACHED("DAILY_LIMIT_REACHED", "오늘 가능한 질문을 모두 소진했습니다.", HttpStatus.TOO_MANY_REQUESTS),
