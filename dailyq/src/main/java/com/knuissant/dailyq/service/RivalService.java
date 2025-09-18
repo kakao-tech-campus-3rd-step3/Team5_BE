@@ -1,12 +1,17 @@
 package com.knuissant.dailyq.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.rivals.Rival;
+import com.knuissant.dailyq.domain.rivals.RivalStatus;
 import com.knuissant.dailyq.domain.users.User;
+import com.knuissant.dailyq.dto.rivals.ReceivedRivalRequest;
 import com.knuissant.dailyq.dto.rivals.RivalResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
@@ -32,6 +37,19 @@ public class RivalService {
         Rival savedRival = rivalRepository.save(rivalRequest);
 
         return RivalResponse.from(savedRival);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReceivedRivalRequest> getReceivedRequests(Long receiverId) {
+
+        if (!userRepository.existsById(receiverId)) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, receiverId);
+        }
+
+        return rivalRepository.findByReceiverIdAndStatus(receiverId, RivalStatus.WAITING)
+                .stream()
+                .map(ReceivedRivalRequest::from)
+                .collect(Collectors.toList());
     }
 
     private User findUserById(Long userId) {
