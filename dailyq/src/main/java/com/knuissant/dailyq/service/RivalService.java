@@ -56,8 +56,7 @@ public class RivalService {
 
         Rival rivalRequest = findWaitingRivalRequest(senderId, receiverId);
 
-        rivalRequest.accept();
-        createMutualRival(receiverId, senderId);
+        rivalRequest.accept(); //단방향
 
         return RivalResponse.from(rivalRequest);
     }
@@ -81,22 +80,6 @@ public class RivalService {
         if (exists) {
             throw new BusinessException(ErrorCode.RIVAL_REQUEST_ALREADY_EXIST, senderId,
                     receiverId);
-        }
-    }
-
-    private void createMutualRival(Long senderId, Long receiverId) {
-
-        boolean mutualRivalExists = rivalRepository
-                .existsBySenderIdAndReceiverId(senderId, receiverId);
-
-        if (!mutualRivalExists) {
-
-            User receiver = findUserById(receiverId);
-            User sender = findUserById(senderId);
-
-            Rival mutualRival = Rival.createAccepted(sender, receiver);
-
-            rivalRepository.save(mutualRival);
         }
     }
 
