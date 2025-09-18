@@ -24,7 +24,7 @@ public enum ErrorCode {
   // etc 4xx
   FORBIDDEN_ACCESS("FORBIDDEN_ACCESS", "리소스에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
   DAILY_LIMIT_REACHED("DAILY_LIMIT_REACHED", "오늘 가능한 질문을 모두 소진했습니다.", HttpStatus.TOO_MANY_REQUESTS),
-
+  RIVAL_REQUEST_ALREADY_EXIST("RIVAL_REQUEST_ALREADY_EXIST","이미 라이벌 요청이 존재합니다.",HttpStatus.CONFLICT),
   //5xx System Errors
   INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부에 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   CURSOR_GENERATION_FAILED("CURSOR_GENERATION_FAILED", "커서 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
