@@ -109,15 +109,15 @@ CREATE TABLE answers (
                          answer_text MEDIUMTEXT NOT NULL, -- 오디오 변환 후 answer 생성
                          level TINYINT NULL,
                          starred TINYINT(1) NOT NULL DEFAULT 0, -- default 0
-                         answered_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                          memo MEDIUMTEXT NULL, -- 메모 필드 추가
                          CONSTRAINT ck_answers_level CHECK (level IS NULL OR (level BETWEEN 1 AND 5)),
     CONSTRAINT fk_answers_user
         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     CONSTRAINT fk_answers_question
         FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE RESTRICT,
-    INDEX idx_answers_user_time (user_id, answered_time DESC),
-    INDEX idx_answers_q_time (question_id, answered_time DESC)
+    INDEX idx_answers_user_time (user_id, created_at DESC),
+    INDEX idx_answers_q_time (question_id, created_at DESC)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================

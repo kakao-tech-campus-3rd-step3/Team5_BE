@@ -98,7 +98,7 @@ public class AnswerController {
             @RequestParam("user_id") Long userId,
             @Valid @RequestBody AnswerCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(answerService.createAnswerAndFeedback(request, userId));
+                .body(answerService.submitAnswer(request, userId));
     }
 
     @PatchMapping("/{answerId}/level")
