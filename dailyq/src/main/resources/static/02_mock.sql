@@ -4,51 +4,48 @@
 
 /* USERS (5) */
 INSERT INTO users (user_id, email, name, role, streak, solved_today)
-VALUES
-    (1, 'alice@example.com', 'Alice', 'FREE', 3, 0),
-    (2, 'bob@example.com', 'Bob', 'PAID', 10, 1),
-    (3, 'carol@example.com', 'Carol', 'FREE', 1, 0),
-    (4, 'dave@example.com', 'Dave', 'PAID', 7, 1),
-    (5, 'erin@example.com', 'Erin', 'ADMIN', 0, 0);
+VALUES (1, 'alice@example.com', 'Alice', 'FREE', 3, 0),
+       (2, 'bob@example.com', 'Bob', 'PAID', 10, 1),
+       (3, 'carol@example.com', 'Carol', 'FREE', 1, 0),
+       (4, 'dave@example.com', 'Dave', 'PAID', 7, 1),
+       (5, 'erin@example.com', 'Erin', 'ADMIN', 0, 0);
 
 /* OCCUPATIONS 상위 카테고리 (5) */
 INSERT INTO occupations (occupation_id, occupation_name)
-VALUES
-    (1, '개발'),
-    (2, '데이터'),
-    (3, '디자인'),
-    (4, '마케팅'),
-    (5, '운영');
+VALUES (1, '개발'),
+       (2, '데이터'),
+       (3, '디자인'),
+       (4, '마케팅'),
+       (5, '운영');
 
 /* JOBS 세부 직군 (5) */
 INSERT INTO jobs (job_id, job_name, occupation_id)
-VALUES
-    (1, '백엔드 개발자', 1),
-    (2, '프론트엔드 개발자', 1),
-    (3, '데이터 사이언티스트', 2),
-    (4, '프로덕트 디자이너', 3),
-    (5, '그로스 마케터', 4);
+VALUES (1, '백엔드 개발자', 1),
+       (2, '프론트엔드 개발자', 1),
+       (3, '데이터 사이언티스트', 2),
+       (4, '프로덕트 디자이너', 3),
+       (5, '그로스 마케터', 4);
 
 /* USER PREFERENCES (5) — 대표 직군 매칭 */
-INSERT INTO user_preferences (user_id, daily_question_limit, question_mode, user_response_type, time_limit_seconds, notify_time, allow_push, user_job)
-VALUES
-    ( 1, 1, 'TECH', 'TEXT', 180, '09:00:00', 1, 1),
-    (2, 10, 'FLOW', 'VOICE', 120, '08:30:00', 1, 2),
-    ( 3, 1, 'TECH', 'TEXT', 180, 0, 1, 3),
-    (4, 1, 'FLOW', 'VOICE', 90, '20:00:00', 0, 4),
-    (5, 10, 'TECH', 'TEXT', 180, '07:30:00', 0, 5);
+INSERT INTO user_preferences (user_id, daily_question_limit, question_mode, user_response_type,
+                              time_limit_seconds, notify_time, allow_push, user_job)
+VALUES (1, 1, 'TECH', 'TEXT', 180, '09:00:00', 1, 1),
+       (2, 10, 'FLOW', 'VOICE', 120, '08:30:00', 1, 2),
+       (3, 1, 'TECH', 'TEXT', 180, 0, 1, 3),
+       (4, 1, 'FLOW', 'VOICE', 90, '20:00:00', 0, 4),
+       (5, 10, 'TECH', 'TEXT', 180, '07:30:00', 0, 5);
 
 /* QUESTIONS (5) */
 INSERT INTO questions (question_id, question_type, question_text, enabled)
-VALUES
-    (1, 'TECH', 'HTTP와 HTTPS의 차이와 TLS 핸드셰이크 과정을 설명하세요.', 1),
-    (2, 'TECH', '데이터베이스 인덱스의 동작 원리와 주의할 점을 설명하세요.', 1),
-    (3, 'INTRO', '1분 자기소개를 해주세요.', 1),
-    (4, 'MOTIVATION', '이 직무에 지원한 동기를 말씀해 주세요.', 1),
-    (5, 'TECH', '프로세스와 스레드의 차이, 컨텍스트 스위칭 비용에 대해 설명하세요.', 1);
+VALUES (1, 'TECH', 'HTTP와 HTTPS의 차이와 TLS 핸드셰이크 과정을 설명하세요.', 1),
+       (2, 'TECH', '데이터베이스 인덱스의 동작 원리와 주의할 점을 설명하세요.', 1),
+       (3, 'INTRO', '1분 자기소개를 해주세요.', 1),
+       (4, 'MOTIVATION', '이 직무에 지원한 동기를 말씀해 주세요.', 1),
+       (5, 'TECH', '프로세스와 스레드의 차이, 컨텍스트 스위칭 비용에 대해 설명하세요.', 1);
 
 /* QUESTION_JOBS (5개 이상 가능하지만 최소 5행) */
-INSERT INTO question_jobs (question_id, job_id) VALUES
+INSERT INTO question_jobs (question_id, job_id)
+VALUES
 -- Q1: 백엔드/프론트
 (1, 1),
 (1, 2),
@@ -96,7 +93,8 @@ VALUES
     (4, 4, 'DONE', 'FEEDBACK2', 230, '2025-09-04 20:06:00'),
     (5, 5, 'DONE', '컨텍스트 스위칭 비용의 원인(CPU 캐시 미스 등) 예시가 좋아요.', 900, '2025-09-05 07:52:00');
 
+
 /* ----- 마지막으로 USER_PREFERENCES에 jobs FK 연결 보장 ----- */
 ALTER TABLE user_preferences
     ADD CONSTRAINT fk_user_prefs_job
-        FOREIGN KEY (user_job) REFERENCES jobs(job_id) ON DELETE RESTRICT;
+        FOREIGN KEY (user_job) REFERENCES jobs (job_id) ON DELETE RESTRICT;

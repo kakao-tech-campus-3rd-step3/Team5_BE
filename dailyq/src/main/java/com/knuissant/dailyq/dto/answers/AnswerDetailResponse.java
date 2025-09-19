@@ -14,7 +14,7 @@ public record AnswerDetailResponse(
         String answerText,
         Integer level,
         Boolean starred,
-        LocalDateTime answeredTime,
+        LocalDateTime createdAt,
         FeedbackDetail feedback
 ) {
 
@@ -49,7 +49,7 @@ public record AnswerDetailResponse(
                 answer.getAnswerText(),
                 answer.getLevel(),
                 answer.getStarred(),
-                answer.getAnsweredTime(),
+                answer.getCreatedAt(),
                 (feedback != null) ? FeedbackDetail.from(feedback) : null
         );
     }
