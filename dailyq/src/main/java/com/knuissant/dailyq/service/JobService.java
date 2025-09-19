@@ -26,7 +26,6 @@ public class JobService {
         occupationRepository.findById(occupationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND));
 
-        // 2. 상위 직군이 존재하므로, 해당 직군에 속한 하위 직업(Job) 목록을 조회하여 반환합니다.
         return jobRepository.findByOccupationId(occupationId).stream()
                 .map(JobResponse::from)
                 .collect(Collectors.toList());

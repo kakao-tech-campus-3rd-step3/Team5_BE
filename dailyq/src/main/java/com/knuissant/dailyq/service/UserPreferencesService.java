@@ -6,10 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.jobs.Job;
-import com.knuissant.dailyq.domain.questions.QuestionMode;
-import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserPreferences;
-import com.knuissant.dailyq.domain.users.UserResponseType;
 import com.knuissant.dailyq.dto.users.UserJobsUpdateRequest;
 import com.knuissant.dailyq.dto.users.UserPreferencesResponse;
 import com.knuissant.dailyq.dto.users.UserPreferencesUpdateRequest;
@@ -18,7 +15,6 @@ import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.JobRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
 
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,23 +22,6 @@ public class UserPreferencesService {
 
     private final UserPreferencesRepository userPreferencesRepository;
     private final JobRepository jobRepository;
-
-    public void createDefaultPreferences(User user) {
-        Job defaultJob = jobRepository.findById(1L)
-                .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
-
-        UserPreferences defaultPreferences = UserPreferences.builder()
-                .user(user)
-                .userId(user.getId())
-                .dailyQuestionLimit(1)
-                .questionMode(QuestionMode.TECH)
-                .userResponseType(UserResponseType.TEXT)
-                .timeLimitSeconds(180)
-                .allowPush(false)
-                .userJob(defaultJob)
-                .build();
-        userPreferencesRepository.save(defaultPreferences);
-    }
 
     public UserPreferencesResponse updateUserPreferences(Long userId, UserPreferencesUpdateRequest request) {
         UserPreferences preferences = findUserPreferencesByUserId(userId);
@@ -54,15 +33,7 @@ public class UserPreferencesService {
                 request.allowPush()
         );
 
-        return new UserPreferencesResponse(
-                preferences.getDailyQuestionLimit(),
-                preferences.getQuestionMode(),
-                preferences.getUserResponseType(),
-                preferences.getTimeLimitSeconds(),
-                preferences.getNotifyTime(),
-                preferences.getAllowPush(),
-                preferences.getUserJob() != null ? preferences.getUserJob().getId() : null
-        );
+        return UserPreferencesResponse.from(preferences);
     }
 
     public void updateUserJob(Long userId, UserJobsUpdateRequest request) {
