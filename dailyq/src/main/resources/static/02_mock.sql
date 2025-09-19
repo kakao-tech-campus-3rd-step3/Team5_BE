@@ -46,6 +46,7 @@ VALUES (1, 'TECH', 'HTTP와 HTTPS의 차이와 TLS 핸드셰이크 과정을 설
 /* QUESTION_JOBS (5개 이상 가능하지만 최소 5행) */
 INSERT INTO question_jobs (question_id, job_id)
 VALUES
+
 -- Q1: 백엔드/프론트
 (1, 1),
 (1, 2),
