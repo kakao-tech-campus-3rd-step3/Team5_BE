@@ -24,16 +24,17 @@ VALUES (1, '백엔드 개발자', 1),
        (2, '프론트엔드 개발자', 1),
        (3, '데이터 사이언티스트', 2),
        (4, '프로덕트 디자이너', 3),
-       (5, '그로스 마케터', 4);
+       (5, '그로스 마케터', 4),
+       (6, '서비스 운영자', 5);
 
 /* USER PREFERENCES (5) — 대표 직군 매칭 */
 INSERT INTO user_preferences (user_id, daily_question_limit, question_mode, user_response_type,
                               time_limit_seconds, notify_time, allow_push, user_job)
 VALUES (1, 1, 'TECH', 'TEXT', 180, '09:00:00', 1, 1),
        (2, 10, 'FLOW', 'VOICE', 120, '08:30:00', 1, 2),
-       (3, 1, 'TECH', 'TEXT', 180, 0, 1, 3),
+       (3, 1, 'TECH', 'TEXT', 180, NULL, 1, 3),
        (4, 1, 'FLOW', 'VOICE', 90, '20:00:00', 0, 4),
-       (5, 10, 'TECH', 'TEXT', 180, '07:30:00', 0, 5);
+       (5, 10, 'TECH', 'TEXT', 180, '07:30:00', 0, 6);
 
 /* QUESTIONS (5) */
 INSERT INTO questions (question_id, question_type, question_text, enabled)
@@ -77,13 +78,13 @@ VALUES
     (5, 'PERSONALITY');
 
 /* ANSWERS (5) */
-INSERT INTO answers (answer_id, user_id, question_id, answer_text, level, starred, answered_time, memo)
+INSERT INTO answers (answer_id, user_id, question_id, answer_text, level, starred, created_at, memo)
 VALUES
     (1, 1, 1, 'TLS는 대칭키 교환을 위해 비대칭키를 활용하며...', 4, 0, '2025-09-01 09:12:00', '이걸 틀리네'),
     (2, 2, 2,'이것은 답변이다.', 5, 1, '2025-09-02 08:45:00','이것은 메모다'),
-    (3, 3, 3, '안녕하세요, 데이터에 진심인 장효석입니다...', 3, 0, '2025-09-03 21:10:00','장효석 화이팅'),
-    (4, 4, 4, '사용자 문제를 정의하고 솔루션을 실험하는 과정이 즐겁습니다.', 4, 1, '2025-09-04 20:05:00'),
-    (5, 5, 5, 'answer', NULL, 0, '2025-09-05 07:50:00');
+    (3, 3, 3, '안녕하세요, 데이터에 진심인 김도현입니다...', 3, 0, '2025-09-03 21:10:00','화이팅'),
+    (4, 4, 4, '사용자 문제를 정의하고 솔루션을 실험하는 과정이 즐겁습니다.', 4, 1, '2025-09-04 20:05:00', NULL),
+    (5, 5, 5, 'answer', NULL, 0, '2025-09-05 07:50:00', NULL);
 
 /* ANSWER FEEDBACKS (5) */
 INSERT INTO feedbacks (feedback_id, answer_id, status, content, latency_ms, created_at)
@@ -94,8 +95,12 @@ VALUES
     (4, 4, 'DONE', 'FEEDBACK2', 230, '2025-09-04 20:06:00'),
     (5, 5, 'DONE', '컨텍스트 스위칭 비용의 원인(CPU 캐시 미스 등) 예시가 좋아요.', 900, '2025-09-05 07:52:00');
 
+/* RIVALS (5) */
+INSERT INTO rivals (rival_id, sender_id, receiver_id, status)
+VALUES
+    (1, 1, 2, 'ACCEPTED'),  -- Alice -> Bob (수락됨)
+    (2, 2, 1, 'ACCEPTED'),  -- Bob -> Alice (수락됨, 서로 라이벌)
+    (3, 3, 1, 'WAITING'),   -- Carol -> Alice (대기 중)
+    (4, 4, 2, 'REJECTED'),  -- Dave -> Bob (거절됨)
+    (5, 5, 3, 'WAITING');   -- Erin -> Carol (대기 중)
 
-/* ----- 마지막으로 USER_PREFERENCES에 jobs FK 연결 보장 ----- */
-ALTER TABLE user_preferences
-    ADD CONSTRAINT fk_user_prefs_job
-        FOREIGN KEY (user_job) REFERENCES jobs (job_id) ON DELETE RESTRICT;
