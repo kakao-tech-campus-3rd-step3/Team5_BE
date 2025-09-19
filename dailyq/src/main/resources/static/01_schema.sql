@@ -135,3 +135,22 @@ CREATE TABLE feedbacks (
                                FOREIGN KEY (answer_id) REFERENCES answers(answer_id) ON DELETE CASCADE,
                            INDEX idx_feedback_answer_status (answer_id, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*
+ RIVALS
+ - USERS TABLE과 USERS TABLE 사이의 다대다 관계를 나타내는 매핑 테이블
+ - 단방향 라이벌 기록
+ */
+CREATE TABLE rivals (
+                        rival_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                        sender_id BIGINT NOT NULL,
+                        receiver_id BIGINT NOT NULL,
+                        status ENUM('WAITING', 'ACCEPTED', 'REJECTED') NOT NULL DEFAULT 'WAITING',
+
+                        CONSTRAINT fk_rival_sender FOREIGN KEY (sender_id)
+                            REFERENCES users(user_id) ON DELETE CASCADE,
+                        CONSTRAINT fk_rival_receiver FOREIGN KEY (receiver_id)
+                            REFERENCES users(user_id) ON DELETE CASCADE,
+                        CONSTRAINT uq_rival_pair UNIQUE (sender_id, receiver_id)
+);
+
