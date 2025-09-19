@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS user_flow_progress;
 DROP TABLE IF EXISTS question_jobs;
 DROP TABLE IF EXISTS questions;
 DROP TABLE IF EXISTS user_preferences;
+DROP TABLE IF EXISTS rivals;
 DROP TABLE IF EXISTS jobs;
 DROP TABLE IF EXISTS occupations;
 DROP TABLE IF EXISTS users;
