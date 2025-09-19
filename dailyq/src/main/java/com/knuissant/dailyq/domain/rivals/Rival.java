@@ -63,14 +63,6 @@ public class Rival {
                 .build();
     }
 
-    public static Rival createAccepted(User sender, User receiver) {
-        return Rival.builder()
-                .sender(sender)
-                .receiver(receiver)
-                .status(RivalStatus.ACCEPTED)
-                .build();
-    }
-
     public void accept() {
         if (this.status != RivalStatus.WAITING) {
             throw new BusinessException(ErrorCode.RIVAL_REQUEST_ALREADY_EXIST);
