@@ -1,30 +1,19 @@
 package com.knuissant.dailyq.external.gpt;
 
-import java.util.List;
-import java.util.Optional;
-
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.RequiredArgsConstructor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
-import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.exception.InfraException;
-import com.knuissant.dailyq.external.gpt.dto.GptRequest;
-import com.knuissant.dailyq.external.gpt.dto.GptRequest.Message;
-import com.knuissant.dailyq.external.gpt.dto.GptRequest.ResponseFormat;
-import com.knuissant.dailyq.external.gpt.dto.GptResponse;
 
 @Component
 @RequiredArgsConstructor
 public class GptClient {
 
-    private final WebClient webClient;
-    private final ObjectMapper objectMapper;
+    private final ChatClient chatClient;
 
     private static final String SYSTEM_PROMPT = """
             당신은 사용자의 답변에 대해 건설적인 피드백을 제공하는 면접관입니다.
@@ -60,44 +49,14 @@ public class GptClient {
                 %s
                 """, question, userAnswer);
 
-        Message systemMessage = new Message("system", SYSTEM_PROMPT);
-        Message requestMessage = new Message("user", userPrompt);
-
-        GptRequest gptRequest = new GptRequest(
-                "gpt-5-nano",   // gpt model
-                List.of(systemMessage, requestMessage),
-                new ResponseFormat("json_object")
-        );
-
-        String jsonContent = callGptApi(gptRequest);
-
-        return parseContent(jsonContent);
-    }
-
-    private String callGptApi(GptRequest gptRequest) {
         try {
-            GptResponse gptResponse = webClient.post()
-                                               .bodyValue(gptRequest)
-                                               .retrieve()
-                                               .bodyToMono(GptResponse.class)
-                                               .block();
-
-            return Optional.ofNullable(gptResponse)
-                           .flatMap(GptResponse::getFirstMessageContent)
-                           .filter(a -> !a.isEmpty())
-                           .orElseThrow(
-                                   () -> new InfraException(ErrorCode.INVALID_GPT_RESPONSE));
-
+            return chatClient.prompt()
+                    .system(SYSTEM_PROMPT)
+                    .user(userPrompt)
+                    .call()
+                    .entity(FeedbackResponse.class);
         } catch (Exception e) {
             throw new InfraException(ErrorCode.GPT_API_COMMUNICATION_ERROR);
-        }
-    }
-
-    private FeedbackResponse parseContent(String jsonContent) {
-        try {
-            return objectMapper.readValue(jsonContent, FeedbackResponse.class);
-        } catch (JsonProcessingException e) {
-            throw new InfraException(ErrorCode.GPT_RESPONSE_PARSING_FAILED);
         }
     }
 
