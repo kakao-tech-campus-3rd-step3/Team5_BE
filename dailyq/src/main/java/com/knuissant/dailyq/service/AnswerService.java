@@ -2,6 +2,7 @@ package com.knuissant.dailyq.service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -173,7 +174,10 @@ public class AnswerService {
             Join<Answer, Question> questionJoin = null;
 
             if (condition.date() != null) {
-                predicates.add(cb.equal(root.get("answeredDate"), condition.date()));
+                LocalDateTime startOfDay = condition.date().atStartOfDay();
+                LocalDateTime endOfDay = condition.date().atTime(LocalTime.MAX);
+
+                predicates.add(cb.between(root.get("createdAt"), startOfDay, endOfDay));
             }
             if (condition.jobId() != null) {
                 if (questionJoin == null) {
