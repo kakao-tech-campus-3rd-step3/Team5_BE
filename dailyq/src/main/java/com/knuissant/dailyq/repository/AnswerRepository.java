@@ -10,7 +10,7 @@ import com.knuissant.dailyq.domain.answers.Answer;
 public interface AnswerRepository extends JpaRepository<Answer, Long>,
         JpaSpecificationExecutor<Answer> {
 
-    @Query(value = "SELECT COUNT(*) FROM answers WHERE user_id = :userId AND answered_time >= CURDATE() AND answered_time < DATE_ADD(CURDATE(), INTERVAL 1 DAY)", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM answers WHERE user_id = :userId AND created_at >= CURDATE() AND created_at < DATE_ADD(CURDATE(), INTERVAL 1 DAY)", nativeQuery = true)
     long countTodayByUserId(@Param("userId") Long userId);
 }
 
