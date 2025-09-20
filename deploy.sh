@@ -81,11 +81,11 @@ if [ "$MYSQL_HEALTHY" = false ]; then
 fi
 echo "✅ MySQL 헬스체크 성공"
 
-echo "📝 스키마 상태 확인 및 초기화(비어있으면 import)"
-if ! $COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" -N -e \"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${DB_NAME}';\"" | grep -qE '^[1-9]'; then
-  echo "➡️  테이블이 없어 보입니다. schema.sql을 import 합니다."
-  $COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" ${DB_NAME} < /docker-entrypoint-initdb.d/schema.sql" || true
-fi
+echo "📝 스키마 및 Mock 데이터 강제 재적용"
+echo "➡️  최신 스키마를 적용합니다."
+$COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" ${DB_NAME} < /docker-entrypoint-initdb.d/01_schema.sql" || true
+echo "➡️  Mock 데이터를 적용합니다."
+$COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" ${DB_NAME} < /docker-entrypoint-initdb.d/02_mock.sql" || true
 
 echo "🔍 애플리케이션 헬스체크..."
 APP_HEALTHY=false
