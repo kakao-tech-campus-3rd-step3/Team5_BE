@@ -37,9 +37,6 @@ public class User {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(nullable = false)
-    private String password;
-
     @Column(length = 100)
     private String name;
 
@@ -59,12 +56,11 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public static User create(UserCreateRequest request, String encodedPassword) {
+    public static User create(String email, String name) {
         return new User(
                 null,
-                request.email(),
-                encodedPassword,
-                request.name(),
+                email,
+                name,
                 UserRole.FREE,
                 0,
                 false,
