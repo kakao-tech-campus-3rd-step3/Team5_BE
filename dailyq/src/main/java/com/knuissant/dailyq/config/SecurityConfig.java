@@ -37,6 +37,7 @@ public class SecurityConfig {
                         // Swagger UI와 OAuth2 로그인 관련 경로만 허용하도록 단순화합니다.
                         .requestMatchers(
                                 "/",
+                                "/index.html",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
