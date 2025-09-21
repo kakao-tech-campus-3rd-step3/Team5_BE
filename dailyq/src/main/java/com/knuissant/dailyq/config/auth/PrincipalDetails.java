@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import com.knuissant.dailyq.domain.users.User;
@@ -14,26 +12,26 @@ import com.knuissant.dailyq.domain.users.User;
 import lombok.Getter;
 
 @Getter
-public class PrincipalDetails implements UserDetails, OAuth2User {
+public class PrincipalDetails implements OAuth2User {
 
     private final User user;
-    private Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
 
-    // JWT 기반 로그인을 위한 생성자
-    public PrincipalDetails(User user) {
-        this.user = user;
-    }
-
-    // 소셜(OAuth2) 로그인을 위한 생성자
     public PrincipalDetails(User user, Map<String, Object> attributes) {
         this.user = user;
         this.attributes = attributes;
     }
 
-    // OAuth2User 인터페이스 메서드
+    // --- OAuth2User 인터페이스 메서드 ---
     @Override
     public Map<String, Object> getAttributes() {
         return attributes;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // 권한 정보를 반환합니다.
+        return Collections.singletonList(() -> "ROLE_" + user.getRole().name());
     }
 
     @Override
@@ -41,41 +39,6 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         return user.getEmail();
     }
 
-    // UserDetails 인터페이스 메서드
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()));
-    }
-
-    @Override
-    public String getPassword() {
-        return user.getPassword();
-    }
-
-    @Override
-    public String getUsername() {
-        return user.getEmail();
-    }
-
-    // 계정 상태 관련 메서드들은 모두 true를 반환하여 항상 활성 상태로 유지
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+    // --- UserDetails 관련 메서드는 모두 제거. ---
 }
 

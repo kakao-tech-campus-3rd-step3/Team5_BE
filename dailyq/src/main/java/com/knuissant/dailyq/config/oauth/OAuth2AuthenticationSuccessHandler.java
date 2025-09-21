@@ -1,7 +1,8 @@
-package com.knuissant.dailyq.config.auth;
+package com.knuissant.dailyq.config.oauth;
 
 import java.io.IOException;
 
+import com.knuissant.dailyq.config.auth.PrincipalDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;

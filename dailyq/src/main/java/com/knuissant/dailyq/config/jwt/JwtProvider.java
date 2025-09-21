@@ -2,17 +2,16 @@ package com.knuissant.dailyq.config.jwt;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Map;
 
 import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.knuissant.dailyq.config.auth.PrincipalDetails;
-import com.knuissant.dailyq.config.auth.PrincipalDetailsService;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
@@ -33,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JwtProvider {
 
     private final UserRepository userRepository;
+    // PrincipalDetailsService 의존성 제거
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -51,27 +51,14 @@ public class JwtProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // --- Access Token 생성 메서드 ---
-    public String createAccessToken(Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails)authentication.getPrincipal();
-        return createToken(principal.getUser().getId(), accessTokenExpirationMillis);
-    }
-
     public String createAccessToken(Long userId) {
         return createToken(userId, accessTokenExpirationMillis);
-    }
-
-    // --- Refresh Token 생성 메서드 ---
-    public String createRefreshToken(Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails)authentication.getPrincipal();
-        return createToken(principal.getUser().getId(), refreshTokenExpirationMillis);
     }
 
     public String createRefreshToken(Long userId) {
         return createToken(userId, refreshTokenExpirationMillis);
     }
 
-    // --- Private Helper: 토큰 생성 로직 ---
     private String createToken(Long userId, long expirationMillis) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMillis);
@@ -88,9 +75,9 @@ public class JwtProvider {
         Long userId = getUserIdFromToken(token);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
-        UserDetails userDetails = new PrincipalDetails(user);
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        
+        PrincipalDetails principalDetails = new PrincipalDetails(user, Map.of());
+        return new UsernamePasswordAuthenticationToken(principalDetails, "", principalDetails.getAuthorities());
     }
 
     public boolean validateToken(String token) {
