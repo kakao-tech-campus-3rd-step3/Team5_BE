@@ -69,7 +69,7 @@ public class Rival {
 
     public void accept() {
         if (this.status != RivalStatus.WAITING) {
-            throw new BusinessException(ErrorCode.RIVAL_REQUEST_ALREADY_EXIST);
+            throw new BusinessException(ErrorCode.INVALID_RIVAL_REQUEST_STATUS);
         }
         this.status = RivalStatus.ACCEPTED;
     }
