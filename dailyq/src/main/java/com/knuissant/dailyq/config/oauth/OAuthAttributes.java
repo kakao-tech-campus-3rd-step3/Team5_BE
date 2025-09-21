@@ -25,7 +25,10 @@ public class OAuthAttributes {
         if ("kakao".equals(registrationId)) {
             return ofKakao("id", attributes);
         }
-        // 추후 구글 로그인을 추가할 경우 여기에 ofGoogle(...)를 추가
+
+        if ("google".equals(registrationId)) {
+            return ofGoogle(userNameAttributeName, attributes);
+        }
         return null;
     }
 
@@ -38,6 +41,16 @@ public class OAuthAttributes {
                 userNameAttributeName,
                 (String)kakaoProfile.get("nickname"),
                 (String)kakaoAccount.get("email")
+        );
+    }
+
+    // 구글 응답을 파싱하는 ofGoogle 메서드를 추가합니다.
+    private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
+        return new OAuthAttributes(
+                attributes,
+                userNameAttributeName,
+                (String)attributes.get("name"),
+                (String)attributes.get("email")
         );
     }
 
