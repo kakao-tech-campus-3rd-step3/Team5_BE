@@ -28,7 +28,7 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
     @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        log.info("Kakao User Attributes : {}", oAuth2User.getAttributes());
+        log.info("Social User Attributes : {}", oAuth2User.getAttributes());
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
@@ -36,6 +36,11 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
 
         OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
+        // 1. attributes 객체가 null이 아닌지 먼저 확인하여 NPE를 방지합니다.
+        if (attributes == null) {
+            throw new OAuth2AuthenticationException("Unsupported provider: " + registrationId);
+        }
+        // 2. email 정보가 없는 경우 예외 처리
         if (!StringUtils.hasText(attributes.getEmail())) {
             throw new OAuth2AuthenticationException("Email not found from OAuth2 provider.");
         }
@@ -46,7 +51,8 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
     }
 
     private User saveOrUpdate(OAuthAttributes attributes) {
-        User user = userRepository.findByEmail(attributes.getEmail())
+        // 불필요한 지역 변수를 제거
+        return userRepository.findByEmail(attributes.getEmail())
                 .map(entity -> {
                     log.info("기존 회원입니다: {}", attributes.getEmail());
                     return entity;
@@ -58,7 +64,6 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
                     userPreferencesService.createDefaultPreferences(newUser);
                     return newUser;
                 });
-        return user;
     }
 }
 
