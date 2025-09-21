@@ -13,8 +13,6 @@ import jakarta.persistence.Table;
 
 import org.springframework.util.StringUtils;
 
-import com.knuissant.dailyq.dto.users.UserCreateRequest;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
