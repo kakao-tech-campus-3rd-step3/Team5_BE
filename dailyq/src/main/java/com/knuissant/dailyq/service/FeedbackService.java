@@ -34,7 +34,7 @@ public class FeedbackService {
 
         long startTime = System.currentTimeMillis();
         try {
-            FeedbackResponse feedbackResponse = gptClient.getFeedback(systemPrompt, userPrompt);
+            FeedbackResponse feedbackResponse = gptClient.call(systemPrompt, userPrompt);
             long latencyMs = System.currentTimeMillis() - startTime;
 
             feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackResponse, latencyMs);
