@@ -67,7 +67,7 @@ fi
 cd ..
 
 echo "🚀 컨테이너 기동..."
-if ! $COMPOSE_CMD up -d; then
+if ! $COMPOSE_CMD up -d --no-parallel; then
     echo "❌ Docker Compose 빌드/기동 실패"
     echo "📋 컨테이너 상태 확인:"
     $COMPOSE_CMD ps -a || true
@@ -107,20 +107,20 @@ $COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" ${DB_NAME} < 
 
 echo "🔍 애플리케이션 헬스체크..."
 APP_HEALTHY=false
-for i in {1..60}; do
+for i in {1..90}; do
   if $COMPOSE_CMD ps app | grep -q "(healthy)"; then
     APP_HEALTHY=true
     break
-  elif curl -f http://localhost:8080/actuator/health &>/dev/null; then
+  elif curl -f http://localhost:80/actuator/health &>/dev/null; then
     APP_HEALTHY=true
     break
   fi
-  echo "🔍 애플리케이션 헬스체크 대기 중... ($i/60)"
-  sleep 2
+  echo "🔍 애플리케이션 헬스체크 대기 중... ($i/90)"
+  sleep 3
 done
 
 if [ "$APP_HEALTHY" = false ]; then
-    echo "❌ 애플리케이션 헬스체크 실패 (2분 타임아웃)"
+    echo "❌ 애플리케이션 헬스체크 실패 (4.5분 타임아웃)"
     echo "📋 컨테이너 상태:"
     $COMPOSE_CMD ps -a
     echo "📋 애플리케이션 로그:"
