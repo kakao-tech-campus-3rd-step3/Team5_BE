@@ -41,7 +41,7 @@ services:
       start_period: 90s
 
   app:
-    build: ./dailyq
+    image: dailyq-app:latest
     container_name: dailyq-app
     restart: unless-stopped
     ports:
@@ -63,11 +63,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 1G
+          cpus: '1.5'
+          memory: 1.5G
         reservations:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '0.75'
+          memory: 768M
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 20s
