@@ -19,6 +19,19 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4.1-nano
+    retry:
+      max-attempts: 3
+      backoff:
+        initial-interval: 2000ms
+        multiplier: 2
+      on-http-codes: [ 429, 500, 503 ]
+
 springdoc:
   api-docs:
     path: /api-docs
@@ -29,10 +42,6 @@ springdoc:
     # HTTPS 환경에서 Mixed Content 오류 방지
     use-root-path: true
     # 서버 URL을 명시적으로 설정하지 않으면 OpenAPI Configuration에서 설정한 서버 정보 사용
-
-openai:
-  api:
-    key: ${OPENAI_API_KEY}
 
 # CORS 설정
 cors:
