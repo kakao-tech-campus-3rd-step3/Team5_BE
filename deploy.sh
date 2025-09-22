@@ -67,7 +67,7 @@ fi
 cd ..
 
 echo "🚀 컨테이너 기동..."
-if ! $COMPOSE_CMD up -d --no-parallel; then
+if ! $COMPOSE_CMD up -d; then
     echo "❌ Docker Compose 빌드/기동 실패"
     echo "📋 컨테이너 상태 확인:"
     $COMPOSE_CMD ps -a || true
