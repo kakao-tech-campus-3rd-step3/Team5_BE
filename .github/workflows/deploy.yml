@@ -26,8 +26,10 @@ jobs:
           echo "=== 배포 브랜치: ${{ github.ref_name }} ==="
           echo "=== 브랜치 변경 및 Git pull 실행 ==="
           git stash || true
+          git fetch origin
           git checkout ${{ github.ref_name }} || git checkout -b ${{ github.ref_name }} origin/${{ github.ref_name }}
-          git pull origin ${{ github.ref_name }}
+          echo "=== 원격 브랜치와 강제 동기화 ==="
+          git reset --hard origin/${{ github.ref_name }}
           echo "=== deploy.sh 실행 ==="
           chmod +x ./deploy.sh
           ./deploy.sh
