@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.5'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.google.cloud.tools.jib' version '3.4.4'
 }
 
 group = 'com.knuissant'
@@ -41,4 +42,58 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// Jib 설정
+jib {
+    from {
+        image = 'openjdk:21-jdk-slim'
+        platforms {
+            platform {
+                architecture = 'amd64'
+                os = 'linux'
+            }
+        }
+    }
+    
+    to {
+        image = 'dailyq-app'
+        tags = ['latest', version]
+    }
+    
+    container {
+        ports = ['8080']
+        
+        // 비루트 사용자 설정
+        user = '1001:1001'
+        
+        // JVM 옵션 최적화
+        jvmFlags = [
+            '-Xms512m',
+            '-Xmx1024m',
+            '-XX:+UseG1GC',
+            '-XX:+UseContainerSupport',
+            '-Djava.security.egd=file:/dev/./urandom'
+        ]
+        
+        // 환경변수
+        environment = [
+            'SPRING_PROFILES_ACTIVE': 'prod'
+        ]
+        
+        // Health check용 레이블
+        labels = [
+            'maintainer': 'dailyq-team',
+            'version': version
+        ]
+        
+        // 작업 디렉토리
+        workingDirectory = '/app'
+    }
+    
+    // Docker daemon을 사용하여 로컬에 빌드
+    dockerBuild {
+        // Docker daemon이 없으면 tarball로 빌드
+        noCache = false
+    }
 }
