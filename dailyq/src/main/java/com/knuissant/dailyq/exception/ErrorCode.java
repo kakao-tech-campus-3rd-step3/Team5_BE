@@ -14,6 +14,7 @@ public enum ErrorCode {
   MULTIPLE_FILTER_NOT_ALLOWED("MULTIPLE_FILTER_NOT_ALLOWED","조회 필터는 단 하나만 설정할 수 있습니다.",HttpStatus.BAD_REQUEST),
   INVALID_CURSOR("INVALID_CURSOR","잘못된 커서 값입니다.",HttpStatus.BAD_REQUEST),
   INVALID_RIVAL_REQUEST_STATUS("INVALID_RIVAL_REQUEST_STATUS", "요청을 처리할 수 없는 상태입니다.", HttpStatus.BAD_REQUEST),
+  CANNOT_RIVAL_YOURSELF("CANNOT_RIVAL_YOURSELF","자기 자신에게는 라이벌 신청을 할 수 없습니다.",HttpStatus.BAD_REQUEST),
   // Not Found(404)
   USER_NOT_FOUND("USER_NOT_FOUND", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   ANSWER_NOT_FOUND("ANSWER_NOT_FOUND","해당 답변을 찾을 수 없습니다.",HttpStatus.NOT_FOUND),

@@ -3,6 +3,7 @@ package com.knuissant.dailyq.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,15 +29,24 @@ public class RivalService {
 
     public RivalResponse sendRivalRequest(Long senderId, Long receiverId) {
 
+        if (senderId.equals(receiverId)) {
+            throw new BusinessException(ErrorCode.CANNOT_RIVAL_YOURSELF, senderId);
+        }
+
         User sender = findUserByIdOrThrow(senderId);
         User receiver = findUserByIdOrThrow(receiverId);
 
-        validateRivalRequestNotExists(senderId, receiverId);
+        try {
+            validateRivalRequestNotExists(senderId, receiverId);
 
-        Rival rivalRequest = Rival.create(sender, receiver);
-        Rival savedRival = rivalRepository.save(rivalRequest);
+            Rival rivalRequest = Rival.create(sender, receiver);
+            Rival savedRival = rivalRepository.save(rivalRequest);
 
-        return RivalResponse.from(savedRival);
+            return RivalResponse.from(savedRival);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.RIVAL_REQUEST_ALREADY_EXIST, senderId,
+                    receiverId);
+        }
     }
 
     @Transactional(readOnly = true)
