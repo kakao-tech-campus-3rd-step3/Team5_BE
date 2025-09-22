@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -154,6 +155,12 @@ public class AnswerService {
             AnswerSearchConditionRequest condition, AnswerService.CursorRequest cursorRequest,
             boolean isDesc) {
         return (root, query, cb) -> {
+
+            assert query != null;
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                root.fetch("question", JoinType.LEFT);
+            }
+
             List<Predicate> predicates = new ArrayList<>();
 
             predicates.add(cb.equal(root.get("user").get("id"), userId));
