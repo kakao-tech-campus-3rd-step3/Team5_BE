@@ -94,8 +94,7 @@ public class RivalService {
     }
 
     private Rival findWaitingRivalRequest(Long senderId, Long receiverId) {
-        return rivalRepository.findBySenderIdAndReceiverId(senderId, receiverId)
-                .filter(r -> r.getStatus() == RivalStatus.WAITING)
+        return rivalRepository.findBySenderIdAndReceiverIdAndStatus(senderId,receiverId,RivalStatus.WAITING)
                 .orElseThrow(
                         () -> new BusinessException(ErrorCode.RIVAL_REQUEST_NOT_FOUND, senderId,
                                 receiverId));
