@@ -10,4 +10,5 @@ import com.knuissant.dailyq.domain.feedbacks.Feedback;
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
+    Optional<Feedback> findByAnswerId(Long answerId);
 }
