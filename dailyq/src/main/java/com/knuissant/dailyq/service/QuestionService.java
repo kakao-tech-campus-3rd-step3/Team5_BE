@@ -102,7 +102,9 @@ public class QuestionService {
             return Optional.empty();
         }
         
-        int randomOffset = ThreadLocalRandom.current().nextInt((int) count);
+        // count가 int 범위를 넘으면 int 최대값(약 21억)으로 제한
+        int safeCount = count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
+        int randomOffset = ThreadLocalRandom.current().nextInt(safeCount);
         Pageable pageable = PageRequest.of(randomOffset, 1);
         List<Question> questions = questionRepository.findAvailableTechQuestionsByJobId(jobId, userId, pageable);
         return questions.isEmpty() ? Optional.empty() : Optional.of(questions.get(0));
@@ -116,7 +118,9 @@ public class QuestionService {
             return Optional.empty();
         }
         
-        int randomOffset = ThreadLocalRandom.current().nextInt((int) count);
+        // count가 int 범위를 넘으면 int 최대값(약 21억)으로 제한
+        int safeCount = count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
+        int randomOffset = ThreadLocalRandom.current().nextInt(safeCount);
         Pageable pageable = PageRequest.of(randomOffset, 1);
         List<Question> questions = questionRepository.findAvailableQuestionsByType(questionType, userId, pageable);
         return questions.isEmpty() ? Optional.empty() : Optional.of(questions.get(0));
