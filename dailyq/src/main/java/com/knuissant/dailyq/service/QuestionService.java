@@ -22,8 +22,9 @@ import com.knuissant.dailyq.domain.questions.QuestionType;
 import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.dto.questions.RandomQuestionResponse;
-import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserFlowProgressRepository;
@@ -41,7 +42,7 @@ public class QuestionService {
     @Transactional(readOnly = true)
     public RandomQuestionResponse getRandomQuestion(Long userId) {
         UserPreferences prefs = userPreferencesRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new InfraException(ErrorCode.USER_PREFERENCES_NOT_FOUND));
 
         validateDailyQuestionLimit(userId, prefs);
 
@@ -49,7 +50,7 @@ public class QuestionService {
         QuestionMode mode = prefs.getQuestionMode();
         Long jobId = Optional.ofNullable(prefs.getUserJob())
             .map(job -> job.getId())
-            .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
+            .orElseThrow(() -> new InfraException(ErrorCode.USER_JOB_NOT_SET));
 
         // Resolve phase when FLOW
         FlowPhase phase = null;
@@ -72,7 +73,7 @@ public class QuestionService {
 
     private FlowPhase resolvePhase(Long userId) {
         UserFlowProgress progress = userFlowProgressRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new InfraException(ErrorCode.USER_FLOW_PROGRESS_NOT_FOUND));
         return progress.getNextPhase();
     }
 
