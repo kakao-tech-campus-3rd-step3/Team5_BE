@@ -50,7 +50,12 @@ services:
         condition: service_healthy
     networks:
       - dailyq-network
-    # 앱 헬스체크는 생략합니다 (Actuator 미사용)
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
 
 volumes:
   mysql_data:

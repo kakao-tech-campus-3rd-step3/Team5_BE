@@ -93,7 +93,7 @@ for i in {1..60}; do
   if $COMPOSE_CMD ps app | grep -q "(healthy)"; then
     APP_HEALTHY=true
     break
-  elif curl -f http://localhost:8080/actuator/health &>/dev/null; then
+  elif curl -f http://localhost:80/actuator/health &>/dev/null; then
     APP_HEALTHY=true
     break
   fi
