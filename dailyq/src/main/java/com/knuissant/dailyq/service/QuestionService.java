@@ -1,5 +1,8 @@
 package com.knuissant.dailyq.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -77,7 +80,9 @@ public class QuestionService {
     }
 
     private void validateDailyQuestionLimit(Long userId, UserPreferences userPreferences) {
-        long answeredToday = answerRepository.countTodayByUserId(userId);
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
+        long answeredToday = answerRepository.countByUserIdAndCreatedAtBetween(userId, startOfDay, endOfDay);
         int remain = userPreferences.getDailyQuestionLimit() - (int) answeredToday;
         
         Optional.of(remain)
