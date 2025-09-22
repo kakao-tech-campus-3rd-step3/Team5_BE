@@ -3,8 +3,12 @@ package com.knuissant.dailyq.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,20 +102,23 @@ public class QuestionService {
         }
         
         int randomOffset = ThreadLocalRandom.current().nextInt((int) count);
-        return questionRepository.findRandomTechByJobIdWithOffset(jobId, userId, randomOffset);
+        Pageable pageable = PageRequest.of(randomOffset, 1);
+        List<Question> questions = questionRepository.findAvailableTechQuestionsByJobId(jobId, userId, pageable);
+        return questions.isEmpty() ? Optional.empty() : Optional.of(questions.get(0));
     }
 
     private Optional<Question> findRandomFlowQuestion(FlowPhase phase, Long userId) {
         QuestionType questionType = mapPhaseToType(phase);
-        String questionTypeStr = questionType.name();
         
-        long count = questionRepository.countAvailableQuestions(questionTypeStr, userId);
+        long count = questionRepository.countAvailableQuestions(questionType, userId);
         if (count == 0) {
             return Optional.empty();
         }
         
         int randomOffset = ThreadLocalRandom.current().nextInt((int) count);
-        return questionRepository.findRandomByTypeWithOffset(questionTypeStr, userId, randomOffset);
+        Pageable pageable = PageRequest.of(randomOffset, 1);
+        List<Question> questions = questionRepository.findAvailableQuestionsByType(questionType, userId, pageable);
+        return questions.isEmpty() ? Optional.empty() : Optional.of(questions.get(0));
     }
 
     private QuestionType mapPhaseToType(FlowPhase phase) {
