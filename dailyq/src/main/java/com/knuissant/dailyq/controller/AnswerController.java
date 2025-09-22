@@ -55,7 +55,6 @@ public class AnswerController {
 
         //정렬 조건 단일 파라미터 검증
         long filterCount = Stream.of(
-                condition.sortOrder(),
                 condition.date(),
                 condition.jobId(),
                 condition.questionType(),
