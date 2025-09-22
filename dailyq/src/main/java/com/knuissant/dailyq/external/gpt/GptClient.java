@@ -1,19 +1,23 @@
 package com.knuissant.dailyq.external.gpt;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.knuissant.dailyq.dto.FeedbackResponse;
+import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.external.gpt.dto.GptRequest;
 import com.knuissant.dailyq.external.gpt.dto.GptRequest.Message;
 import com.knuissant.dailyq.external.gpt.dto.GptRequest.ResponseFormat;
 import com.knuissant.dailyq.external.gpt.dto.GptResponse;
-import java.util.List;
-import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 @RequiredArgsConstructor
@@ -82,10 +86,10 @@ public class GptClient {
                            .flatMap(GptResponse::getFirstMessageContent)
                            .filter(a -> !a.isEmpty())
                            .orElseThrow(
-                                   () -> new BusinessException(ErrorCode.INVALID_GPT_RESPONSE));
+                                   () -> new InfraException(ErrorCode.INVALID_GPT_RESPONSE));
 
         } catch (Exception e) {
-            throw new BusinessException(ErrorCode.GPT_API_COMMUNICATION_ERROR);
+            throw new InfraException(ErrorCode.GPT_API_COMMUNICATION_ERROR);
         }
     }
 
@@ -93,7 +97,7 @@ public class GptClient {
         try {
             return objectMapper.readValue(jsonContent, FeedbackResponse.class);
         } catch (JsonProcessingException e) {
-            throw new BusinessException(ErrorCode.GPT_RESPONSE_PARSING_FAILED);
+            throw new InfraException(ErrorCode.GPT_RESPONSE_PARSING_FAILED);
         }
     }
 

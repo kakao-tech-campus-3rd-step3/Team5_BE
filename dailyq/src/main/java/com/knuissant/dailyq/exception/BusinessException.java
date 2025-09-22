@@ -6,15 +6,18 @@ import lombok.Getter;
 public class BusinessException extends RuntimeException {
 
     private final ErrorCode errorCode;
+    private final Object[] args;
 
     public BusinessException(ErrorCode errorCode) {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
+        this.args = new Object[]{};
     }
 
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
+    public BusinessException(ErrorCode errorCode, Object... args) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
+        this.args = args;
     }
 }
 

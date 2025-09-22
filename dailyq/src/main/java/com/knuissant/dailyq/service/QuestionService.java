@@ -1,11 +1,13 @@
 package com.knuissant.dailyq.service;
 
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.knuissant.dailyq.constants.QuestionConstants;
+import lombok.RequiredArgsConstructor;
+
 import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
@@ -19,8 +21,6 @@ import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -36,15 +36,13 @@ public class QuestionService {
         UserPreferences prefs = userPreferencesRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        long answeredToday = answerRepository.countTodayByUserId(userId);
-        int remain = prefs.getDailyQuestionLimit() - (int) answeredToday;
-        if (remain <= 0) {
-            throw new BusinessException(ErrorCode.DAILY_LIMIT_REACHED);
-        }
+        validateDailyQuestionLimit(userId, prefs);
 
         // Use user preferences
         QuestionMode mode = prefs.getQuestionMode();
-        Long jobId = prefs.getUserJob() != null ? prefs.getUserJob().getId() : null;
+        Long jobId = Optional.ofNullable(prefs.getUserJob())
+            .map(job -> job.getId())
+            .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
 
         // Resolve phase when FLOW
         FlowPhase phase = null;
@@ -52,19 +50,8 @@ public class QuestionService {
             phase = resolvePhase(userId);
         }
 
-        Optional<Question> picked;
-        if (mode == QuestionMode.TECH) {
-            if (jobId != null) {
-                picked = questionRepository.findRandomTechByJobId(jobId, userId);
-            } else {
-                picked = questionRepository.findRandomByType(QuestionConstants.QUESTION_TYPE_TECH, userId);
-            }
-        } else { // FLOW
-            QuestionType typeForPhase = mapPhaseToType(phase);
-            picked = questionRepository.findRandomByType(typeForPhase.name(), userId);
-        }
-
-        Question q = picked.orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE));
+        Question q = selectRandomQuestion(mode, phase, jobId, userId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE));
 
         return new RandomQuestionResponse(
             q.getId(),
@@ -80,6 +67,46 @@ public class QuestionService {
         UserFlowProgress progress = userFlowProgressRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         return progress.getNextPhase();
+    }
+
+    private Optional<Question> selectRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId) {
+        return switch (mode) {
+            case TECH -> findRandomTechQuestion(jobId, userId);
+            case FLOW -> findRandomFlowQuestion(phase, userId);
+        };
+    }
+
+    private void validateDailyQuestionLimit(Long userId, UserPreferences userPreferences) {
+        long answeredToday = answerRepository.countTodayByUserId(userId);
+        int remain = userPreferences.getDailyQuestionLimit() - (int) answeredToday;
+        
+        Optional.of(remain)
+            .filter(r -> r > 0)
+            .orElseThrow(() -> new BusinessException(ErrorCode.DAILY_LIMIT_REACHED));
+    }
+
+    private Optional<Question> findRandomTechQuestion(Long jobId, Long userId) {
+        // count 조회 후 랜덤 offset 생성
+        long count = questionRepository.countAvailableTechQuestions(jobId, userId);
+        if (count == 0) {
+            return Optional.empty();
+        }
+        
+        int randomOffset = ThreadLocalRandom.current().nextInt((int) count);
+        return questionRepository.findRandomTechByJobIdWithOffset(jobId, userId, randomOffset);
+    }
+
+    private Optional<Question> findRandomFlowQuestion(FlowPhase phase, Long userId) {
+        QuestionType questionType = mapPhaseToType(phase);
+        String questionTypeStr = questionType.name();
+        
+        long count = questionRepository.countAvailableQuestions(questionTypeStr, userId);
+        if (count == 0) {
+            return Optional.empty();
+        }
+        
+        int randomOffset = ThreadLocalRandom.current().nextInt((int) count);
+        return questionRepository.findRandomByTypeWithOffset(questionTypeStr, userId, randomOffset);
     }
 
     private QuestionType mapPhaseToType(FlowPhase phase) {

@@ -1,8 +1,7 @@
 package com.knuissant.dailyq.domain.answers;
 
-import com.knuissant.dailyq.constants.AnswerConstants;
-import com.knuissant.dailyq.domain.questions.Question;
-import com.knuissant.dailyq.domain.users.User;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,13 +12,15 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import com.knuissant.dailyq.domain.questions.Question;
+import com.knuissant.dailyq.domain.users.User;
 
 @Getter
 @Builder
@@ -54,25 +55,19 @@ public class Answer {
     @Column(nullable = false, insertable = false)
     private Boolean starred;
 
-    @Column(name = "answered_time", nullable = false, insertable = false, updatable = false)
-    private LocalDateTime answeredTime;
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    /**
-     * 답변을 생성하는 팩토리 메서드
-     * 기본값으로 level=1, starred=false를 설정합니다.
-     */
+    @Column(name = "memo", columnDefinition = "MEDIUMTEXT")
+    private String memo;
+
     public static Answer create(User user, Question question, String answerText) {
         return Answer.builder()
                 .user(user)
                 .question(question)
                 .answerText(answerText)
-                .level(AnswerConstants.DEFAULT_ANSWER_LEVEL)
-                .starred(AnswerConstants.DEFAULT_STARRED)
                 .build();
     }
-
-    @Column(name = "memo", columnDefinition = "MEDIUMTEXT")
-    private String memo;
 
     public void updateMemo(String memo) {
         this.memo = memo;
