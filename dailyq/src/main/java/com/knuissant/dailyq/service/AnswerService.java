@@ -54,8 +54,6 @@ public class AnswerService {
     private final FeedbackRepository feedbackRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
-<<<<<<< HEAD
-=======
     private final ObjectMapper objectMapper;
 
     //API 스펙과 무관하며(오로지,내부사용) 재사용 가능성이 없다고 생각하여 따로 DTO를 만들지 않았습니다.
@@ -119,7 +117,6 @@ public class AnswerService {
         return AnswerDetailResponse.of(answer, feedback);
 
     }
->>>>>>> release/2025-09-19
 
     @Transactional
     public AnswerCreateResponse submitAnswer(AnswerCreateRequest request, Long userId) {
@@ -151,8 +148,6 @@ public class AnswerService {
 
         return AnswerLevelUpdateResponse.from(answer);
     }
-<<<<<<< HEAD
-=======
 
     private Specification<Answer> createSpecification(Long userId,
             AnswerSearchConditionRequest condition, AnswerService.CursorRequest cursorRequest,
@@ -240,5 +235,4 @@ public class AnswerService {
             throw new BusinessException(ErrorCode.INVALID_CURSOR);
         }
     }
->>>>>>> release/2025-09-19
 }
