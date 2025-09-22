@@ -53,10 +53,7 @@ public class QuestionService {
             .orElseThrow(() -> new InfraException(ErrorCode.USER_JOB_NOT_SET));
 
         // Resolve phase when FLOW
-        FlowPhase phase = null;
-        if (mode == QuestionMode.FLOW) {
-            phase = resolvePhase(userId);
-        }
+        final FlowPhase phase = resolvePhase(userId, mode);
 
         Question q = selectRandomQuestion(mode, phase, jobId, userId)
             .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE));
@@ -71,7 +68,11 @@ public class QuestionService {
         );
     }
 
-    private FlowPhase resolvePhase(Long userId) {
+    private FlowPhase resolvePhase(Long userId, QuestionMode mode) {
+        if (mode != QuestionMode.FLOW) {
+            return null;
+        }
+        
         UserFlowProgress progress = userFlowProgressRepository.findById(userId)
             .orElseThrow(() -> new InfraException(ErrorCode.USER_FLOW_PROGRESS_NOT_FOUND));
         return progress.getNextPhase();
