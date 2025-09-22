@@ -1,7 +1,6 @@
 package com.knuissant.dailyq.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -59,7 +58,7 @@ public class RivalService {
         return rivalRepository.findByReceiverIdAndStatus(receiverId, RivalStatus.WAITING)
                 .stream()
                 .map(ReceivedRivalRequest::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public RivalResponse acceptRivalRequest(Long senderId, Long receiverId) {
