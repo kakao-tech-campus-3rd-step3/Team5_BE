@@ -37,7 +37,7 @@ import com.knuissant.dailyq.exception.ErrorCode;
                 )
         },
         indexes = {
-        @Index(name = "idx_rivals_receiver", columnList = "receiver_id")
+                @Index(name = "idx_rivals_receiver_status", columnList = "receiver_id, status")
         }
 )
 public class Rival {
