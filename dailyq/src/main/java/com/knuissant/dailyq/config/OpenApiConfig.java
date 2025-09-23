@@ -30,7 +30,7 @@ public class OpenApiConfig {
         if ("prod".equals(activeProfile)) {
             openAPI.servers(List.of(
                     new Server()
-                            .url("https://dailyq.my")
+                            .url("https://be.dailyq.my")
                             .description("Production Server")
             ));
         } else {

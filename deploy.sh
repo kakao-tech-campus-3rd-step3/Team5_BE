@@ -140,5 +140,6 @@ echo "🗑️  배포 후 정리..."
 docker image prune -f || true
 
 echo "✅ 배포 완료"
-echo "📱 http://localhost:8080"
-echo "📱 http://localhost:8080/swagger-ui.html"
+echo "📱 https://be.dailyq.my"
+echo "📱 https://be.dailyq.my/swagger-ui.html"
+echo "📱 Local: http://localhost:8080"
