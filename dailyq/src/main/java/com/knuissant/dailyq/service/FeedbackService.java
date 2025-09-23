@@ -3,6 +3,7 @@ package com.knuissant.dailyq.service;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
@@ -13,6 +14,7 @@ import com.knuissant.dailyq.external.gpt.PromptManager;
 import com.knuissant.dailyq.external.gpt.PromptType;
 import com.knuissant.dailyq.repository.FeedbackRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FeedbackService {
@@ -41,7 +43,12 @@ public class FeedbackService {
             return feedbackResponse;
 
         } catch (Exception e) {
-            feedbackUpdateService.updateFeedbackFailure(feedbackId);
+            try {
+                feedbackUpdateService.updateFeedbackFailure(feedbackId);
+            } catch (Exception failureUpdateEx) {
+                log.error("Filed to update status to FAILED for feedbackId {}, Original error: {}",
+                        feedbackId, e.getMessage());
+            }
             throw e;
         }
     }
