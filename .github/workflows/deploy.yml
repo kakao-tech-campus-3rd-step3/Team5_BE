@@ -2,7 +2,7 @@ name: Deploy to Server
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, refactor#69 ]
   workflow_dispatch:
 
 jobs:
