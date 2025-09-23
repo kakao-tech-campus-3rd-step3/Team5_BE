@@ -26,7 +26,7 @@ public class FeedbackService {
 
     public FeedbackResponse generateFeedback(Long feedbackId) {
 
-        Feedback feedback = feedbackRepository.findByIdWithDetails(feedbackId)
+        Feedback feedback = feedbackRepository.findWithDetailsById(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
         String question = feedback.getAnswer().getQuestion().getQuestionText();
         String answer = feedback.getAnswer().getAnswerText();
