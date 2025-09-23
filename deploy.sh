@@ -42,14 +42,32 @@ fi
 echo "🧹 기존 컨테이너/네트워크 정리..."
 $COMPOSE_CMD down --remove-orphans || true
 
-echo "🗑️  오래된 Docker 이미지 정리..."
+echo "🗑️  Docker 리소스 정리..."
+# 디스크 공간 확보를 위한 강화된 정리
+echo "📊 정리 전 디스크 사용량:"
+df -h / || true
+docker system df || true
+
 # 사용하지 않는 이미지 정리 (dangling images)
 docker image prune -f || true
-# 7일 이상 된 빌드 캐시 정리
-docker builder prune -f --filter until=168h || true
+# 모든 빌드 캐시 정리
+docker builder prune -a -f || true
+# 사용하지 않는 볼륨 정리
+docker volume prune -f || true
 
-echo "🏗️  빌드 및 기동..."
-if ! $COMPOSE_CMD up --build -d; then
+echo "📊 정리 후 디스크 사용량:"
+df -h / || true
+
+echo "🏗️  Jib으로 이미지 빌드..."
+cd dailyq
+if ! ./gradlew jibDockerBuild --no-daemon; then
+    echo "❌ Jib 빌드 실패"
+    exit 1
+fi
+cd ..
+
+echo "🚀 컨테이너 기동..."
+if ! $COMPOSE_CMD up -d; then
     echo "❌ Docker Compose 빌드/기동 실패"
     echo "📋 컨테이너 상태 확인:"
     $COMPOSE_CMD ps -a || true
@@ -89,20 +107,20 @@ $COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" ${DB_NAME} < 
 
 echo "🔍 애플리케이션 헬스체크..."
 APP_HEALTHY=false
-for i in {1..60}; do
+for i in {1..90}; do
   if $COMPOSE_CMD ps app | grep -q "(healthy)"; then
     APP_HEALTHY=true
     break
-  elif curl -f http://localhost:8080/actuator/health &>/dev/null; then
+  elif curl -f http://localhost:80/actuator/health &>/dev/null; then
     APP_HEALTHY=true
     break
   fi
-  echo "🔍 애플리케이션 헬스체크 대기 중... ($i/60)"
-  sleep 2
+  echo "🔍 애플리케이션 헬스체크 대기 중... ($i/90)"
+  sleep 3
 done
 
 if [ "$APP_HEALTHY" = false ]; then
-    echo "❌ 애플리케이션 헬스체크 실패 (2분 타임아웃)"
+    echo "❌ 애플리케이션 헬스체크 실패 (4.5분 타임아웃)"
     echo "📋 컨테이너 상태:"
     $COMPOSE_CMD ps -a
     echo "📋 애플리케이션 로그:"

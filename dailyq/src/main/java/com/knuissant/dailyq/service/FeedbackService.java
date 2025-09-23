@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
@@ -14,6 +15,8 @@ import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.external.gpt.GptClient;
+import com.knuissant.dailyq.external.gpt.PromptManager;
+import com.knuissant.dailyq.external.gpt.PromptType;
 import com.knuissant.dailyq.repository.FeedbackRepository;
 
 @Service
@@ -23,19 +26,23 @@ public class FeedbackService {
     private final GptClient gptClient;
     private final FeedbackRepository feedbackRepository;
     private final ObjectMapper objectMapper;
+    private final PromptManager promptManager;
 
     @Transactional
     public FeedbackResponse generateFeedback(Long feedbackId) {
 
         Feedback feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
         String question = feedback.getAnswer().getQuestion().getQuestionText();
         String answer = feedback.getAnswer().getAnswerText();
+
+        String systemPrompt = promptManager.load(PromptType.FEEDBACK_SYSTEM);
+        String userPrompt = promptManager.load(PromptType.FEEDBACK_USER, question, answer);
 
         FeedbackResponse response;
         long startTime = System.currentTimeMillis();
         try {
-            response = gptClient.getFeedback(question, answer);
+            response = gptClient.getFeedback(systemPrompt, userPrompt);
         } catch (BusinessException e) {
             feedback.updateStatus(FeedbackStatus.FAILED);
             throw e;

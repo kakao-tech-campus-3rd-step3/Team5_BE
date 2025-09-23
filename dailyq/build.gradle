@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.5'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.google.cloud.tools.jib' version '3.4.4'
 }
 
 group = 'com.knuissant'
@@ -25,19 +26,79 @@ repositories {
 }
 
 dependencies {
+    // spring
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // ai
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
+    // documentation
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1'
+
+    // db
     runtimeOnly 'com.mysql:mysql-connector-j:8.3.0'
+
+    // lombok
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:1.0.0"
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// Jib 설정
+jib {
+    from {
+        image = 'openjdk:21-jdk-slim'
+        platforms {
+            platform {
+                architecture = 'amd64'
+                os = 'linux'
+            }
+        }
+    }
+    
+    to {
+        image = 'dailyq-app'
+        tags = ['latest', version]
+    }
+    
+    container {
+        ports = ['8080']
+        // 비루트 사용자 설정
+        user = '1001:1001'
+        jvmFlags = [
+            '-Xms512m',
+            '-Xmx1024m',
+            '-XX:+UseG1GC',
+            '-XX:+UseContainerSupport',
+            '-Djava.security.egd=file:/dev/./urandom'
+        ]
+        
+        environment = [
+            'SPRING_PROFILES_ACTIVE': 'prod'
+        ]
+        labels = [
+            'maintainer': 'dailyq-team',
+            'version': version
+        ]
+        workingDirectory = '/app'
+    }
+    allowInsecureRegistries = false
 }
