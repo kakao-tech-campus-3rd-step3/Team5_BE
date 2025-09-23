@@ -56,7 +56,7 @@ public class QuestionService {
         final FlowPhase phase = resolvePhase(userId, mode);
 
         Question q = selectRandomQuestion(mode, phase, jobId, userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE));
+            .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE, mode.name(), phase.name(), jobId));
 
         return new RandomQuestionResponse(
             q.getId(),
@@ -93,7 +93,7 @@ public class QuestionService {
         
         Optional.of(remain)
             .filter(r -> r > 0)
-            .orElseThrow(() -> new BusinessException(ErrorCode.DAILY_LIMIT_REACHED));
+            .orElseThrow(() -> new BusinessException(ErrorCode.DAILY_LIMIT_REACHED, remain));
     }
 
     private Optional<Question> findRandomTechQuestion(Long jobId, Long userId) {
