@@ -8,11 +8,12 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
 
+
     // 4xx Business Errors
     // Bad Request(400)
     VALIDATION_FAILED("VALIDATION_FAILED", "입력값에 대한 유효성 검사에 실패했습니다.", HttpStatus.BAD_REQUEST),
     MULTIPLE_FILTER_NOT_ALLOWED("MULTIPLE_FILTER_NOT_ALLOWED", "조회 필터는 단 하나만 설정할 수 있습니다.", HttpStatus.BAD_REQUEST),
-    INVALID_CURSOR("INVALID_CURSOR", "잘못된 커서 값입니다.", HttpStatus.BAD_REQUEST),
+
     // Not Found(404)
     USER_NOT_FOUND("USER_NOT_FOUND", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     ANSWER_NOT_FOUND("ANSWER_NOT_FOUND", "해당 답변을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
