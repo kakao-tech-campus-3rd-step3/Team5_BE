@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
+import com.knuissant.dailyq.domain.rivals.Rival;
 import com.knuissant.dailyq.dto.rivals.ReceivedRivalRequest;
+import com.knuissant.dailyq.dto.rivals.RivalProfileResponse;
 import com.knuissant.dailyq.dto.rivals.RivalResponse;
 import com.knuissant.dailyq.service.RivalService;
+import com.knuissant.dailyq.service.UserService;
 
 @RestController
 @RequestMapping("/api/rivals")
@@ -24,6 +27,7 @@ import com.knuissant.dailyq.service.RivalService;
 public class RivalController {
 
     private final RivalService rivalService;
+    private final UserService userService;
 
     @PostMapping("/{targetUserId}")
     public ResponseEntity<RivalResponse> sendRivalRequest(
@@ -64,5 +68,13 @@ public class RivalController {
         rivalService.rejectRivalRequest(senderId, receiverId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{userId}/profile")
+    public ResponseEntity<RivalProfileResponse> getProfile(@PathVariable Long userId) {
+
+        RivalProfileResponse response = rivalService.getProfile(userId);
+
+        return ResponseEntity.ok(response);
     }
 }
