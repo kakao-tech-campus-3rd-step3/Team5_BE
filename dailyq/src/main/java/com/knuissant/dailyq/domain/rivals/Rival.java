@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -34,6 +35,9 @@ import com.knuissant.dailyq.exception.ErrorCode;
                         name = "uq_rivals_pair",
                         columnNames = {"sender_id", "receiver_id"}
                 )
+        },
+        indexes = {
+                @Index(name = "idx_rivals_receiver_status", columnList = "receiver_id, status")
         }
 )
 public class Rival {
@@ -65,7 +69,7 @@ public class Rival {
 
     public void accept() {
         if (this.status != RivalStatus.WAITING) {
-            throw new BusinessException(ErrorCode.RIVAL_REQUEST_ALREADY_EXIST);
+            throw new BusinessException(ErrorCode.INVALID_RIVAL_REQUEST_STATUS);
         }
         this.status = RivalStatus.ACCEPTED;
     }
