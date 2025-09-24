@@ -1,5 +1,6 @@
 package com.knuissant.dailyq.controller;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -47,13 +48,13 @@ public class AnswerController {
 
             @ModelAttribute AnswerSearchConditionRequest condition,
 
-            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(required = false) LocalDateTime lastCreatedAt,
 
             @RequestParam(defaultValue = "10") int limit) {
 
         //정렬 조건 단일 파라미터 검증
         long filterCount = Stream.of(
-                condition.sortOrder(),
                 condition.date(),
                 condition.jobId(),
                 condition.questionType(),
@@ -66,7 +67,7 @@ public class AnswerController {
                 .orElseThrow(() -> new BusinessException(ErrorCode.MULTIPLE_FILTER_NOT_ALLOWED));
 
         AnswerListResponse.CursorResult<AnswerListResponse.Summary> result = answerService.getArchives(
-                userId, condition, cursor, limit);
+                userId, condition, lastId, lastCreatedAt, limit);
         return ResponseEntity.ok(result);
     }
 
