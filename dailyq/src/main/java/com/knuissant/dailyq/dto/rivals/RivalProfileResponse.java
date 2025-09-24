@@ -11,11 +11,14 @@ public record RivalProfileResponse(
         Long totalAnswerCount,
         List<LocalDate> datesForStreak
 ) {
-    public static RivalProfileResponse from(User user, long totalAnswerCount, List<LocalDate> datesForStreak) {
+
+    public static RivalProfileResponse from(User user, long totalAnswerCount,
+            List<LocalDate> datesForStreak) {
         return new RivalProfileResponse(
                 user.getName(),
                 user.getStreak(),
                 totalAnswerCount,
                 datesForStreak
         );
+    }
 }
