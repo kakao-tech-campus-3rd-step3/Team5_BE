@@ -41,11 +41,16 @@ springdoc:
     tagsSorter: alpha
     # HTTPS 환경에서 Mixed Content 오류 방지
     use-root-path: true
-    # 서버 URL을 명시적으로 설정하지 않으면 OpenAPI Configuration에서 설정한 서버 정보 사용
+
+# OpenAPI 서버 설정
+openapi:
+  server:
+    url: http://localhost:8080
+    description: Development Server
 
 # CORS 설정
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://34.22.98.44,https://dailyq.my}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://34.22.98.44,https://dailyq.my,https://be.dailyq.my}
 
 # Actuator 설정
 management:
@@ -60,3 +65,16 @@ management:
   info:
     env:
       enabled: true
+
+---
+# 프로덕션 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+# OpenAPI 서버 설정 (프로덕션)
+openapi:
+  server:
+    url: https://be.dailyq.my
+    description: Production Server
