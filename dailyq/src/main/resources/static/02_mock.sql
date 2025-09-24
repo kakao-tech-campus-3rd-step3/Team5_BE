@@ -10,7 +10,7 @@ VALUES (1, 'alice@example.com', 'Alice', 'FREE', 3, 0),
        (4, 'dave@example.com', 'Dave', 'PAID', 7, 1),
        (5, 'erin@example.com', 'Erin', 'ADMIN', 0, 0);
 
----
+-- 
 
 /* OCCUPATIONS */
 INSERT INTO occupations (occupation_id, occupation_name)
@@ -20,7 +20,7 @@ VALUES (1, '개발'),
        (4, '마케팅'),
        (5, '운영');
 
----
+-- 
 
 /* JOBS */
 INSERT INTO jobs (job_id, job_name, occupation_id)
@@ -31,7 +31,7 @@ VALUES (1, '백엔드 개발자', 1),
        (5, '그로스 마케터', 4),
        (6, '서비스 운영자', 5);
 
----
+-- 
 
 /* USER PREFERENCES */
 INSERT INTO user_preferences (user_id, daily_question_limit, question_mode, user_response_type,
@@ -42,7 +42,7 @@ VALUES (1, 1, 'TECH', 'TEXT', 180, '09:00:00', 1, 1),
        (4, 1, 'FLOW', 'VOICE', 90, '20:00:00', 0, 4),
        (5, 10, 'TECH', 'TEXT', 180, '07:30:00', 0, 6);
 
----
+-- 
 
 /* QUESTIONS (정렬 및 일부 라벨 변경) */
 INSERT INTO questions (question_id, question_type, question_text, enabled)
@@ -152,7 +152,7 @@ VALUES
     (93, 'PERSONALITY', '동료의 강점을 찾아 활용한 경험을 말해 주세요.', 1),
     (94, 'PERSONALITY', '욕설이나 비난 없이 단호하게 의견을 내는 방법은?', 1);
 
----
+-- 
 
 /* QUESTION_JOBS */
 INSERT INTO question_jobs (question_id, job_id)
@@ -226,7 +226,7 @@ VALUES
 (99, 1), (99, 2), (99, 3), (99, 4), (99, 5), (99, 6),
 (100, 1), (100, 2), (100, 3), (100, 4), (100, 5), (100, 6);
 
----
+-- 
 
 /* USER FLOW PROGRESS */
 INSERT INTO user_flow_progress (user_id, next_phase)
@@ -237,7 +237,7 @@ VALUES
     (4, 'TECH2'),
     (5, 'PERSONALITY');
 
----
+-- 
 
 /* ANSWERS */
 INSERT INTO answers (answer_id, user_id, question_id, answer_text, level, starred, created_at, memo)
@@ -343,7 +343,7 @@ VALUES
     (99, 4, 99, '감사와 피드백 문화를 통해 심리적 안전감을 높였습니다.', 4, 1, '2025-12-08 09:15:00', '감사 데일리'),
     (100, 5, 100, '장기 프로젝트에서 목표-마일스톤-리스크를 명확히 운영했습니다.', 5, 0, '2025-12-09 16:00:00', NULL);
 
----
+-- 
 
 /* ANSWER FEEDBACKS */
 INSERT INTO feedbacks (feedback_id, answer_id, status, content, latency_ms, created_at)
@@ -449,7 +449,7 @@ VALUES
     (99, 99, 'DONE', '{"overallEvaluation": "팀 문화 기여가 구체적", "positivePoints": ["감사/피드백", "안전감"], "pointsForImprovement": ["문화 지표", "온보딩 반영"]}', 600, '2025-12-08 09:16:00'),
     (100, 100, 'DONE', '{"overallEvaluation": "장기 프로젝트 운영 역량 우수", "positivePoints": ["목표/마일스톤", "리스크 관리"], "pointsForImprovement": ["가치 후속 측정", "교훈 저장"]}', 730, '2025-12-09 16:01:00');
 
----
+-- 
 
 /* RIVALS */
 INSERT INTO rivals (rival_id, sender_id, receiver_id, status)
