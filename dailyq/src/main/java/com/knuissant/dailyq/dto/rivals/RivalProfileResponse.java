@@ -9,16 +9,23 @@ public record RivalProfileResponse(
         String name,
         Integer streak,
         Long totalAnswerCount,
-        List<LocalDate> datesForStreak
+        List<DailySolveCount> dailySolveCounts
 ) {
 
+    public record DailySolveCount(
+            LocalDate date,
+            Long count
+    ) {
+
+    }
+
     public static RivalProfileResponse from(User user, long totalAnswerCount,
-            List<LocalDate> datesForStreak) {
+            List<DailySolveCount> dailySolveCounts) {
         return new RivalProfileResponse(
                 user.getName(),
                 user.getStreak(),
                 totalAnswerCount,
-                datesForStreak
+                dailySolveCounts
         );
     }
 }
