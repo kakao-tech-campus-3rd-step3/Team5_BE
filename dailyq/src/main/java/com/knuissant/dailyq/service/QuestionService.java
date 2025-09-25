@@ -29,6 +29,7 @@ import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
+import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +39,7 @@ public class QuestionService {
     private final AnswerRepository answerRepository;
     private final UserPreferencesRepository userPreferencesRepository;
     private final UserFlowProgressRepository userFlowProgressRepository;
+    private final FollowUpQuestionService followUpQuestionService;
 
     @Transactional(readOnly = true)
     public RandomQuestionResponse getRandomQuestion(Long userId) {
@@ -79,6 +81,13 @@ public class QuestionService {
     }
 
     private Optional<Question> selectRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId) {
+        // 1. 먼저 미답변 꼬리질문 확인
+        Optional<Question> followUpQuestion = findUnansweredFollowUpQuestion(userId);
+        if (followUpQuestion.isPresent()) {
+            return followUpQuestion;
+        }
+
+        // 2. 일반 질문 제공
         return switch (mode) {
             case TECH -> findRandomTechQuestion(jobId, userId);
             case FLOW -> findRandomFlowQuestion(phase, userId);
@@ -134,6 +143,28 @@ public class QuestionService {
             case TECH1, TECH2 -> QuestionType.TECH;
             case PERSONALITY -> QuestionType.PERSONALITY;
         };
+    }
+
+    /**
+     * 사용자의 미답변 꼬리질문 조회
+     */
+    private Optional<Question> findUnansweredFollowUpQuestion(Long userId) {
+        List<FollowUpQuestion> unansweredFollowUps = followUpQuestionService.getUnansweredFollowUpQuestions(userId);
+        return unansweredFollowUps.isEmpty() ? Optional.empty() : Optional.of(convertToQuestion(unansweredFollowUps.get(0)));
+    }
+
+    /**
+     * 꼬리질문을 일반 Question으로 변환
+     */
+    private Question convertToQuestion(FollowUpQuestion followUpQuestion) {
+        return Question.builder()
+            .id(-followUpQuestion.getId()) // 음수 ID로 꼬리질문 구분
+            .questionText(followUpQuestion.getQuestionText())
+            .questionType(QuestionType.TECH) // 꼬리질문은 일반적으로 TECH 타입으로 분류
+            .enabled(true)
+            .createdAt(followUpQuestion.getCreatedAt())
+            .updatedAt(followUpQuestion.getCreatedAt())
+            .build();
     }
 }
 
