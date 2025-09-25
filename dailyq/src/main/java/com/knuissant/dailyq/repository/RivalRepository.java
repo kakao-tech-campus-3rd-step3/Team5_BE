@@ -15,4 +15,5 @@ public interface RivalRepository extends JpaRepository<Rival, Long> {
 
     List<Rival> findAllBySenderId(Long senderId);
 
+    List<Rival> findAllByReceiverId(Long receiverId);
 }

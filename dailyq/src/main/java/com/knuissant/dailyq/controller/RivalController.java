@@ -73,4 +73,14 @@ public class RivalController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/followed")
+    public ResponseEntity<List<RivalListResponse>> getFollowedRivalList() {
+
+        Long userId = 1L;// 임시
+
+        List<RivalListResponse> response = rivalService.getFollowedRivalList(userId);
+
+        return ResponseEntity.ok(response);
+    }
 }

@@ -90,6 +90,16 @@ public class RivalService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<RivalListResponse> getFollowedRivalList(Long userId) {
+
+        List<Rival> followedRivals = rivalRepository.findAllByReceiverId(userId);
+
+        return followedRivals.stream()
+                .map(rival -> RivalListResponse.from(rival.getSender()))
+                .toList();
+    }
+
     private User findUserByIdOrThrow(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
