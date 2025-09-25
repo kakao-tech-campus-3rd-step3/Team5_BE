@@ -39,7 +39,7 @@ public class RivalService {
 
         if (rivalRepository.existsBySenderIdAndReceiverId(senderId, receiverId)) {
 
-            throw new BusinessException(ErrorCode.RIVAL_REQUEST_ALREADY_EXIST, senderId,
+            throw new BusinessException(ErrorCode.ALREADY_FOLLOWING_RIVAL, senderId,
                     receiverId);
         }
 
@@ -51,7 +51,7 @@ public class RivalService {
     public void unfollowRival(Long senderId, Long receiverId) {
         Rival rivalShip = rivalRepository.findBySenderIdAndReceiverId(senderId, receiverId)
                 .orElseThrow(
-                        () -> new BusinessException(ErrorCode.RIVAL_REQUEST_NOT_FOUND, senderId,
+                        () -> new BusinessException(ErrorCode.RIVAL_RELATION_NOT_FOUND, senderId,
                                 receiverId));
         rivalRepository.delete(rivalShip);
     }

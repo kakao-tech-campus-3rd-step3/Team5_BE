@@ -33,8 +33,7 @@ import com.knuissant.dailyq.domain.users.User;
                 )
         },
         indexes = {
-                @Index(name = "idx_rivals_sender", columnList = "sender_id"),
-                @Index(name = "idx_rivals_receiver", columnList = "receiver_id")
+                @Index(name = "idx_rivals_receiver", columnList = "receiver_id, sender_id")
         }
 )
 public class Rival {
