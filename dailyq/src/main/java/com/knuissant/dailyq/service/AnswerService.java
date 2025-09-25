@@ -25,6 +25,7 @@ import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.Question;
+import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
@@ -123,32 +124,29 @@ public class AnswerService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        Question question = questionRepository.findById(request.questionId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
-
-        // 꼬리질문인지 확인하고 처리
-        handleFollowUpQuestionIfNeeded(request.questionId(), userId);
+        Question question;
+        FollowUpQuestion followUpQuestion = null;
+        if (request.questionId() < 0) {
+            Long followUpQuestionId = Math.abs(request.questionId());
+            question = followUpQuestionService.getOriginalQuestionForFollowUp(followUpQuestionId);
+            followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
+        } else {
+            question = questionRepository.findById(request.questionId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
+        }
 
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
         Answer answer = Answer.create(user, question, request.answerText());
+        if (followUpQuestion != null) {
+            answer.setFollowUpQuestion(followUpQuestion);
+            followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestion.getId());
+        }
         Answer savedAnswer = answerRepository.save(answer);
 
         Feedback feedback = Feedback.create(savedAnswer, FeedbackStatus.PENDING);
         Feedback savedFeedback = feedbackRepository.save(feedback);
 
         return AnswerCreateResponse.from(savedAnswer, savedFeedback);
-    }
-
-    /**
-     * 꼬리질문인 경우 답변 완료로 표시
-     */
-    private void handleFollowUpQuestionIfNeeded(Long questionId, Long userId) {
-        // 음수 ID는 꼬리질문을 의미 (QuestionService.convertToQuestion에서 설정)
-        if (questionId < 0) {
-            // 꼬리질문 ID는 음수를 양수로 변환
-            Long followUpQuestionId = Math.abs(questionId);
-            followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestionId);
-        }
     }
 
     @Transactional
