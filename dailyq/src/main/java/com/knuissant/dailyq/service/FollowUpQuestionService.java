@@ -35,14 +35,14 @@ public class FollowUpQuestionService {
         Answer answer = answerRepository.findById(answerId)
             .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
 
-        // 꼬리질문의 꼬리질문은 생성하지 않음
+        // 꼬리질문의 꼬리질문은 생성하지 않음(한번 더 예외처리)
         if (isAnswerToFollowUpQuestion(answer)) {
-            throw new BusinessException(ErrorCode.FOLLOWUP_GENERATION_NOT_ALLOWED, "이미 꼬리질문에 대한 답변입니다.", answer);
+            throw new BusinessException(ErrorCode.FOLLOWUP_GENERATION_NOT_ALLOWED, answer.getId());
         }
 
-        // 이미 해당 답변에 대한 꼬리질문이 있는지 확인
+        // 이미 해당 답변에 대한 꼬리질문이 있는지 확인 (원본 답변 기준 중복 방지)
         if (followUpQuestionRepository.existsByAnswer(answer)) {
-            throw new BusinessException(ErrorCode.FOLLOWUP_QUESTION_ALREADY_EXISTS, "이미 꼬리질문이 존재합니다.", answer);
+            throw new BusinessException(ErrorCode.FOLLOWUP_QUESTION_ALREADY_EXISTS, answer.getId());
         }
 
         try {
@@ -71,7 +71,7 @@ public class FollowUpQuestionService {
      * 답변이 꼬리질문에 대한 답변인지 확인
      */
     private boolean isAnswerToFollowUpQuestion(Answer answer) {
-        return followUpQuestionRepository.isAnswerToFollowUpQuestion(answer);
+        return answer.getFollowUpQuestion() != null;
     }
 
     /**
@@ -94,6 +94,9 @@ public class FollowUpQuestionService {
         followUpQuestion.markAsAnswered();
     }
 
+    /**
+     * 꼬리질문 조회
+     */
     @Transactional(readOnly = true)
     public FollowUpQuestion getFollowUpQuestion(Long followUpQuestionId) {
         return followUpQuestionRepository.findById(followUpQuestionId)

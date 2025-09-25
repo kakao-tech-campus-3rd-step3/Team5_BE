@@ -50,7 +50,7 @@ public class FeedbackService {
                 log.info("Publishing FeedbackCompletedEvent for answerId: {}", feedback.getAnswer().getId());
                 eventPublisher.publishEvent(new FeedbackCompletedEvent(feedback.getId(), feedback.getAnswer().getId()));
             } else {
-                log.debug("Skip follow-up generation for follow-up answer: {}", feedback.getAnswer().getId());
+                log.info("[FollowUp] Skip generating follow-ups: answer {} is a follow-up answer", feedback.getAnswer().getId());
             }
             
             return feedbackResponse;
