@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.rivals.Rival;
 import com.knuissant.dailyq.domain.users.User;
+import com.knuissant.dailyq.dto.rivals.RivalListResponse;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse.DailySolveCount;
 import com.knuissant.dailyq.dto.rivals.RivalResponse;
@@ -77,6 +78,16 @@ public class RivalService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         return RivalSearchResponse.from(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RivalListResponse> getFollowingRivalList(Long userId) {
+
+        List<Rival> followingRivals = rivalRepository.findAllBySenderId(userId);
+
+        return followingRivals.stream()
+                .map(rival -> RivalListResponse.from(rival.getReceiver()))
+                .toList();
     }
 
     private User findUserByIdOrThrow(Long userId) {

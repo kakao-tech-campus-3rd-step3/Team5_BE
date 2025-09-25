@@ -1,5 +1,7 @@
 package com.knuissant.dailyq.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
+import com.knuissant.dailyq.dto.rivals.RivalListResponse;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse;
 import com.knuissant.dailyq.dto.rivals.RivalResponse;
 import com.knuissant.dailyq.dto.rivals.RivalSearchResponse;
@@ -57,6 +60,16 @@ public class RivalController {
     public ResponseEntity<RivalSearchResponse> searchRivalByEmail(@RequestParam String email) {
 
         RivalSearchResponse response = rivalService.searchRivalByEmail(email);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/following")
+    public ResponseEntity<List<RivalListResponse>> getFollowingRivalList() {
+
+        Long userId = 1L; // 임시
+
+        List<RivalListResponse> response = rivalService.getFollowingRivalList(userId);
 
         return ResponseEntity.ok(response);
     }
