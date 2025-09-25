@@ -9,6 +9,7 @@ import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.external.gpt.GptClient;
 import com.knuissant.dailyq.external.gpt.PromptManager;
 import com.knuissant.dailyq.external.gpt.PromptType;
@@ -42,12 +43,11 @@ public class FeedbackService {
 
             feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackResponse, latencyMs);
             
-            // 피드백 완료 후 꼬리질문 생성 (비동기)
-            try {
-                followUpQuestionService.generateFollowUpQuestions(feedback.getAnswer().getId());
-            } catch (Exception e) {
-                log.warn("Failed to generate follow-up questions for answerId: {}", 
-                        feedback.getAnswer().getId(), e);
+            // 응답 반환을 우선하고, 커밋 후 비동기로 꼬리질문 생성
+            if (feedback.getAnswer().getFollowUpQuestion() == null) {
+                followUpQuestionAfterCommit(feedback.getAnswer().getId());
+            } else {
+                log.debug("Skip follow-up generation for follow-up answer: {}", feedback.getAnswer().getId());
             }
             
             return feedbackResponse;
@@ -56,10 +56,19 @@ public class FeedbackService {
             try {
                 feedbackUpdateService.updateFeedbackFailure(feedbackId);
             } catch (Exception failureUpdateEx) {
-                log.error("Filed to update status to FAILED for feedbackId {}, Original error: {}",
-                        feedbackId, e.getMessage());
+                throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "피드백 상태 업데이트 실패", failureUpdateEx);
             }
-            throw e;
+            throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "피드백 생성 처리 중 오류", e);
+        }
+    }
+
+    @org.springframework.transaction.event.TransactionalEventListener(phase = org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT)
+    @org.springframework.scheduling.annotation.Async
+    public void followUpQuestionAfterCommit(Long answerId) {
+        try {
+            followUpQuestionService.generateFollowUpQuestions(answerId);
+        } catch (Exception ex) {
+            throw new InfraException(ErrorCode.GPT_API_COMMUNICATION_ERROR, "꼬리질문 생성 실패", ex);
         }
     }
 }
