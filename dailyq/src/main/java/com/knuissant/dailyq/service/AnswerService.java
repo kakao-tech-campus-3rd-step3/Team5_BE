@@ -51,6 +51,7 @@ public class AnswerService {
     private final FeedbackRepository feedbackRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final FollowUpQuestionService followUpQuestionService;
 
     //API 스펙과 무관하며(오로지,내부사용) 재사용 가능성이 없다고 생각하여 따로 DTO를 만들지 않았습니다.
     private record CursorRequest(LocalDateTime createdAt, Long id) {
@@ -125,6 +126,9 @@ public class AnswerService {
         Question question = questionRepository.findById(request.questionId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
 
+        // 꼬리질문인지 확인하고 처리
+        handleFollowUpQuestionIfNeeded(request.questionId(), userId);
+
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
         Answer answer = Answer.create(user, question, request.answerText());
         Answer savedAnswer = answerRepository.save(answer);
@@ -133,6 +137,18 @@ public class AnswerService {
         Feedback savedFeedback = feedbackRepository.save(feedback);
 
         return AnswerCreateResponse.from(savedAnswer, savedFeedback);
+    }
+
+    /**
+     * 꼬리질문인 경우 답변 완료로 표시
+     */
+    private void handleFollowUpQuestionIfNeeded(Long questionId, Long userId) {
+        // 음수 ID는 꼬리질문을 의미 (QuestionService.convertToQuestion에서 설정)
+        if (questionId < 0) {
+            // 꼬리질문 ID는 음수를 양수로 변환
+            Long followUpQuestionId = Math.abs(questionId);
+            followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestionId);
+        }
     }
 
     @Transactional
