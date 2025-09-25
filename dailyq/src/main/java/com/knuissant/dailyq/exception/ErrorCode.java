@@ -12,7 +12,6 @@ public enum ErrorCode {
     // Bad Request(400)
     VALIDATION_FAILED("VALIDATION_FAILED", "입력값에 대한 유효성 검사에 실패했습니다.", HttpStatus.BAD_REQUEST),
     MULTIPLE_FILTER_NOT_ALLOWED("MULTIPLE_FILTER_NOT_ALLOWED", "조회 필터는 단 하나만 설정할 수 있습니다.", HttpStatus.BAD_REQUEST),
-    INVALID_RIVAL_REQUEST_STATUS("INVALID_RIVAL_REQUEST_STATUS", "요청을 처리할 수 없는 상태입니다.", HttpStatus.BAD_REQUEST),
     CANNOT_RIVAL_YOURSELF("CANNOT_RIVAL_YOURSELF","자기 자신에게는 라이벌 신청을 할 수 없습니다.",HttpStatus.BAD_REQUEST),
 
     // Not Found(404)
@@ -23,11 +22,11 @@ public enum ErrorCode {
     NO_QUESTION_AVAILABLE("NO_QUESTION_AVAILABLE", "조건에 맞는 질문이 없습니다.", HttpStatus.NOT_FOUND),
     OCCUPATION_NOT_FOUND("OCCUPATION_NOT_FOUND", "직군을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     JOB_NOT_FOUND("JOB_NOT_FOUND", "직업을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    RIVAL_REQUEST_NOT_FOUND("RIVAL_REQUEST_NOT_FOUND", "라이벌 요청을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    RIVAL_RELATION_NOT_FOUND("RIVAL_RELATION_NOT_FOUND", "라이벌 관계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     // etc 4xx
     FORBIDDEN_ACCESS("FORBIDDEN_ACCESS", "리소스에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
     DAILY_LIMIT_REACHED("DAILY_LIMIT_REACHED", "오늘 가능한 질문을 모두 소진했습니다.", HttpStatus.TOO_MANY_REQUESTS),
-    RIVAL_REQUEST_ALREADY_EXIST("RIVAL_REQUEST_ALREADY_EXIST", "이미 라이벌 요청이 존재합니다.", HttpStatus.CONFLICT),
+    ALREADY_FOLLOWING_RIVAL("ALREADY_FOLLOWING_RIVAL", "이미 팔로우 중인 라이벌입니다.", HttpStatus.CONFLICT),
     //5xx System Errors
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부에 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     CURSOR_GENERATION_FAILED("CURSOR_GENERATION_FAILED", "커서 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
