@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
-import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.dto.questions.FollowUpQuestionResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
@@ -99,12 +98,5 @@ public class FollowUpQuestionService {
     public FollowUpQuestion getFollowUpQuestion(Long followUpQuestionId) {
         return followUpQuestionRepository.findById(followUpQuestionId)
             .orElseThrow(() -> new BusinessException(ErrorCode.FOLLOWUP_QUESTION_NOT_FOUND));
-    }
-
-    @Transactional(readOnly = true)
-    public Question getOriginalQuestionForFollowUp(Long followUpQuestionId) {
-        FollowUpQuestion followUpQuestion = getFollowUpQuestion(followUpQuestionId);
-        Answer originalAnswer = followUpQuestion.getAnswer();
-        return originalAnswer.getQuestion();
     }
 }

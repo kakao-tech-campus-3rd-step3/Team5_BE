@@ -128,8 +128,8 @@ public class AnswerService {
         FollowUpQuestion followUpQuestion = null;
         if (request.questionId() < 0) {
             Long followUpQuestionId = Math.abs(request.questionId());
-            question = followUpQuestionService.getOriginalQuestionForFollowUp(followUpQuestionId);
             followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
+            question = followUpQuestion.getAnswer().getQuestion();
         } else {
             question = questionRepository.findById(request.questionId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
