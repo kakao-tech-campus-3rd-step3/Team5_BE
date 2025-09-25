@@ -3,16 +3,13 @@ package com.knuissant.dailyq.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.rivals.Rival;
-import com.knuissant.dailyq.domain.rivals.RivalStatus;
 import com.knuissant.dailyq.domain.users.User;
-import com.knuissant.dailyq.dto.rivals.ReceivedRivalRequest;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse.DailySolveCount;
 import com.knuissant.dailyq.dto.rivals.RivalResponse;
@@ -31,7 +28,7 @@ public class RivalService {
     private final UserRepository userRepository;
     private final AnswerRepository answerRepository;
 
-    public RivalResponse sendRivalRequest(Long senderId, Long receiverId) {
+    public RivalResponse followRival(Long senderId, Long receiverId) {
 
         if (senderId.equals(receiverId)) {
             throw new BusinessException(ErrorCode.CANNOT_RIVAL_YOURSELF, senderId);
@@ -40,46 +37,23 @@ public class RivalService {
         User sender = findUserByIdOrThrow(senderId);
         User receiver = findUserByIdOrThrow(receiverId);
 
-        try {
-            validateRivalRequestNotExists(senderId, receiverId);
+        if (rivalRepository.existsBySenderIdAndReceiverId(senderId, receiverId)) {
 
-            Rival rivalRequest = Rival.create(sender, receiver);
-            Rival savedRival = rivalRepository.save(rivalRequest);
-
-            return RivalResponse.from(savedRival);
-        } catch (DataIntegrityViolationException e) {
             throw new BusinessException(ErrorCode.RIVAL_REQUEST_ALREADY_EXIST, senderId,
                     receiverId);
         }
+
+        Rival rivalShip = rivalRepository.save(Rival.create(sender, receiver));
+
+        return RivalResponse.from(rivalShip);
     }
 
-    @Transactional(readOnly = true)
-    public List<ReceivedRivalRequest> getReceivedRequests(Long receiverId) {
-
-        if (!userRepository.existsById(receiverId)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND, receiverId);
-        }
-
-        return rivalRepository.findByReceiverIdAndStatus(receiverId, RivalStatus.WAITING)
-                .stream()
-                .map(ReceivedRivalRequest::from)
-                .toList();
-    }
-
-    public RivalResponse acceptRivalRequest(Long senderId, Long receiverId) {
-
-        Rival rivalRequest = findWaitingRivalRequest(senderId, receiverId);
-
-        rivalRequest.accept(); //단방향
-
-        return RivalResponse.from(rivalRequest);
-    }
-
-    public void rejectRivalRequest(Long senderId, Long receiverId) {
-
-        Rival rivalRequest = findWaitingRivalRequest(senderId, receiverId);
-
-        rivalRepository.delete(rivalRequest);
+    public void unfollowRival(Long senderId, Long receiverId) {
+        Rival rivalShip = rivalRepository.findBySenderIdAndReceiverId(senderId, receiverId)
+                .orElseThrow(
+                        () -> new BusinessException(ErrorCode.RIVAL_REQUEST_NOT_FOUND, senderId,
+                                receiverId));
+        rivalRepository.delete(rivalShip);
     }
 
     @Transactional(readOnly = true)
@@ -100,21 +74,5 @@ public class RivalService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
     }
 
-    private void validateRivalRequestNotExists(Long senderId, Long receiverId) {
-        boolean exists = rivalRepository.existsBySenderIdAndReceiverId(senderId, receiverId) ||
-                rivalRepository.existsBySenderIdAndReceiverId(receiverId, senderId);
-
-        if (exists) {
-            throw new BusinessException(ErrorCode.RIVAL_REQUEST_ALREADY_EXIST, senderId,
-                    receiverId);
-        }
-    }
-
-    private Rival findWaitingRivalRequest(Long senderId, Long receiverId) {
-        return rivalRepository.findBySenderIdAndReceiverIdAndStatus(senderId, receiverId,
-                        RivalStatus.WAITING)
-                .orElseThrow(
-                        () -> new BusinessException(ErrorCode.RIVAL_REQUEST_NOT_FOUND, senderId,
-                                receiverId));
-    }
 }
+
