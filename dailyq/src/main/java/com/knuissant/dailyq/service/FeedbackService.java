@@ -1,5 +1,6 @@
 package com.knuissant.dailyq.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import com.knuissant.dailyq.external.gpt.GptClient;
 import com.knuissant.dailyq.external.gpt.PromptManager;
 import com.knuissant.dailyq.external.gpt.PromptType;
 import com.knuissant.dailyq.repository.FeedbackRepository;
+import com.knuissant.dailyq.service.event.FeedbackCompletedEvent;
 
 @Slf4j
 @Service
@@ -24,7 +26,7 @@ public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final PromptManager promptManager;
     private final FeedbackUpdateService feedbackUpdateService;
-    private final FollowUpQuestionService followUpQuestionService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public FeedbackResponse generateFeedback(Long feedbackId) {
 
@@ -43,9 +45,10 @@ public class FeedbackService {
 
             feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackResponse, latencyMs);
             
-            // 응답 반환을 우선하고, 커밋 후 비동기로 꼬리질문 생성
+            // 응답 반환을 우선: 이벤트 발행 (커밋 후 리스너에서 비동기 처리)
             if (feedback.getAnswer().getFollowUpQuestion() == null) {
-                followUpQuestionAfterCommit(feedback.getAnswer().getId());
+                log.info("Publishing FeedbackCompletedEvent for answerId: {}", feedback.getAnswer().getId());
+                eventPublisher.publishEvent(new FeedbackCompletedEvent(feedback.getId(), feedback.getAnswer().getId()));
             } else {
                 log.debug("Skip follow-up generation for follow-up answer: {}", feedback.getAnswer().getId());
             }
@@ -59,16 +62,6 @@ public class FeedbackService {
                 throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "피드백 상태 업데이트 실패", failureUpdateEx);
             }
             throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "피드백 생성 처리 중 오류", e);
-        }
-    }
-
-    @org.springframework.transaction.event.TransactionalEventListener(phase = org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT)
-    @org.springframework.scheduling.annotation.Async
-    public void followUpQuestionAfterCommit(Long answerId) {
-        try {
-            followUpQuestionService.generateFollowUpQuestions(answerId);
-        } catch (Exception ex) {
-            throw new InfraException(ErrorCode.GPT_API_COMMUNICATION_ERROR, "꼬리질문 생성 실패", ex);
         }
     }
 }
