@@ -59,9 +59,10 @@ public class FeedbackService {
             try {
                 feedbackUpdateService.updateFeedbackFailure(feedbackId);
             } catch (Exception failureUpdateEx) {
-                throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "피드백 상태 업데이트 실패", failureUpdateEx);
+                log.error("Filed to update status to FAILED for feedbackId {}, Original error: {}",
+                        feedbackId, e.getMessage());
             }
-            throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "피드백 생성 처리 중 오류", e);
+            throw e;
         }
     }
 }
