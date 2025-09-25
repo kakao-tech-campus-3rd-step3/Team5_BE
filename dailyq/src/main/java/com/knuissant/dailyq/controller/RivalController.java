@@ -7,12 +7,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse;
 import com.knuissant.dailyq.dto.rivals.RivalResponse;
+import com.knuissant.dailyq.dto.rivals.RivalSearchResponse;
 import com.knuissant.dailyq.service.RivalService;
 
 @RestController
@@ -47,6 +49,14 @@ public class RivalController {
     public ResponseEntity<RivalProfileResponse> getProfile(@PathVariable Long userId) {
 
         RivalProfileResponse response = rivalService.getProfile(userId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<RivalSearchResponse> searchRivalByEmail(@RequestParam String email) {
+
+        RivalSearchResponse response = rivalService.searchRivalByEmail(email);
 
         return ResponseEntity.ok(response);
     }

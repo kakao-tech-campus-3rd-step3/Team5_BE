@@ -13,6 +13,7 @@ import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse.DailySolveCount;
 import com.knuissant.dailyq.dto.rivals.RivalResponse;
+import com.knuissant.dailyq.dto.rivals.RivalSearchResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.AnswerRepository;
@@ -67,6 +68,15 @@ public class RivalService {
                 userId, forOneYear);
 
         return RivalProfileResponse.from(user, totalAnswerCount, dailySolveCounts);
+    }
+
+    @Transactional(readOnly = true)
+    public RivalSearchResponse searchRivalByEmail(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return RivalSearchResponse.from(user);
     }
 
     private User findUserByIdOrThrow(Long userId) {
