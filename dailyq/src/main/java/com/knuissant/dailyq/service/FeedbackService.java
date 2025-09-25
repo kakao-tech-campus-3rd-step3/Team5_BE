@@ -23,6 +23,7 @@ public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final PromptManager promptManager;
     private final FeedbackUpdateService feedbackUpdateService;
+    private final FollowUpQuestionService followUpQuestionService;
 
     public FeedbackResponse generateFeedback(Long feedbackId) {
 
@@ -40,6 +41,15 @@ public class FeedbackService {
             long latencyMs = System.currentTimeMillis() - startTime;
 
             feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackResponse, latencyMs);
+            
+            // 피드백 완료 후 꼬리질문 생성 (비동기)
+            try {
+                followUpQuestionService.generateFollowUpQuestions(feedback.getAnswer().getId());
+            } catch (Exception e) {
+                log.warn("Failed to generate follow-up questions for answerId: {}", 
+                        feedback.getAnswer().getId(), e);
+            }
+            
             return feedbackResponse;
 
         } catch (Exception e) {
