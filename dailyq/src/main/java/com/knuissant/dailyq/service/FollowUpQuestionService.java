@@ -37,12 +37,12 @@ public class FollowUpQuestionService {
 
         // 꼬리질문의 꼬리질문은 생성하지 않음
         if (isAnswerToFollowUpQuestion(answer)) {
-            throw new BusinessException(ErrorCode.FOLLOWUP_QUESTION_NOT_FOUND, "이미 꼬리질문에 대한 답변입니다.");
+            throw new BusinessException(ErrorCode.FOLLOWUP_GENERATION_NOT_ALLOWED, "이미 꼬리질문에 대한 답변입니다.", answer);
         }
 
         // 이미 해당 답변에 대한 꼬리질문이 있는지 확인
         if (followUpQuestionRepository.existsByAnswer(answer)) {
-            throw new BusinessException(ErrorCode.FOLLOWUP_QUESTION_NOT_FOUND, "이미 꼬리질문이 존재합니다.");
+            throw new BusinessException(ErrorCode.FOLLOWUP_QUESTION_ALREADY_EXISTS, "이미 꼬리질문이 존재합니다.", answer);
         }
 
         try {
