@@ -20,6 +20,7 @@ public enum ErrorCode {
     ANSWER_NOT_FOUND("ANSWER_NOT_FOUND", "해당 답변을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     QUESTION_NOT_FOUND("QUESTION_NOT_FOUND", "해당 질문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     FEEDBACK_NOT_FOUND("FEEDBACK_NOT_FOUND", "해당 피드백을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    FOLLOWUP_QUESTION_NOT_FOUND("FOLLOWUP_QUESTION_NOT_FOUND", "해당 꼬리질문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     NO_QUESTION_AVAILABLE("NO_QUESTION_AVAILABLE", "조건에 맞는 질문이 없습니다.", HttpStatus.NOT_FOUND),
     OCCUPATION_NOT_FOUND("OCCUPATION_NOT_FOUND", "직군을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     JOB_NOT_FOUND("JOB_NOT_FOUND", "직업을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
