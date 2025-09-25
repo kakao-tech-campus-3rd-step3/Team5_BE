@@ -28,7 +28,7 @@ public class RivalController {
     private final RivalService rivalService;
 
     @PostMapping("/{targetUserId}")
-    public ResponseEntity<RivalResponse> sendRivalRequest(
+    public ResponseEntity<RivalResponse> followRival(
             @PathVariable Long targetUserId) {
 
         Long senderId = 1L; // 임시
