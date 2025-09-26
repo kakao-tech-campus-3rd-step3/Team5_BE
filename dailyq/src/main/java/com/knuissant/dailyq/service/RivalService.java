@@ -3,6 +3,10 @@ package com.knuissant.dailyq.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import com.knuissant.dailyq.domain.rivals.Rival;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.rivals.RivalListResponse;
+import com.knuissant.dailyq.dto.rivals.RivalListResponse.CursorResult;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse.DailySolveCount;
 import com.knuissant.dailyq.dto.rivals.RivalResponse;
@@ -81,13 +86,31 @@ public class RivalService {
     }
 
     @Transactional(readOnly = true)
-    public List<RivalListResponse> getFollowingRivalList(Long userId) {
+    public RivalListResponse.CursorResult getFollowingRivalList(Long userId, Long lastId,
+            int limit) {
 
-        List<Rival> followingRivals = rivalRepository.findAllBySenderId(userId);
+        Pageable pageable = PageRequest.of(0, limit + 1, Sort.by("id").ascending());
 
-        return followingRivals.stream()
+        Slice<Rival> rivalsSlice;
+
+        if (lastId == null) {
+            rivalsSlice = rivalRepository.findAllBySenderId(userId, pageable);
+        } else {
+            rivalsSlice = rivalRepository.findBySenderIdAndIdGreaterThan(userId, lastId, pageable);
+        }
+
+        List<Rival> rivals = rivalsSlice.getContent();
+
+        boolean hasNext = rivals.size() > limit;
+
+        List<RivalListResponse> items = rivals.stream()
+                .limit(limit)
                 .map(rival -> RivalListResponse.from(rival.getReceiver()))
                 .toList();
+
+        Long nextCursor = hasNext ? items.getLast().userId() : null;
+
+        return CursorResult.from(items, nextCursor, hasNext);
     }
 
     @Transactional(readOnly = true)

@@ -16,6 +16,10 @@ public record RivalListResponse(
             boolean hasNext
     ) {
 
+        public static CursorResult from(List<RivalListResponse> items, Long nextCursor,
+                boolean hasNext) {
+            return new CursorResult(items, nextCursor, hasNext);
+        }
     }
 
     public static RivalListResponse from(User user) {
