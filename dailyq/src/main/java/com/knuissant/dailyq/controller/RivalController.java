@@ -65,13 +65,14 @@ public class RivalController {
     }
 
     @GetMapping("/following")
-    public ResponseEntity<List<RivalListResponse>> getFollowingRivalList(
+    public ResponseEntity<RivalListResponse.CursorResult> getFollowingRivalList(
             @RequestParam(required = false) Long lastId,
             @RequestParam(defaultValue = "20") int limit) {
 
         Long userId = 1L; // 임시
 
-        List<RivalListResponse> response = rivalService.getFollowingRivalList(userId);
+        RivalListResponse.CursorResult response = rivalService.getFollowingRivalList(userId, lastId,
+                limit);
 
         return ResponseEntity.ok(response);
     }
