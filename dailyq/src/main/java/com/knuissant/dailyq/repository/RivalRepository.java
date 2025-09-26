@@ -1,6 +1,5 @@
 package com.knuissant.dailyq.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
@@ -17,14 +16,17 @@ public interface RivalRepository extends JpaRepository<Rival, Long> {
 
     Optional<Rival> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
 
-    List<Rival> findAllBySenderId(Long senderId);
-
-    List<Rival> findAllByReceiverId(Long receiverId);
-
     @Query("SELECT r FROM Rival r WHERE r.sender.id = :senderId AND r.id > :lastId ORDER BY r.id ASC")
     Slice<Rival> findBySenderIdAndIdGreaterThan(@Param("senderId") Long senderId,
             @Param("lastId") Long lastId, Pageable pageable);
 
+    @Query("SELECT r FROM Rival r WHERE r.receiver.id = :receiverId AND r.id > :lastId ORDER BY r.id ASC")
+    Slice<Rival> findByReceiverIdAndIdGreaterThan(@Param("receiverId") Long receiverId,
+            @Param("lastId") Long lastId, Pageable pageable);
+
     // 첫 페이지 조회
     Slice<Rival> findAllBySenderId(Long senderId, Pageable pageable);
+
+    Slice<Rival> findAllByReceiverId(Long receiverId, Pageable pageable);
+
 }
