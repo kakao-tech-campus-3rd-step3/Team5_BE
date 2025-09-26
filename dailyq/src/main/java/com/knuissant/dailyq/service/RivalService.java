@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import com.knuissant.dailyq.domain.rivals.Rival;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.rivals.RivalListResponse;
-import com.knuissant.dailyq.dto.rivals.RivalListResponse.CursorResult;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse;
 import com.knuissant.dailyq.dto.rivals.RivalProfileResponse.DailySolveCount;
 import com.knuissant.dailyq.dto.rivals.RivalResponse;
@@ -91,42 +90,50 @@ public class RivalService {
 
         Pageable pageable = PageRequest.of(0, limit + 1, Sort.by("id").ascending());
 
-        Slice<Rival> rivalsSlice;
+        Slice<Rival> rivalsSlice = (lastId == null)
+                ? rivalRepository.findAllBySenderId(userId, pageable)
+                : rivalRepository.findBySenderIdAndIdGreaterThan(userId, lastId, pageable);
 
-        if (lastId == null) {
-            rivalsSlice = rivalRepository.findAllBySenderId(userId, pageable);
-        } else {
-            rivalsSlice = rivalRepository.findBySenderIdAndIdGreaterThan(userId, lastId, pageable);
-        }
-
-        List<Rival> rivals = rivalsSlice.getContent();
-
-        boolean hasNext = rivals.size() > limit;
-
-        List<RivalListResponse> items = rivals.stream()
-                .limit(limit)
-                .map(rival -> RivalListResponse.from(rival.getReceiver()))
-                .toList();
-
-        Long nextCursor = hasNext ? items.getLast().userId() : null;
-
-        return CursorResult.from(items, nextCursor, hasNext);
+        return createCursorResult(rivalsSlice, limit, true);
     }
 
     @Transactional(readOnly = true)
-    public List<RivalListResponse> getFollowedRivalList(Long userId) {
+    public RivalListResponse.CursorResult getFollowedRivalList(Long userId, Long lastId,
+            int limit) {
 
-        List<Rival> followedRivals = rivalRepository.findAllByReceiverId(userId);
+        Pageable pageable = PageRequest.of(0, limit + 1, Sort.by("id").ascending());
 
-        return followedRivals.stream()
-                .map(rival -> RivalListResponse.from(rival.getSender()))
-                .toList();
+        Slice<Rival> rivalsSlice = (lastId == null)
+                ? rivalRepository.findAllByReceiverId(userId, pageable)
+                : rivalRepository.findByReceiverIdAndIdGreaterThan(userId, lastId, pageable);
+
+        return createCursorResult(rivalsSlice, limit, false);
     }
 
     private User findUserByIdOrThrow(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
     }
+
+    private RivalListResponse.CursorResult createCursorResult(Slice<Rival> rivalsSlice, int limit,
+            boolean isFollowingList) {
+        List<Rival> rivals = rivalsSlice.getContent();
+        boolean hasNext = rivals.size() > limit;
+
+        List<RivalListResponse> items = rivals.stream()
+                .limit(limit)
+                .map(rival -> {
+                    // boolean 플래그 값에 따라 sender를 가져올지 receiver를 가져올지 결정
+                    User userToShow = isFollowingList ? rival.getReceiver() : rival.getSender();
+                    return RivalListResponse.from(userToShow);
+                })
+                .toList();
+
+        Long nextCursor = hasNext ? rivals.get(limit).getId() : null;
+
+        return new RivalListResponse.CursorResult(items, nextCursor, hasNext);
+    }
+
 
 }
 
