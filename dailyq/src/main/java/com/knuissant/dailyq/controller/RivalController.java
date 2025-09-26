@@ -65,7 +65,9 @@ public class RivalController {
     }
 
     @GetMapping("/following")
-    public ResponseEntity<List<RivalListResponse>> getFollowingRivalList() {
+    public ResponseEntity<List<RivalListResponse>> getFollowingRivalList(
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "20") int limit) {
 
         Long userId = 1L; // 임시
 
