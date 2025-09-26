@@ -19,10 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
-import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
@@ -51,6 +49,7 @@ public class AnswerService {
     private final FeedbackRepository feedbackRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final FeedbackService feedbackService;
 
     //API 스펙과 무관하며(오로지,내부사용) 재사용 가능성이 없다고 생각하여 따로 DTO를 만들지 않았습니다.
     private record CursorRequest(LocalDateTime createdAt, Long id) {
@@ -129,8 +128,7 @@ public class AnswerService {
         Answer answer = Answer.create(user, question, request.answerText());
         Answer savedAnswer = answerRepository.save(answer);
 
-        Feedback feedback = Feedback.create(savedAnswer, FeedbackStatus.PENDING);
-        Feedback savedFeedback = feedbackRepository.save(feedback);
+        Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
 
         return AnswerCreateResponse.from(savedAnswer, savedFeedback);
     }
