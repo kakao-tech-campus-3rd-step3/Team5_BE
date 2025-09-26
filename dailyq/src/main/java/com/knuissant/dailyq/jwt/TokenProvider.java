@@ -16,6 +16,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.ExpiredJwtException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -139,10 +140,15 @@ public class TokenProvider {
 
     // 토큰에서 클레임 정보를 추출
     private Claims parseClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            // 토큰이 만료되었더라도 클레임 정보는 필요할 수 있으므로, 예외에서 클레임을 추출하여 반환합니다.
+            return e.getClaims();
+        }
     }
 }
