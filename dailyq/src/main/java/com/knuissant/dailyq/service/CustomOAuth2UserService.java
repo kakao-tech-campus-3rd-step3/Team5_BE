@@ -11,12 +11,15 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.oauth.OAuthAttributes;
 import com.knuissant.dailyq.repository.UserRepository;
+import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.ErrorCode;
 
 /**
  * Spring Security에서 OAuth2 로그인 성공 이후 후속 조치를 진행하는 사용자 정보 서비스 클래스입니다.
@@ -66,6 +69,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
      * @return 저장되거나 업데이트된 사용자 엔티티
      */
     private User saveOrUpdate(OAuthAttributes attributes) {
+        if (!StringUtils.hasText(attributes.getEmail())) {
+            throw new BusinessException(ErrorCode.INVALID_SOCIAL_LOGIN, "Email not found from OAuth2 provider.");
+        }
         // 이메일을 통해 데이터베이스에서 사용자를 찾음.
         User user = userRepository.findByEmail(attributes.getEmail())
                 // 만약 사용자가 이미 존재한다면, 이름(닉네임) 정보만 업데이트.
