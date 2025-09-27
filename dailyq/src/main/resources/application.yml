@@ -32,6 +32,35 @@ spring:
         multiplier: 2
       on-http-codes: [ 429, 500, 503 ]
 
+  # OAuth2 클라이언트 설정
+  security:
+    oauth2:
+      client:
+        registration:
+          # Google 로그인 설정
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - profile
+              - email
+          # Kakao 로그인 설정
+          kakao:
+            client-id: ${KAKAO_API_KEY}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - profile_nickname
+              - account_email
+            client-name: Kakao
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
 springdoc:
   api-docs:
     path: /api-docs
@@ -41,12 +70,6 @@ springdoc:
     tagsSorter: alpha
     # HTTPS 환경에서 Mixed Content 오류 방지
     use-root-path: true
-
-# OpenAPI 서버 설정
-openapi:
-  server:
-    url: http://localhost:8080
-    description: Development Server
 
 # CORS 설정
 cors:
@@ -66,7 +89,11 @@ management:
     env:
       enabled: true
 
----
+jwt:
+  secret: ${jwt.secret}
+  access-token-expiration-millis: ${jwt.access-token-expiration-millis}   # 1시간
+  refresh-token-expiration-millis: ${jwt.refresh-token-expiration-millis} # 7일
+
 # 프로덕션 환경 설정
 spring:
   config:
