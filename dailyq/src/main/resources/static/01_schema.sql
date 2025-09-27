@@ -146,7 +146,6 @@ CREATE TABLE rivals (
                         rival_id BIGINT AUTO_INCREMENT PRIMARY KEY,
                         sender_id BIGINT NOT NULL,
                         receiver_id BIGINT NOT NULL,
-                        status ENUM('WAITING', 'ACCEPTED', 'REJECTED') NOT NULL DEFAULT 'WAITING',
 
                         CONSTRAINT fk_rival_sender FOREIGN KEY (sender_id)
                             REFERENCES users(user_id) ON DELETE CASCADE,

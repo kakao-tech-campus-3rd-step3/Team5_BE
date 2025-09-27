@@ -45,8 +45,6 @@ public enum ErrorCode {
   USER_FLOW_PROGRESS_NOT_FOUND("USER_FLOW_PROGRESS_NOT_FOUND", "사용자 플로우 진행 상태를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   FILE_IO_ERROR("FILE_IO_ERROR", "파일 입출력 처리 중 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
-
-
     private final String code;
     private final String message;
     private final HttpStatus status;

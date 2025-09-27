@@ -29,7 +29,7 @@ public class GptClient {
             maxAttempts = 3,
             backoff = @Backoff(delay = 2000, multiplier = 2)
     )
-    public FeedbackResponse getFeedback(String systemPrompt, String userPrompt) {
+    public FeedbackResponse call(String systemPrompt, String userPrompt) {
 
         try {
             return chatClient.prompt()
