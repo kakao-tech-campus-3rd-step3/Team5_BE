@@ -1,11 +1,14 @@
 package com.knuissant.dailyq.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
+import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
@@ -23,6 +26,13 @@ public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final PromptManager promptManager;
     private final FeedbackUpdateService feedbackUpdateService;
+
+    @Transactional
+    public Feedback createPendingFeedback(Answer answer) {
+
+        Feedback feedback = Feedback.create(answer, FeedbackStatus.PENDING);
+        return feedbackRepository.save(feedback);
+    }
 
     public FeedbackResponse generateFeedback(Long feedbackId) {
 
