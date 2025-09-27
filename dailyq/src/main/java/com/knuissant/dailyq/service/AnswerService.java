@@ -25,6 +25,7 @@ import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.Question;
+import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
@@ -51,6 +52,7 @@ public class AnswerService {
     private final FeedbackRepository feedbackRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final FollowUpQuestionService followUpQuestionService;
 
     //API 스펙과 무관하며(오로지,내부사용) 재사용 가능성이 없다고 생각하여 따로 DTO를 만들지 않았습니다.
     private record CursorRequest(LocalDateTime createdAt, Long id) {
@@ -122,11 +124,23 @@ public class AnswerService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        Question question = questionRepository.findById(request.questionId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
+        Question question;
+        FollowUpQuestion followUpQuestion = null;
+        if (request.questionId() < 0) {
+            Long followUpQuestionId = Math.abs(request.questionId());
+            followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
+            question = followUpQuestion.getAnswer().getQuestion();
+        } else {
+            question = questionRepository.findById(request.questionId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
+        }
 
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
         Answer answer = Answer.create(user, question, request.answerText());
+        if (followUpQuestion != null) {
+            answer.setFollowUpQuestion(followUpQuestion);
+            followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestion.getId());
+        }
         Answer savedAnswer = answerRepository.save(answer);
 
         Feedback feedback = Feedback.create(savedAnswer, FeedbackStatus.PENDING);
