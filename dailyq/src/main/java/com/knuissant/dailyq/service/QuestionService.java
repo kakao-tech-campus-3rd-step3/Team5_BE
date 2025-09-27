@@ -1,7 +1,14 @@
 package com.knuissant.dailyq.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +22,9 @@ import com.knuissant.dailyq.domain.questions.QuestionType;
 import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.dto.questions.RandomQuestionResponse;
-import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserFlowProgressRepository;
@@ -34,7 +42,7 @@ public class QuestionService {
     @Transactional(readOnly = true)
     public RandomQuestionResponse getRandomQuestion(Long userId) {
         UserPreferences prefs = userPreferencesRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new InfraException(ErrorCode.USER_PREFERENCES_NOT_FOUND));
 
         validateDailyQuestionLimit(userId, prefs);
 
@@ -42,16 +50,13 @@ public class QuestionService {
         QuestionMode mode = prefs.getQuestionMode();
         Long jobId = Optional.ofNullable(prefs.getUserJob())
             .map(job -> job.getId())
-            .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
+            .orElseThrow(() -> new InfraException(ErrorCode.USER_JOB_NOT_SET));
 
         // Resolve phase when FLOW
-        FlowPhase phase = null;
-        if (mode == QuestionMode.FLOW) {
-            phase = resolvePhase(userId);
-        }
+        final FlowPhase phase = resolvePhase(userId, mode);
 
         Question q = selectRandomQuestion(mode, phase, jobId, userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE));
+            .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE, mode.name(), phase.name(), jobId));
 
         return new RandomQuestionResponse(
             q.getId(),
@@ -63,9 +68,13 @@ public class QuestionService {
         );
     }
 
-    private FlowPhase resolvePhase(Long userId) {
+    private FlowPhase resolvePhase(Long userId, QuestionMode mode) {
+        if (mode != QuestionMode.FLOW) {
+            return null;
+        }
+        
         UserFlowProgress progress = userFlowProgressRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new InfraException(ErrorCode.USER_FLOW_PROGRESS_NOT_FOUND));
         return progress.getNextPhase();
     }
 
@@ -77,12 +86,14 @@ public class QuestionService {
     }
 
     private void validateDailyQuestionLimit(Long userId, UserPreferences userPreferences) {
-        long answeredToday = answerRepository.countTodayByUserId(userId);
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
+        long answeredToday = answerRepository.countByUserIdAndCreatedAtBetween(userId, startOfDay, endOfDay);
         int remain = userPreferences.getDailyQuestionLimit() - (int) answeredToday;
         
         Optional.of(remain)
             .filter(r -> r > 0)
-            .orElseThrow(() -> new BusinessException(ErrorCode.DAILY_LIMIT_REACHED));
+            .orElseThrow(() -> new BusinessException(ErrorCode.DAILY_LIMIT_REACHED, remain));
     }
 
     private Optional<Question> findRandomTechQuestion(Long jobId, Long userId) {
@@ -92,21 +103,28 @@ public class QuestionService {
             return Optional.empty();
         }
         
-        int randomOffset = ThreadLocalRandom.current().nextInt((int) count);
-        return questionRepository.findRandomTechByJobIdWithOffset(jobId, userId, randomOffset);
+        // count가 int 범위를 넘으면 int 최대값(약 21억)으로 제한
+        int safeCount = count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
+        int randomOffset = ThreadLocalRandom.current().nextInt(safeCount);
+        Pageable pageable = PageRequest.of(randomOffset, 1);
+        List<Question> questions = questionRepository.findAvailableTechQuestionsByJobId(jobId, userId, pageable);
+        return questions.isEmpty() ? Optional.empty() : Optional.of(questions.get(0));
     }
 
     private Optional<Question> findRandomFlowQuestion(FlowPhase phase, Long userId) {
         QuestionType questionType = mapPhaseToType(phase);
-        String questionTypeStr = questionType.name();
         
-        long count = questionRepository.countAvailableQuestions(questionTypeStr, userId);
+        long count = questionRepository.countAvailableQuestions(questionType, userId);
         if (count == 0) {
             return Optional.empty();
         }
         
-        int randomOffset = ThreadLocalRandom.current().nextInt((int) count);
-        return questionRepository.findRandomByTypeWithOffset(questionTypeStr, userId, randomOffset);
+        // count가 int 범위를 넘으면 int 최대값(약 21억)으로 제한
+        int safeCount = count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
+        int randomOffset = ThreadLocalRandom.current().nextInt(safeCount);
+        Pageable pageable = PageRequest.of(randomOffset, 1);
+        List<Question> questions = questionRepository.findAvailableQuestionsByType(questionType, userId, pageable);
+        return questions.isEmpty() ? Optional.empty() : Optional.of(questions.get(0));
     }
 
     private QuestionType mapPhaseToType(FlowPhase phase) {

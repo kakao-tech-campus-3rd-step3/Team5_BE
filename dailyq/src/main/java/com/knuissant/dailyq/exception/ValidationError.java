@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ValidationError {
 
-  private final String field;
-  private final String value;
-  private final String reason;
+    private final String field;
+    private final String value;
+    private final String reason;
 }

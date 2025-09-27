@@ -44,8 +44,13 @@ USER dailyq
 EXPOSE 8080
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=15s --timeout=10s --start-period=120s --retries=10 \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the application with optimized JVM settings
+ENTRYPOINT ["java", \
+    "-Xms256m", "-Xmx512m", \
+    "-XX:+UseG1GC", \
+    "-XX:+UseStringDeduplication", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-jar", "app.jar"]

@@ -42,14 +42,32 @@ fi
 echo "🧹 기존 컨테이너/네트워크 정리..."
 $COMPOSE_CMD down --remove-orphans || true
 
-echo "🗑️  오래된 Docker 이미지 정리..."
+echo "🗑️  Docker 리소스 정리..."
+# 디스크 공간 확보를 위한 강화된 정리
+echo "📊 정리 전 디스크 사용량:"
+df -h / || true
+docker system df || true
+
 # 사용하지 않는 이미지 정리 (dangling images)
 docker image prune -f || true
-# 7일 이상 된 빌드 캐시 정리
-docker builder prune -f --filter until=168h || true
+# 모든 빌드 캐시 정리
+docker builder prune -a -f || true
+# 사용하지 않는 볼륨 정리
+docker volume prune -f || true
 
-echo "🏗️  빌드 및 기동..."
-if ! $COMPOSE_CMD up --build -d; then
+echo "📊 정리 후 디스크 사용량:"
+df -h / || true
+
+echo "🏗️  Jib으로 이미지 빌드..."
+cd dailyq
+if ! ./gradlew jibDockerBuild --no-daemon; then
+    echo "❌ Jib 빌드 실패"
+    exit 1
+fi
+cd ..
+
+echo "🚀 컨테이너 기동..."
+if ! $COMPOSE_CMD up -d; then
     echo "❌ Docker Compose 빌드/기동 실패"
     echo "📋 컨테이너 상태 확인:"
     $COMPOSE_CMD ps -a || true
@@ -81,28 +99,28 @@ if [ "$MYSQL_HEALTHY" = false ]; then
 fi
 echo "✅ MySQL 헬스체크 성공"
 
-echo "📝 스키마 상태 확인 및 초기화(비어있으면 import)"
-if ! $COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" -N -e \"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${DB_NAME}';\"" | grep -qE '^[1-9]'; then
-  echo "➡️  테이블이 없어 보입니다. schema.sql을 import 합니다."
-  $COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" ${DB_NAME} < /docker-entrypoint-initdb.d/schema.sql" || true
-fi
+echo "📝 스키마 및 Mock 데이터 강제 재적용"
+echo "➡️  최신 스키마를 적용합니다."
+$COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" ${DB_NAME} < /docker-entrypoint-initdb.d/01_schema.sql" || true
+echo "➡️  Mock 데이터를 적용합니다."
+$COMPOSE_CMD exec -T mysql sh -lc "mysql -uroot -p\"$DB_PASSWORD\" ${DB_NAME} < /docker-entrypoint-initdb.d/02_mock.sql" || true
 
 echo "🔍 애플리케이션 헬스체크..."
 APP_HEALTHY=false
-for i in {1..30}; do
+for i in {1..90}; do
   if $COMPOSE_CMD ps app | grep -q "(healthy)"; then
     APP_HEALTHY=true
     break
-  elif curl -f http://localhost:8080/actuator/health &>/dev/null; then
+  elif curl -f http://localhost:80/actuator/health &>/dev/null; then
     APP_HEALTHY=true
     break
   fi
-  echo "🔍 애플리케이션 헬스체크 대기 중... ($i/30)"
-  sleep 2
+  echo "🔍 애플리케이션 헬스체크 대기 중... ($i/90)"
+  sleep 3
 done
 
 if [ "$APP_HEALTHY" = false ]; then
-    echo "❌ 애플리케이션 헬스체크 실패"
+    echo "❌ 애플리케이션 헬스체크 실패 (4.5분 타임아웃)"
     echo "📋 컨테이너 상태:"
     $COMPOSE_CMD ps -a
     echo "📋 애플리케이션 로그:"
@@ -122,5 +140,6 @@ echo "🗑️  배포 후 정리..."
 docker image prune -f || true
 
 echo "✅ 배포 완료"
-echo "📱 http://localhost:8080"
-echo "📱 http://localhost:8080/swagger-ui.html"
+echo "📱 https://be.dailyq.my"
+echo "📱 https://be.dailyq.my/swagger-ui.html"
+echo "📱 Local: http://localhost:8080"

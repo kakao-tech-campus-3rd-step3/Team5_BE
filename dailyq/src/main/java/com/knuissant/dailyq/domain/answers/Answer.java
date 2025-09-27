@@ -28,8 +28,8 @@ import com.knuissant.dailyq.domain.users.User;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "answers", indexes = {
-        @Index(name = "idx_answers_user_time", columnList = "user_id, answered_time DESC"),
-        @Index(name = "idx_answers_q_time", columnList = "question_id, answered_time DESC")
+        @Index(name = "idx_answers_user_time", columnList = "user_id, created_at DESC"),
+        @Index(name = "idx_answers_q_time", columnList = "question_id, created_at DESC")
 })
 public class Answer {
 

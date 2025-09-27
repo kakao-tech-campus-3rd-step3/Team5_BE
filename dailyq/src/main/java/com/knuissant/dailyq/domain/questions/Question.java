@@ -48,10 +48,10 @@ public class Question {
     @Column(nullable = false)
     private Boolean enabled;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false, insertable = false)
     private LocalDateTime updatedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)

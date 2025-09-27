@@ -6,16 +6,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
-import com.knuissant.dailyq.dto.rivals.ReceivedRivalRequest;
+import com.knuissant.dailyq.dto.rivals.RivalListResponse;
+import com.knuissant.dailyq.dto.rivals.RivalProfileResponse;
 import com.knuissant.dailyq.dto.rivals.RivalResponse;
+import com.knuissant.dailyq.dto.rivals.RivalSearchResponse;
 import com.knuissant.dailyq.service.RivalService;
 
 @RestController
@@ -26,43 +28,64 @@ public class RivalController {
     private final RivalService rivalService;
 
     @PostMapping("/{targetUserId}")
-    public ResponseEntity<RivalResponse> sendRivalRequest(
+    public ResponseEntity<RivalResponse> followRival(
             @PathVariable Long targetUserId) {
 
         Long senderId = 1L; // 임시
 
-        RivalResponse rivalResponseDto = rivalService.sendRivalRequest(senderId, targetUserId);
+        RivalResponse rivalResponseDto = rivalService.followRival(senderId, targetUserId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(rivalResponseDto);
     }
 
-    @GetMapping("/requests/received")
-    public ResponseEntity<List<ReceivedRivalRequest>> getReceivedRequests() {
+    @DeleteMapping("/{targetUserId}")
+    public ResponseEntity<Void> unfollowRival(@PathVariable Long targetUserId) {
 
-        Long receiverId = 2L; // 임시
+        Long currentUserId = 1L; // 임시
 
-        List<ReceivedRivalRequest> responses = rivalService.getReceivedRequests(receiverId);
+        rivalService.unfollowRival(currentUserId, targetUserId);
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/requests/accept/{senderId}")
-    public ResponseEntity<RivalResponse> acceptRivalRequest(@PathVariable Long senderId) {
+    @GetMapping("/{userId}/profile")
+    public ResponseEntity<RivalProfileResponse> getProfile(@PathVariable Long userId) {
 
-        Long receiverId = 2L; // 임시
-
-        RivalResponse response = rivalService.acceptRivalRequest(senderId, receiverId);
+        RivalProfileResponse response = rivalService.getProfile(userId);
 
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/requests/reject/{senderId}")
-    public ResponseEntity<Void> rejectRivalRequest(@PathVariable Long senderId) {
+    @GetMapping("/search")
+    public ResponseEntity<RivalSearchResponse> searchRivalByEmail(@RequestParam String email) {
 
-        Long receiverId = 2L; //임시
+        RivalSearchResponse response = rivalService.searchRivalByEmail(email);
 
-        rivalService.rejectRivalRequest(senderId, receiverId);
+        return ResponseEntity.ok(response);
+    }
 
-        return ResponseEntity.noContent().build();
+    @GetMapping("/following")
+    public ResponseEntity<RivalListResponse.CursorResult> getFollowingRivalList(
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "20") int limit) {
+
+        Long userId = 1L; // 임시
+
+        RivalListResponse.CursorResult response = rivalService.getFollowingRivalList(userId, lastId,
+                limit);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/followed")
+    public ResponseEntity<RivalListResponse.CursorResult> getFollowedRivalList(
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "20") int limit) {
+        Long userId = 1L;// 임시
+
+        RivalListResponse.CursorResult response = rivalService.getFollowedRivalList(userId, lastId,
+                limit);
+
+        return ResponseEntity.ok(response);
     }
 }

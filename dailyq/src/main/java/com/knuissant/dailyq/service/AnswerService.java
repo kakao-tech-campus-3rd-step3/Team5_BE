@@ -1,9 +1,8 @@
 package com.knuissant.dailyq.service;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 import jakarta.persistence.criteria.Join;
@@ -12,6 +11,7 @@ import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -19,12 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
-import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
@@ -40,7 +36,6 @@ import com.knuissant.dailyq.dto.answers.AnswerListResponse.Summary;
 import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
-import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.FeedbackRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
@@ -54,7 +49,7 @@ public class AnswerService {
     private final FeedbackRepository feedbackRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
-    private final ObjectMapper objectMapper;
+    private final FeedbackService feedbackService;
 
     //API 스펙과 무관하며(오로지,내부사용) 재사용 가능성이 없다고 생각하여 따로 DTO를 만들지 않았습니다.
     private record CursorRequest(LocalDateTime createdAt, Long id) {
@@ -63,9 +58,11 @@ public class AnswerService {
 
     @Transactional(readOnly = true)
     public CursorResult<Summary> getArchives(Long userId, AnswerSearchConditionRequest condition,
-            String cursor, int limit) {
-        //커서 파싱
-        CursorRequest cursorRequest = parseCursor(cursor);
+            Long lastId, LocalDateTime lastCreatedAt, int limit) {
+
+        CursorRequest cursorRequest = (lastId != null && lastCreatedAt != null)
+                ? new CursorRequest(lastCreatedAt, lastId)
+                : null;
 
         String actualSortOrder = (condition.sortOrder() != null) ? condition.sortOrder() : "DESC";
         boolean isDesc = !"ASC".equalsIgnoreCase(actualSortOrder);
@@ -78,8 +75,9 @@ public class AnswerService {
 
         Specification<Answer> spec = createSpecification(userId, condition, cursorRequest, isDesc);
 
-        List<Answer> answers = answerRepository.findAll(spec, pageable).getContent();
-        return convertToCursorResult(answers, limit);
+        Slice<Answer> slice = answerRepository.findAll(spec, pageable);
+
+        return convertToCursorResult(slice.getContent(), limit);
     }
 
     @Transactional
@@ -130,8 +128,7 @@ public class AnswerService {
         Answer answer = Answer.create(user, question, request.answerText());
         Answer savedAnswer = answerRepository.save(answer);
 
-        Feedback feedback = Feedback.create(savedAnswer, FeedbackStatus.PENDING);
-        Feedback savedFeedback = feedbackRepository.save(feedback);
+        Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
 
         return AnswerCreateResponse.from(savedAnswer, savedFeedback);
     }
@@ -153,6 +150,12 @@ public class AnswerService {
             AnswerSearchConditionRequest condition, AnswerService.CursorRequest cursorRequest,
             boolean isDesc) {
         return (root, query, cb) -> {
+
+            assert query != null;
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                root.fetch("question", JoinType.LEFT);
+            }
+
             List<Predicate> predicates = new ArrayList<>();
 
             predicates.add(cb.equal(root.get("user").get("id"), userId));
@@ -173,7 +176,10 @@ public class AnswerService {
             Join<Answer, Question> questionJoin = null;
 
             if (condition.date() != null) {
-                predicates.add(cb.equal(root.get("answeredDate"), condition.date()));
+                LocalDateTime startOfDay = condition.date().atStartOfDay();
+                LocalDateTime endOfDay = condition.date().atTime(LocalTime.MAX);
+
+                predicates.add(cb.between(root.get("createdAt"), startOfDay, endOfDay));
             }
             if (condition.jobId() != null) {
                 if (questionJoin == null) {
@@ -208,31 +214,15 @@ public class AnswerService {
                 .map(Summary::from)
                 .toList();
 
-        String nextCursor = hasNext ? createCursor(content.get(content.size() - 1)) : null;
+        Long nextId = null;
+        LocalDateTime nextCreatedAt = null;
 
-        return new CursorResult<>(summaries, nextCursor, hasNext);
-    }
+        if (hasNext) {
+            Answer lastAnswer = content.get(content.size() - 1);
+            nextId = lastAnswer.getId();
+            nextCreatedAt = lastAnswer.getCreatedAt();
+        }
 
-    // 커서 생성/파싱 로직
-    private String createCursor(Answer answer) {
-        try {
-            CursorRequest cursorData = new CursorRequest(answer.getCreatedAt(), answer.getId());
-            String json = objectMapper.writeValueAsString(cursorData);
-            return Base64.getEncoder().encodeToString(json.getBytes());
-        } catch (JsonProcessingException e) {
-            throw new InfraException(ErrorCode.CURSOR_GENERATION_FAILED);
-        }
-    }
-
-    private CursorRequest parseCursor(String cursorStr) {
-        if (cursorStr == null || cursorStr.isBlank()) {
-            return null;
-        }
-        try {
-            byte[] decodedBytes = Base64.getDecoder().decode(cursorStr);
-            return objectMapper.readValue(new String(decodedBytes), CursorRequest.class);
-        } catch (IOException | IllegalArgumentException e) {
-            throw new BusinessException(ErrorCode.INVALID_CURSOR);
-        }
+        return new CursorResult<>(summaries, nextId, nextCreatedAt, hasNext);
     }
 }

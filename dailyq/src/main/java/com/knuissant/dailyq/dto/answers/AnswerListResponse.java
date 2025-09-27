@@ -36,9 +36,8 @@ public record AnswerListResponse(List<Summary> summaries) {
 
     public record CursorResult<T>(
             List<T> items,
-
-            String nextCursor,
-
+            Long nextId,
+            LocalDateTime nextCreatedAt,
             boolean hasNext
     ) {
 
