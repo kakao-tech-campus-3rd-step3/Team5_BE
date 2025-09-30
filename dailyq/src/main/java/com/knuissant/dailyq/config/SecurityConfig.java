@@ -33,10 +33,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // HTTP 요청에 대한 접근 권한 설정
                 .authorizeHttpRequests(authorize -> authorize
-                        // 테스트를 위해 만든 /login, /home, 그리고 루트(/) 경로는 모두가 접근할 수 있도록 허용합니다.
-                        .requestMatchers("/","login", "/home").permitAll()
                         // 소셜 로그인을 시작하는 URL과 토큰 재발급 API도 당연히 허용해야 합니다.
-                        .requestMatchers("/oauth2/authorization/**", "/api/v1/token/refresh").permitAll()
+                        .requestMatchers("/oauth2/authorization/**", "/api/token/refresh",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/api-docs/**",
+                                "/login/oauth2/**").permitAll()
                         // 그 외 모든 요청은 인증이 필요합니다.
                         .anyRequest().authenticated()
                 )

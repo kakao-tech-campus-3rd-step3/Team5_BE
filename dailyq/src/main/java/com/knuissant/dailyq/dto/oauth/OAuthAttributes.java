@@ -26,10 +26,10 @@ public class OAuthAttributes {
      * 각 소셜 타입에 맞는 정적 팩토리 메소드를 호출하는 진입점 역할을 합니다.
      */
     public static OAuthAttributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) {
-        if ("kakao".equals(registrationId)) {
-            return ofKakao("id", attributes);
-        }
-        return ofGoogle(userNameAttributeName, attributes);
+        return switch (registrationId) {
+            case "kakao" -> ofKakao("id", attributes);
+            default -> ofGoogle(userNameAttributeName, attributes);
+        };
     }
 
     /**
