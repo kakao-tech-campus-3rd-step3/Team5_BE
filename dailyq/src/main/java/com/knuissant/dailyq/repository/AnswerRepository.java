@@ -21,11 +21,16 @@ public interface AnswerRepository extends JpaRepository<Answer, Long>,
 
     long countByUserId(Long userId);
 
-    @Query("SELECT new com.knuissant.dailyq.dto.rivals.RivalProfileResponse.DailySolveCount(CAST(a.createdAt AS LocalDate), COUNT(a)) " +
-            "FROM Answer a " +
-            "WHERE a.user.id = :userId AND a.createdAt >= :startDate " +
-            "GROUP BY CAST(a.createdAt AS LocalDate)")
-    List<RivalProfileResponse.DailySolveCount> findDailySolveCountsByUserId(@Param("userId") Long userId,
+    @Query(value = """
+            SELECT DATE(a.created_at) as date, COUNT(*) as count 
+            FROM answers a 
+            WHERE a.user_id = :userId 
+              AND a.created_at >= :startDate 
+            GROUP BY DATE(a.created_at)
+            ORDER BY date DESC
+            """, nativeQuery = true)
+    List<Object[]> findDailySolveCountsByUserId(
+            @Param("userId") Long userId,
             @Param("startDate") LocalDateTime startDate);
 }
 
