@@ -23,8 +23,9 @@ public class JobService {
     private final OccupationRepository occupationRepository;
 
     public List<JobResponse> findJobsByOccupation(Long occupationId) {
-        occupationRepository.findById(occupationId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND));
+        if (!occupationRepository.existsById(occupationId)) {
+            throw new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND);
+        }
 
         return jobRepository.findByOccupationId(occupationId).stream()
                 .map(JobResponse::from)
