@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import com.knuissant.dailyq.exception.ErrorCode;
  */
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/api")
 public class TokenApiController {
 
     private final TokenService tokenService;
@@ -30,7 +32,7 @@ public class TokenApiController {
      * @param refreshToken 쿠키에서 가져온 리프레시 토큰
      * @return 성공 시 새로운 액세스 토큰을 포함한 응답
      */
-    @PostMapping("/api/v1/token/refresh")
+    @PostMapping("/token/refresh")
     public ResponseEntity<Map<String, String>> refreshAccessToken(
             @CookieValue(name = "refresh_token", required = false) String refreshToken) {
 
