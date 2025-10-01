@@ -6,6 +6,8 @@ import lombok.Getter;
 
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserRole;
+import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.ErrorCode;
 
 @Getter
 public class OAuthAttributes {
@@ -27,8 +29,9 @@ public class OAuthAttributes {
      */
     public static OAuthAttributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) {
         return switch (registrationId) {
+            case "google" -> ofGoogle(userNameAttributeName, attributes);
             case "kakao" -> ofKakao("id", attributes);
-            default -> ofGoogle(userNameAttributeName, attributes);
+            default -> throw new BusinessException(ErrorCode.INVALID_SOCIAL_LOGIN, "지원하지 않는 소셜 로그인입니다: " + registrationId);
         };
     }
 
