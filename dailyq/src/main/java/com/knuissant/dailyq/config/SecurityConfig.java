@@ -35,7 +35,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // 소셜 로그인을 시작하는 URL과 토큰 재발급 API도 당연히 허용해야 합니다.
                         .requestMatchers("/oauth2/authorization/**", "/api/token/refresh",
-                                "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/login/oauth2/**").permitAll()

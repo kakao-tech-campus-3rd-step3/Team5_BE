@@ -73,9 +73,9 @@ springdoc:
     use-root-path: true
 
 jwt:
-  secret: ${jwt.secret}
-  access-token-expiration-millis: ${jwt.access-token-expiration-millis}   # 1시간
-  refresh-token-expiration-millis: ${jwt.refresh-token-expiration-millis} # 7일
+  secret: ${JWT.SECRET}
+  access-token-expiration-millis: ${JWT.ACCESS-TOKEN-EXPIRATION-MILLIS}   # 1시간
+  refresh-token-expiration-millis: ${JWT.REFRESH-TOKEN-EXPIRATION-MILLIS} # 7일
 
 # OpenAPI 서버 설정
 openapi:
