@@ -132,7 +132,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     // 액세스 토큰을 포함한 리다이렉트 URL 생성
     private String getTargetUrl(String accessToken) {
-        return UriComponentsBuilder.fromUriString("https://dailyq.my/home")
+        return UriComponentsBuilder.fromUriString("https://dailyq.my")
                 .queryParam("token", accessToken)
                 .build()
                 .toUriString();
