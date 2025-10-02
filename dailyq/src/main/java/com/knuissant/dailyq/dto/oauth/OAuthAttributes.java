@@ -48,8 +48,15 @@ public class OAuthAttributes {
      * Kakao 사용자 정보를 받아 OAuthAttributes 객체를 생성하는 정적 팩토리 메소드입니다.
      */
     private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
-        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        Map<String, Object> kakaoProfile = (Map<String, Object>) kakaoAccount.get("profile");
+        Object kakaoAccountObj = attributes.get("kakao_account");
+        if (!(kakaoAccountObj instanceof Map<?, ?> kakaoAccount)) {
+            throw new BusinessException(ErrorCode.INVALID_SOCIAL_LOGIN, "Invalid kakao account structure");
+        }
+        
+        Object kakaoProfileObj = kakaoAccount.get("profile");
+        if (!(kakaoProfileObj instanceof Map<?, ?> kakaoProfile)) {
+            throw new BusinessException(ErrorCode.INVALID_SOCIAL_LOGIN, "Invalid kakao profile structure");
+        }
 
         return new OAuthAttributes(attributes, userNameAttributeName,
                 (String) kakaoProfile.get("nickname"),
