@@ -74,8 +74,8 @@ springdoc:
 
 jwt:
   secret: ${JWT.SECRET}
-  access-token-expiration-millis: ${JWT.ACCESS-TOKEN-EXPIRATION-MILLIS}   # 1시간
-  refresh-token-expiration-millis: ${JWT.REFRESH-TOKEN-EXPIRATION-MILLIS} # 7일
+  access-token-expiration-millis: ${JWT.ACCESS_TOKEN_EXPIRATION_MILLIS}   # 1시간
+  refresh-token-expiration-millis: ${JWT.REFRESH_TOKEN_EXPIRATION_MILLIS} # 7일
 
 # OpenAPI 서버 설정
 openapi:
