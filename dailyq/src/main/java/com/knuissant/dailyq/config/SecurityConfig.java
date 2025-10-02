@@ -3,6 +3,7 @@ package com.knuissant.dailyq.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,6 +28,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // CORS 설정을 Spring Security 체인에 연결
+                .cors(Customizer.withDefaults())
                 // CSRF 보호 기능 비활성화 (JWT 사용 시 불필요)
                 .csrf(csrf -> csrf.disable())
                 // 세션을 사용하지 않고, STATELESS 상태로 관리
