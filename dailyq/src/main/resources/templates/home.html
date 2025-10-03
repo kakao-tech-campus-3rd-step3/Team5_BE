@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f8f9fa; margin: 0; }
+        .welcome-container { text-align: center; background-color: #fff; padding: 50px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        p { color: #555; font-size: 18px; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="welcome-container">
+    <h1>로그인 성공</h1>
+    <!-- 서버에서 전달받은 사용자 이름 표시 -->
+    <p><span th:text="${userName}">사용자</span>님, 환영합니다!</p>
+    <br>
+    <!-- 로그아웃 링크 -->
+    <a href="/logout">로그아웃</a>
+</div>
+</body>
+</html>

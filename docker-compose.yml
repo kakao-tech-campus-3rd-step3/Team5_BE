@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
@@ -26,15 +24,24 @@ services:
       - ./dailyq/src/main/resources/static/02_mock.sql:/docker-entrypoint-initdb.d/02_mock.sql:ro
     networks:
       - dailyq-network
+    # MySQL 리소스 제한
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
-      start_period: 60s
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 90s
 
   app:
-    build: ./dailyq
+    image: dailyq-app:latest
     container_name: dailyq-app
     restart: unless-stopped
     ports:
@@ -52,7 +59,21 @@ services:
         condition: service_healthy
     networks:
       - dailyq-network
-    # 앱 헬스체크는 생략합니다 (Actuator 미사용)
+    # CPU/메모리 리소스 제한으로 시스템 안정성 확보
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '0.75'
+          memory: 768M
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 15s
+      retries: 6
+      start_period: 150s
 
 volumes:
   mysql_data:
