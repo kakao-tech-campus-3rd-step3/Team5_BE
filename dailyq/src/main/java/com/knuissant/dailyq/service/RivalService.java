@@ -1,5 +1,6 @@
 package com.knuissant.dailyq.service;
 
+import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -69,8 +70,15 @@ public class RivalService {
         long totalAnswerCount = answerRepository.countByUserId(userId);
 
         LocalDateTime forOneYear = LocalDateTime.now().minusYears(1);
-        List<DailySolveCount> dailySolveCounts = answerRepository.findDailySolveCountsByUserId(
+        List<Object[]> rawResults = answerRepository.findDailySolveCountsByUserId(
                 userId, forOneYear);
+
+        List<DailySolveCount> dailySolveCounts = rawResults.stream()
+                .map(row -> new DailySolveCount(
+                        ((Date) row[0]).toLocalDate(),
+                        ((Number) row[1]).longValue()
+                ))
+                .toList();
 
         return RivalProfileResponse.from(user, totalAnswerCount, dailySolveCounts);
     }

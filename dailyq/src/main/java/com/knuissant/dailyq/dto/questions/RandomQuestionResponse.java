@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.QuestionType;
+
 public record RandomQuestionResponse(
     @NotNull Long questionId,
     @NotNull QuestionType questionType,

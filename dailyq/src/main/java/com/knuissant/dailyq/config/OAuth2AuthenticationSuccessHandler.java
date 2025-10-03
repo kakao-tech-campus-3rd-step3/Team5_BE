@@ -8,6 +8,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.domain.users.User;
@@ -28,14 +28,25 @@ import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.exception.ErrorCode;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final TokenProvider tokenProvider;
     private final UserRepository userRepository;
     private final OAuth2AuthenticationFailureHandler failureHandler;
+    private final long refreshTokenExpirationMillis; // 설정 파일에서 주입받을 필드 추가
 
+    // @RequiredArgsConstructor 대신 명시적 생성자로 변경하여 @Value 주입
+    public OAuth2AuthenticationSuccessHandler(
+            TokenProvider tokenProvider,
+            UserRepository userRepository,
+            OAuth2AuthenticationFailureHandler failureHandler,
+            @Value("${jwt.refresh-token-expiration-millis}") long refreshTokenExpirationMillis) {
+        this.tokenProvider = tokenProvider;
+        this.userRepository = userRepository;
+        this.failureHandler = failureHandler;
+        this.refreshTokenExpirationMillis = refreshTokenExpirationMillis;
+    }
     /**
      * OAuth2 인증 성공 시 호출되는 핸들러 메서드
      * 1. OAuth2User로부터 이메일 정보를 추출
@@ -96,9 +107,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // 카카오 계정의 경우 다른 구조로 이메일 정보가 제공됨
         if (email == null) {
-            Map<String, Object> kakaoAccount = (Map<String, Object>) oAuth2User.getAttribute("kakao_account");
-            if (kakaoAccount != null && kakaoAccount.containsKey("email")) {
-                email = (String) kakaoAccount.get("email");
+            Object kakaoAccountObj = oAuth2User.getAttribute("kakao_account");
+            if (kakaoAccountObj instanceof Map<?, ?> kakaoAccount) {
+                Object emailObj = kakaoAccount.get("email");
+                if (emailObj instanceof String) {
+                    email = (String) emailObj;
+                }
             }
         }
 
@@ -114,13 +128,14 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         refreshTokenCookie.setHttpOnly(true);  // XSS 공격 방지
         refreshTokenCookie.setSecure(true);    // HTTPS에서만 전송
         refreshTokenCookie.setPath("/");       // 모든 경로에서 접근 가능
-        refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);  // 7일 유효
+        // 주입받은 만료 시간(밀리초)을 초 단위로 변환하여 설정
+        refreshTokenCookie.setMaxAge((int) (refreshTokenExpirationMillis / 1000));
         response.addCookie(refreshTokenCookie);
     }
 
     // 액세스 토큰을 포함한 리다이렉트 URL 생성
     private String getTargetUrl(String accessToken) {
-        return UriComponentsBuilder.fromUriString("/home")
+        return UriComponentsBuilder.fromUriString("https://dailyq.my")
                 .queryParam("token", accessToken)
                 .build()
                 .toUriString();
