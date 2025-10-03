@@ -41,7 +41,9 @@ CREATE TABLE user_preferences (
                               allow_push TINYINT(1) NOT NULL DEFAULT 0,
                               user_job BIGINT NOT NULL,
                               CONSTRAINT fk_user_prefs_user
-                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                              CONSTRAINT fk_user_prefs_job
+                                  FOREIGN KEY (user_job) REFERENCES jobs(job_id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
