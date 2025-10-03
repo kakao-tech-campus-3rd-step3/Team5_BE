@@ -1,8 +1,9 @@
 package com.knuissant.dailyq.controller;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,8 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @GetMapping("/random")
-    public RandomQuestionResponse getRandomQuestion(@RequestParam("user_id") Long userId) {
+    public RandomQuestionResponse getRandomQuestion(@AuthenticationPrincipal User principal) {
+        Long userId = Long.parseLong(principal.getUsername());
         return questionService.getRandomQuestion(userId);
     }
 }
