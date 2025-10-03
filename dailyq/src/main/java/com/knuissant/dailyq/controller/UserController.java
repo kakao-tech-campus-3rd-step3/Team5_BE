@@ -20,9 +20,9 @@ import com.knuissant.dailyq.dto.users.UserUpdateRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.exception.InfraException;
+import com.knuissant.dailyq.jwt.JwtUtils;
 import com.knuissant.dailyq.service.UserPreferencesService;
 import com.knuissant.dailyq.service.UserService;
-import com.knuissant.dailyq.util.JwtUtils;
 
 @RestController
 @RequestMapping("/api/user")

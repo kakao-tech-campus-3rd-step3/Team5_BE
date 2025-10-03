@@ -1,4 +1,4 @@
-package com.knuissant.dailyq.util;
+package com.knuissant.dailyq.jwt;
 
 import org.springframework.stereotype.Component;
 
@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
-import com.knuissant.dailyq.jwt.TokenProvider;
 
 import lombok.RequiredArgsConstructor;
 
