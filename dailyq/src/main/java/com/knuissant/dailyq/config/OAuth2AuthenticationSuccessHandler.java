@@ -107,9 +107,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // 카카오 계정의 경우 다른 구조로 이메일 정보가 제공됨
         if (email == null) {
-            Map<String, Object> kakaoAccount = (Map<String, Object>) oAuth2User.getAttribute("kakao_account");
-            if (kakaoAccount != null && kakaoAccount.containsKey("email")) {
-                email = (String) kakaoAccount.get("email");
+            Object kakaoAccountObj = oAuth2User.getAttribute("kakao_account");
+            if (kakaoAccountObj instanceof Map<?, ?> kakaoAccount) {
+                Object emailObj = kakaoAccount.get("email");
+                if (emailObj instanceof String) {
+                    email = (String) emailObj;
+                }
             }
         }
 
@@ -132,7 +135,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     // 액세스 토큰을 포함한 리다이렉트 URL 생성
     private String getTargetUrl(String accessToken) {
-        return UriComponentsBuilder.fromUriString("/home")
+        return UriComponentsBuilder.fromUriString("https://dailyq.my")
                 .queryParam("token", accessToken)
                 .build()
                 .toUriString();

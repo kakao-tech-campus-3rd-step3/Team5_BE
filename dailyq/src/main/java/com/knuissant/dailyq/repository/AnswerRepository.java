@@ -9,8 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.knuissant.dailyq.domain.answers.Answer;
-import com.knuissant.dailyq.dto.rivals.RivalProfileResponse;
-import com.knuissant.dailyq.dto.rivals.RivalProfileResponse.DailySolveCount;
 
 public interface AnswerRepository extends JpaRepository<Answer, Long>,
         JpaSpecificationExecutor<Answer> {
