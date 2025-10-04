@@ -1,6 +1,5 @@
 package com.knuissant.dailyq.service;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -8,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -49,15 +49,12 @@ public class RivalService {
         User sender = findUserByIdOrThrow(senderId);
         User receiver = findUserByIdOrThrow(receiverId);
 
-        if (rivalRepository.existsBySenderIdAndReceiverId(senderId, receiverId)) {
-
-            throw new BusinessException(ErrorCode.ALREADY_FOLLOWING_RIVAL, senderId,
-                    receiverId);
+        try {
+            Rival rivalShip = rivalRepository.save(Rival.create(sender, receiver));
+            return RivalResponse.from(rivalShip);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.ALREADY_FOLLOWING_RIVAL, senderId, receiverId);
         }
-
-        Rival rivalShip = rivalRepository.save(Rival.create(sender, receiver));
-
-        return RivalResponse.from(rivalShip);
     }
 
     public void unfollowRival(Long senderId, Long receiverId) {
