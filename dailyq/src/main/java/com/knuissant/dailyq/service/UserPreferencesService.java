@@ -49,7 +49,6 @@ public class UserPreferencesService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND, "기본 직업 정보를 찾을 수 없습니다."));
         
         UserPreferences defaultPreferences = UserPreferences.builder()
-                .userId(userId)
                 .user(user)
                 .dailyQuestionLimit(1)
                 .questionMode(QuestionMode.TECH)
@@ -100,5 +99,10 @@ public class UserPreferencesService {
     public UserPreferences findUserPreferencesByUserId(Long userId) {
         return userPreferencesRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_PREFERENCES_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByUserId(Long userId) {
+        return userPreferencesRepository.existsById(userId);
     }
 }
