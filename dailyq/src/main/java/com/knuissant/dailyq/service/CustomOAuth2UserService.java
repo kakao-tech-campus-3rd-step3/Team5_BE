@@ -1,6 +1,7 @@
 package com.knuissant.dailyq.service;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -77,9 +78,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         }
         
         // 이메일을 통해 데이터베이스에서 사용자를 찾음.
-        boolean isNewUser = userRepository.findByEmail(attributes.getEmail()).isEmpty();
+        Optional<User> existingUser = userRepository.findByEmail(attributes.getEmail());
         
-        User user = userRepository.findByEmail(attributes.getEmail())
+        User user = existingUser
                 // 만약 사용자가 이미 존재한다면, 이름(닉네임) 정보만 업데이트.
                 .map(entity -> {
                     entity.updateName(attributes.getName());
@@ -87,6 +88,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 })
                 // 사용자가 존재하지 않는다면, OAuthAttributes의 toEntity() 메소드를 통해 새로운 사용자 엔티티를 생성.
                 .orElse(attributes.toEntity());
+        
+        boolean isNewUser = existingUser.isEmpty();
 
         // 사용자 엔티티를 데이터베이스에 저장. (신규 사용자는 insert, 기존 사용자는 update)
         User savedUser = userRepository.save(user);
