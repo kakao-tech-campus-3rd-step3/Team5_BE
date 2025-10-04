@@ -14,7 +14,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -66,9 +65,6 @@ public class UserPreferences {
     @JoinColumn(name = "user_job", nullable = false)
     private Job userJob;
 
-    @Version
-    @Column(name = "version")
-    private Long version;
 
     public void updatePreferences(Integer dailyQuestionLimit, QuestionMode questionMode, UserResponseType answerType, Integer timeLimitSeconds, Boolean allowPush) {
         this.dailyQuestionLimit = dailyQuestionLimit;

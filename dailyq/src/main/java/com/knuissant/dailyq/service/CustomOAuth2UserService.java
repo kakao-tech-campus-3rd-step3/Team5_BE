@@ -97,8 +97,13 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         // 신규 사용자인 경우 기본 UserPreferences 생성
         if (isNewUser) {
             try {
-                userPreferencesService.createDefaultUserPreferences(savedUser.getId());
-                log.info("기본 UserPreferences 생성 완료 - userId: {}", savedUser.getId());
+                // 이미 UserPreferences가 존재하는지 다시 한번 확인
+                if (!userPreferencesService.existsByUserId(savedUser.getId())) {
+                    userPreferencesService.createDefaultUserPreferences(savedUser.getId());
+                    log.info("기본 UserPreferences 생성 완료 - userId: {}", savedUser.getId());
+                } else {
+                    log.info("UserPreferences가 이미 존재함 - userId: {}", savedUser.getId());
+                }
             } catch (Exception e) {
                 // UserPreferences 생성 실패는 로그인을 막지 않도록 로그만 남김
                 log.warn("기본 UserPreferences 생성 실패 - userId: {}, error: {}", savedUser.getId(), e.getMessage(), e);

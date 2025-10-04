@@ -59,7 +59,6 @@ CREATE TABLE user_preferences (
                              notify_time TIME NULL,
                              allow_push TINYINT(1) NOT NULL DEFAULT 0,
                              user_job BIGINT NOT NULL,
-                             version BIGINT NOT NULL DEFAULT 0,
                              CONSTRAINT fk_user_prefs_user
                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
                              CONSTRAINT fk_user_prefs_job
