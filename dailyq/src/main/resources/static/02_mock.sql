@@ -4,12 +4,11 @@
 
 /* USERS */
 INSERT INTO users (user_id, email, name, role, streak, solved_today)
-VALUES (1, 'alice@example.com', 'Alice', 'FREE', 3, 0),
+VALUES (1, 'admin@dailyq.dev', 'FrontEnd', 'ADMIN', 0, 0),
        (2, 'bob@example.com', 'Bob', 'PAID', 10, 1),
        (3, 'carol@example.com', 'Carol', 'FREE', 1, 0),
        (4, 'dave@example.com', 'Dave', 'PAID', 7, 1),
        (5, 'erin@example.com', 'Erin', 'ADMIN', 0, 0);
-
 -- 
 
 /* OCCUPATIONS */

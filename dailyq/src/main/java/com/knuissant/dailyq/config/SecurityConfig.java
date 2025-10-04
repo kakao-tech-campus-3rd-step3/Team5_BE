@@ -52,7 +52,8 @@ public class SecurityConfig {
                         .requestMatchers("/oauth2/authorization/**", "/api/token/refresh",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
-                                "/login/oauth2/**").permitAll()
+                                "/login/oauth2/**",
+                                "/api/dev/**").permitAll()
                         // 그 외 모든 요청은 인증이 필요합니다.
                         .anyRequest().authenticated()
                 )
