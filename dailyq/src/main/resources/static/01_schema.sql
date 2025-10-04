@@ -28,39 +28,41 @@ CREATE TABLE users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
-   USER PREFERENCES
-   - 사용자 대표 직군 1개 선택 (FK: jobs)
-   ========================= */
-CREATE TABLE user_preferences (
-                              user_id BIGINT PRIMARY KEY,
-                              daily_question_limit INT NOT NULL DEFAULT 1,
-                              question_mode ENUM('TECH','FLOW') NOT NULL DEFAULT 'TECH',
-                              user_response_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
-                              time_limit_seconds INT DEFAULT 180,
-                              notify_time TIME NULL,
-                              allow_push TINYINT(1) NOT NULL DEFAULT 0,
-                              user_job BIGINT NOT NULL,
-                              CONSTRAINT fk_user_prefs_user
-                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-/* =========================
    OCCUPATIONS (상위 카테고리)
    ========================= */
 CREATE TABLE occupations (
-                             occupation_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                             occupation_name VARCHAR(100) NOT NULL UNIQUE
+                            occupation_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                            occupation_name VARCHAR(100) NOT NULL UNIQUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
    JOBS (세부 직군)
    ========================= */
 CREATE TABLE jobs (
-                      job_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                      job_name VARCHAR(100) NOT NULL UNIQUE,
-                      occupation_id BIGINT NOT NULL,
-                      CONSTRAINT fk_jobs_parent
-                          FOREIGN KEY (occupation_id) REFERENCES occupations(occupation_id) ON DELETE RESTRICT
+                     job_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                     job_name VARCHAR(100) NOT NULL UNIQUE,
+                     occupation_id BIGINT NOT NULL,
+                     CONSTRAINT fk_jobs_parent
+                         FOREIGN KEY (occupation_id) REFERENCES occupations(occupation_id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/* =========================
+   USER PREFERENCES
+   - 사용자 대표 직군 1개 선택 (FK: jobs)
+   ========================= */
+CREATE TABLE user_preferences (
+                             user_id BIGINT PRIMARY KEY,
+                             daily_question_limit INT NOT NULL DEFAULT 1,
+                             question_mode ENUM('TECH','FLOW') NOT NULL DEFAULT 'TECH',
+                             user_response_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
+                             time_limit_seconds INT DEFAULT 180,
+                             notify_time TIME NULL,
+                             allow_push TINYINT(1) NOT NULL DEFAULT 0,
+                             user_job BIGINT NOT NULL,
+                             CONSTRAINT fk_user_prefs_user
+                                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                             CONSTRAINT fk_user_prefs_job
+                                 FOREIGN KEY (user_job) REFERENCES jobs(job_id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
