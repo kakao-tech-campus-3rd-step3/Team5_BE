@@ -75,7 +75,7 @@ public class UserPreferencesService {
                 createDefaultUserPreferences(userId);
                 preferences = findUserPreferencesByUserId(userId);
             } else {
-                throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "사용자 설정 조회 중 오류가 발생했습니다.");
+                throw e;
             }
         }
         
