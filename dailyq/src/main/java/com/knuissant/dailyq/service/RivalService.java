@@ -89,7 +89,7 @@ public class RivalService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        return RivalSearchResponse.from(user);
+        return RivalSearchResponse.from(user.getId(), user.getName(), user.getEmail());
     }
 
     @Transactional(readOnly = true)
@@ -133,7 +133,7 @@ public class RivalService {
                 .map(rival -> {
                     // boolean 플래그 값에 따라 sender를 가져올지 receiver를 가져올지 결정
                     User userToShow = isFollowingList ? rival.getReceiver() : rival.getSender();
-                    return RivalListResponse.from(userToShow);
+                    return RivalListResponse.from(userToShow.getId(),userToShow.getName(),userToShow.getEmail());
                 })
                 .toList();
 
