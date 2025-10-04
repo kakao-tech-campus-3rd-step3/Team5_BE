@@ -16,14 +16,8 @@ import org.springframework.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.knuissant.dailyq.domain.jobs.Job;
-import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.users.User;
-import com.knuissant.dailyq.domain.users.UserPreferences;
-import com.knuissant.dailyq.domain.users.UserResponseType;
 import com.knuissant.dailyq.dto.oauth.OAuthAttributes;
-import com.knuissant.dailyq.repository.JobRepository;
-import com.knuissant.dailyq.repository.UserPreferencesRepository;
 import com.knuissant.dailyq.repository.UserRepository;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
@@ -37,8 +31,7 @@ import com.knuissant.dailyq.exception.ErrorCode;
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final UserRepository userRepository;
-    private final UserPreferencesRepository userPreferencesRepository;
-    private final JobRepository jobRepository;
+    private final UserPreferencesService userPreferencesService;
 
     /**
      * 리소스 서버(구글, 카카오)에서 사용자 정보를 가져온 뒤 호출되는 메소드입니다.
@@ -100,44 +93,16 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         
         // 신규 사용자인 경우 기본 UserPreferences 생성
         if (isNewUser) {
-            createDefaultUserPreferences(savedUser);
+            try {
+                userPreferencesService.createDefaultUserPreferences(savedUser.getId());
+                log.info("기본 UserPreferences 생성 완료 - userId: {}", savedUser.getId());
+            } catch (Exception e) {
+                // UserPreferences 생성 실패는 로그인을 막지 않도록 로그만 남김
+                log.warn("기본 UserPreferences 생성 실패 - userId: {}, error: {}", savedUser.getId(), e.getMessage(), e);
+            }
         }
         
         return savedUser;
     }
     
-    /**
-     * 신규 사용자에게 기본 UserPreferences를 생성합니다.
-     * @param user 신규 생성된 사용자
-     */
-    private void createDefaultUserPreferences(User user) {
-        try {
-            // 이미 UserPreferences가 존재하는지 확인
-            if (userPreferencesRepository.existsById(user.getId())) {
-                log.info("UserPreferences가 이미 존재합니다 - userId: {}", user.getId());
-                return;
-            }
-            
-            // 기본 직업을 "백엔드 개발자" (jobId=1)로 설정
-            Job defaultJob = jobRepository.findById(1L)
-                    .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND, "기본 직업 정보를 찾을 수 없습니다."));
-            
-            UserPreferences defaultPreferences = UserPreferences.builder()
-                    .userId(user.getId())
-                    .user(user)
-                    .dailyQuestionLimit(1)
-                    .questionMode(QuestionMode.TECH)
-                    .userResponseType(UserResponseType.TEXT)
-                    .timeLimitSeconds(180)
-                    .allowPush(false)
-                    .userJob(defaultJob)
-                    .build();
-            
-            userPreferencesRepository.save(defaultPreferences);
-            log.info("기본 UserPreferences 생성 완료 - userId: {}", user.getId());
-        } catch (Exception e) {
-            // UserPreferences 생성 실패는 로그인을 막지 않도록 로그만 남김
-            log.warn("기본 UserPreferences 생성 실패 - userId: {}, error: {}", user.getId(), e.getMessage(), e);
-        }
-    }
 }
