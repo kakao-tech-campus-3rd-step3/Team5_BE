@@ -68,13 +68,9 @@ public class UserPreferencesService {
         try {
             preferences = findUserPreferencesByUserId(userId);
         } catch (BusinessException e) {
-            if (e.getErrorCode() == ErrorCode.USER_PREFERENCES_NOT_FOUND) {
-                // preferences가 없는 경우 기본값으로 생성
-                createDefaultUserPreferences(userId);
-                preferences = findUserPreferencesByUserId(userId);
-            } else {
-                throw e;
-            }
+            // preferences가 없는 경우 기본값으로 생성
+            createDefaultUserPreferences(userId);
+            preferences = findUserPreferencesByUserId(userId);
         }
         
         preferences.updatePreferences(
