@@ -35,7 +35,6 @@ public class UserPreferencesService {
      * 기존 사용자(로그인 시 UserPreferences가 생성되지 않은 사용자)를 위한 기본 preferences 생성
      * 이 메서드는 PUT /api/user/preferences에서 preferences가 없을 때 호출됩니다.
      */
-    @Transactional
     public UserPreferencesResponse createDefaultUserPreferences(Long userId) {
         // 사용자 존재 확인
         User user = userRepository.findById(userId)
