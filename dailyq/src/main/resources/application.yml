@@ -76,6 +76,11 @@ jwt:
   access-token-expiration-millis: ${JWT_ACCESS_TOKEN_EXPIRATION_MILLIS}   # 1시간
   refresh-token-expiration-millis: ${JWT_REFRESH_TOKEN_EXPIRATION_MILLIS} # 7일
 
+# 개발용 API 설정
+dev:
+  api:
+    password: ${DEV_API_PASSWORD}  # 기본값: dailyq123
+
 # OpenAPI 서버 설정
 openapi:
   server:
