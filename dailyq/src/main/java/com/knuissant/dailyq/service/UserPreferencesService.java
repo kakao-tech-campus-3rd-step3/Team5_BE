@@ -16,6 +16,7 @@ import com.knuissant.dailyq.dto.users.UserPreferencesResponse;
 import com.knuissant.dailyq.dto.users.UserPreferencesUpdateRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.repository.JobRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
 import com.knuissant.dailyq.repository.UserRepository;
@@ -65,7 +66,20 @@ public class UserPreferencesService {
     }
 
     public UserPreferencesResponse updateUserPreferences(Long userId, UserPreferencesUpdateRequest request) {
-        UserPreferences preferences = findUserPreferencesByUserId(userId);
+        UserPreferences preferences;
+        
+        try {
+            preferences = findUserPreferencesByUserId(userId);
+        } catch (BusinessException e) {
+            if (e.getErrorCode() == ErrorCode.USER_PREFERENCES_NOT_FOUND) {
+                // preferences가 없는 경우 기본값으로 생성
+                createDefaultUserPreferences(userId);
+                preferences = findUserPreferencesByUserId(userId);
+            } else {
+                throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "사용자 설정 조회 중 오류가 발생했습니다.");
+            }
+        }
+        
         preferences.updatePreferences(
                 request.dailyQuestionLimit(),
                 request.questionMode(),
