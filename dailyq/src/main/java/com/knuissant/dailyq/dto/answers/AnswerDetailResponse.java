@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 import lombok.extern.slf4j.Slf4j;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.knuissant.dailyq.domain.answers.Answer;
@@ -13,6 +12,7 @@ import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionType;
 import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
+import com.knuissant.dailyq.exception.InfraException;
 
 @Slf4j
 public record AnswerDetailResponse(
@@ -42,16 +42,16 @@ public record AnswerDetailResponse(
 
         public static FeedbackDetail from(Feedback feedback, ObjectMapper objectMapper) {
             try {
-                FeedbackResponse feedbackContent = objectMapper.readValue(
+                FeedbackResponse feedbackContent = FeedbackResponse.from(
                         feedback.getContent(),
-                        FeedbackResponse.class
+                        objectMapper
                 );
                 return new FeedbackDetail(
                         feedback.getStatus(),
                         feedbackContent,
                         feedback.getUpdatedAt()
                 );
-            } catch (JsonProcessingException e) {
+            } catch (InfraException e) {
                 log.error("Failed to parse feedback content JSON: {}", feedback.getContent(), e);
                 return new FeedbackDetail(
                         feedback.getStatus(),
