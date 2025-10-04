@@ -130,7 +130,7 @@ CREATE TABLE answers (
 CREATE TABLE feedbacks (
                            feedback_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                            answer_id BIGINT NOT NULL,
-                           status ENUM('PENDING','DONE','FAILED') NOT NULL DEFAULT 'PENDING',
+                           status ENUM('PENDING', 'PROCESSING', 'DONE','FAILED') NOT NULL DEFAULT 'PENDING',
                            content MEDIUMTEXT NULL, -- entity 생성 후
                            latency_ms BIGINT NULL, -- entity 생성 후, 지연 시간 측정 필요
                                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -46,6 +46,8 @@ public class FeedbackService {
             return FeedbackResponse.from(feedback.getContent(), objectMapper);
         }
 
+        feedbackUpdateService.changeStatusToProcessing(feedbackId);
+
         String question = feedback.getAnswer().getQuestion().getQuestionText();
         String answer = feedback.getAnswer().getAnswerText();
 

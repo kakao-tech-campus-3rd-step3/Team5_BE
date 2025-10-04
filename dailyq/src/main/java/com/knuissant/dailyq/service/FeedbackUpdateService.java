@@ -24,6 +24,17 @@ public class FeedbackUpdateService {
     private final ObjectMapper objectMapper;
 
     @Transactional
+    public void changeStatusToProcessing(Long feedbackId) {
+        Feedback feedback = feedbackRepository.findById(feedbackId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
+
+        if (feedback.getStatus() != FeedbackStatus.PENDING) {
+            throw new BusinessException(ErrorCode.FEEDBACK_ALREADY_PROCESSED, feedbackId);
+        }
+        feedback.updateStatus(FeedbackStatus.PROCESSING);
+    }
+
+    @Transactional
     public void updateFeedbackSuccess(Long feedbackId, FeedbackResponse feedbackResponse, long latencyMs) {
         Feedback feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));

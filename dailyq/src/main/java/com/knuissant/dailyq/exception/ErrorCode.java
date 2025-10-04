@@ -12,8 +12,7 @@ public enum ErrorCode {
     // Bad Request(400)
     VALIDATION_FAILED("VALIDATION_FAILED", "입력값에 대한 유효성 검사에 실패했습니다.", HttpStatus.BAD_REQUEST),
     MULTIPLE_FILTER_NOT_ALLOWED("MULTIPLE_FILTER_NOT_ALLOWED", "조회 필터는 단 하나만 설정할 수 있습니다.", HttpStatus.BAD_REQUEST),
-
-      CANNOT_RIVAL_YOURSELF("CANNOT_RIVAL_YOURSELF","자기 자신에게는 라이벌 신청을 할 수 없습니다.",HttpStatus.BAD_REQUEST),
+    CANNOT_RIVAL_YOURSELF("CANNOT_RIVAL_YOURSELF", "자기 자신에게는 라이벌 신청을 할 수 없습니다.", HttpStatus.BAD_REQUEST),
 
     // Not Found(404)
     USER_NOT_FOUND("USER_NOT_FOUND", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -35,6 +34,7 @@ public enum ErrorCode {
     LOGIN_FAILED("LOGIN_FAILED", "로그인에 실패했습니다.", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS", "인증되지 않은 접근입니다.", HttpStatus.UNAUTHORIZED),
     INVALID_CREDENTIALS("INVALID_CREDENTIALS", "잘못된 인증 정보입니다.", HttpStatus.UNAUTHORIZED),
+    FEEDBACK_ALREADY_PROCESSED("FEEDBACK_ALREADY_PROCESSED", "이미 처리 중인 피드백입니다.", HttpStatus.CONFLICT),
     //5xx System Errors
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부에 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     CURSOR_GENERATION_FAILED("CURSOR_GENERATION_FAILED", "커서 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
