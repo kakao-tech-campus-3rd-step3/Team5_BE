@@ -34,7 +34,6 @@ public class UserPreferencesService {
      * 기존 사용자(로그인 시 UserPreferences가 생성되지 않은 사용자)를 위한 기본 preferences 생성
      * 이 메서드는 PUT /api/user/preferences에서 preferences가 없을 때 호출됩니다.
      */
-    @Transactional
     public UserPreferencesResponse createDefaultUserPreferences(Long userId) {
         // 사용자 존재 확인
         User user = userRepository.findById(userId)
@@ -50,7 +49,6 @@ public class UserPreferencesService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND, "기본 직업 정보를 찾을 수 없습니다."));
         
         UserPreferences defaultPreferences = UserPreferences.builder()
-                .userId(userId)
                 .user(user)
                 .dailyQuestionLimit(1)
                 .questionMode(QuestionMode.TECH)
@@ -65,7 +63,16 @@ public class UserPreferencesService {
     }
 
     public UserPreferencesResponse updateUserPreferences(Long userId, UserPreferencesUpdateRequest request) {
-        UserPreferences preferences = findUserPreferencesByUserId(userId);
+        UserPreferences preferences;
+        
+        try {
+            preferences = findUserPreferencesByUserId(userId);
+        } catch (BusinessException e) {
+            // preferences가 없는 경우 기본값으로 생성
+            createDefaultUserPreferences(userId);
+            preferences = findUserPreferencesByUserId(userId);
+        }
+        
         preferences.updatePreferences(
                 request.dailyQuestionLimit(),
                 request.questionMode(),
@@ -88,5 +95,10 @@ public class UserPreferencesService {
     public UserPreferences findUserPreferencesByUserId(Long userId) {
         return userPreferencesRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_PREFERENCES_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByUserId(Long userId) {
+        return userPreferencesRepository.existsById(userId);
     }
 }

@@ -17,9 +17,6 @@ import com.knuissant.dailyq.dto.users.UserPreferencesResponse;
 import com.knuissant.dailyq.dto.users.UserPreferencesUpdateRequest;
 import com.knuissant.dailyq.dto.users.UserProfileResponse;
 import com.knuissant.dailyq.dto.users.UserUpdateRequest;
-import com.knuissant.dailyq.exception.BusinessException;
-import com.knuissant.dailyq.exception.ErrorCode;
-import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.service.UserPreferencesService;
 import com.knuissant.dailyq.service.UserService;
 
@@ -50,20 +47,8 @@ public class UserController {
     @PutMapping("/preferences")
     public ResponseEntity<UserPreferencesResponse> updateUserPreferences(@AuthenticationPrincipal User principal, @RequestBody UserPreferencesUpdateRequest updateRequest) {
         Long userId = Long.parseLong(principal.getUsername());
-        
-        try {
-            // 기존 preferences 업데이트 시도
-            UserPreferencesResponse response = userPreferencesService.updateUserPreferences(userId, updateRequest);
-            return ResponseEntity.ok(response);
-        } catch (BusinessException e) {
-            if (e.getErrorCode() == ErrorCode.USER_PREFERENCES_NOT_FOUND) {
-                // preferences가 없는 경우 기본값으로 생성 후 업데이트
-                userPreferencesService.createDefaultUserPreferences(userId);
-                UserPreferencesResponse response = userPreferencesService.updateUserPreferences(userId, updateRequest);
-                return ResponseEntity.ok(response);
-            }
-            throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "사용자 설정 업데이트 중 오류가 발생했습니다.");
-        }
+        UserPreferencesResponse response = userPreferencesService.updateUserPreferences(userId, updateRequest);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/jobs")
