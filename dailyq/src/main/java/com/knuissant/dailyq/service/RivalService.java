@@ -75,7 +75,8 @@ public class RivalService {
         long totalAnswerCount = answerRepository.countByUserId(userId);
 
         LocalDateTime forOneYear = LocalDateTime.now().minusYears(1);
-        List<Answer> answers = answerRepository.findByUserIdAndCreatedAtGreaterThanEqual(userId, forOneYear);
+        List<Answer> answers = answerRepository.findByUserIdAndCreatedAtGreaterThanEqual(userId,
+                forOneYear);
 
         Map<LocalDate, Long> countByDate = answers.stream()
                 .collect(Collectors.groupingBy(
@@ -105,7 +106,7 @@ public class RivalService {
     public RivalListResponse.CursorResult getFollowingRivalList(Long userId, Long lastId,
             int limit) {
 
-        Pageable pageable = PageRequest.of(0, limit + 1, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(0, limit + 1);
 
         Slice<Rival> rivalsSlice = (lastId == null)
                 ? rivalRepository.findAllBySenderId(userId, pageable)
@@ -134,19 +135,21 @@ public class RivalService {
 
     private RivalListResponse.CursorResult createCursorResult(Slice<Rival> rivalsSlice, int limit,
             boolean isFollowingList) {
-        List<Rival> rivals = rivalsSlice.getContent();
-        boolean hasNext = rivals.size() > limit;
 
-        List<RivalListResponse> items = rivals.stream()
+        boolean hasNext = rivalsSlice.hasNext();
+
+        List<RivalListResponse> items = rivalsSlice.getContent().stream()
                 .limit(limit)
                 .map(rival -> {
                     // boolean 플래그 값에 따라 sender를 가져올지 receiver를 가져올지 결정
                     User userToShow = isFollowingList ? rival.getReceiver() : rival.getSender();
-                    return RivalListResponse.from(userToShow.getId(),userToShow.getName(),userToShow.getEmail());
+                    return RivalListResponse.from(userToShow.getId(), userToShow.getName(),
+                            userToShow.getEmail());
                 })
                 .toList();
 
-        Long nextCursor = hasNext ? rivals.get(limit).getId() : null;
+        Long nextCursor = hasNext && !items.isEmpty()
+                ? items.getLast().userId() : null;
 
         return new RivalListResponse.CursorResult(items, nextCursor, hasNext);
     }
