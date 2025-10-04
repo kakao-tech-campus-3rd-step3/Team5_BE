@@ -31,7 +31,7 @@ public class FeedbackUpdateService {
         if (feedback.getStatus() != FeedbackStatus.PENDING) {
             throw new BusinessException(ErrorCode.FEEDBACK_ALREADY_PROCESSED, feedbackId);
         }
-        feedback.updateStatus(FeedbackStatus.PROCESSING);
+        feedback.startProcessing();
     }
 
     @Transactional
@@ -39,9 +39,8 @@ public class FeedbackUpdateService {
         Feedback feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
         try {
-            feedback.updateContent(objectMapper.writeValueAsString(feedbackResponse));
-            feedback.updateLatencyMs(latencyMs);
-            feedback.updateStatus(FeedbackStatus.DONE);
+            String content = objectMapper.writeValueAsString(feedbackResponse);
+            feedback.updateSuccess(content, latencyMs);
         } catch (JsonProcessingException e) {
             throw new InfraException(ErrorCode.JSON_PROCESSING_ERROR);
         }
@@ -51,7 +50,7 @@ public class FeedbackUpdateService {
     public void updateFeedbackFailure(Long feedbackId) {
         Feedback feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
-        feedback.updateStatus(FeedbackStatus.FAILED);
+        feedback.updateFailure();
     }
 
 }
