@@ -16,7 +16,6 @@ import com.knuissant.dailyq.dto.users.UserPreferencesResponse;
 import com.knuissant.dailyq.dto.users.UserPreferencesUpdateRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
-import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.repository.JobRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
 import com.knuissant.dailyq.repository.UserRepository;
