@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,10 +17,12 @@ public interface RivalRepository extends JpaRepository<Rival, Long> {
 
     Optional<Rival> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
 
+    @EntityGraph(attributePaths = {"sender","receiver"})
     @Query("SELECT r FROM Rival r WHERE r.sender.id = :senderId AND r.id > :lastId ORDER BY r.id ASC")
     Slice<Rival> findBySenderIdAndIdGreaterThan(@Param("senderId") Long senderId,
             @Param("lastId") Long lastId, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"sender","receiver"})
     @Query("SELECT r FROM Rival r WHERE r.receiver.id = :receiverId AND r.id > :lastId ORDER BY r.id ASC")
     Slice<Rival> findByReceiverIdAndIdGreaterThan(@Param("receiverId") Long receiverId,
             @Param("lastId") Long lastId, Pageable pageable);
