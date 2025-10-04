@@ -56,7 +56,7 @@ public class FeedbackService {
             try {
                 feedbackUpdateService.updateFeedbackFailure(feedbackId);
             } catch (Exception failureUpdateEx) {
-                log.error("Filed to update status to FAILED for feedbackId {}, Original error: {}",
+                log.error("Failed to update status to FAILED for feedbackId {}, Original error: {}",
                         feedbackId, e.getMessage());
             }
             throw e;
