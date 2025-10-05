@@ -65,16 +65,18 @@ public class Feedback {
                 .build();
     }
 
-    public void updateStatus(FeedbackStatus status) {
-        this.status = status;
+    public void startProcessing() {
+        this.status = FeedbackStatus.PROCESSING;
     }
 
-    public void updateContent(String content) {
+    public void updateSuccess(String content, Long latencyMs) {
+        this.status = FeedbackStatus.DONE;
         this.content = content;
+        this.latencyMs = latencyMs;
     }
 
-    public void updateLatencyMs(Long latencyMs) {
-        this.latencyMs = latencyMs;
+    public void updateFailure() {
+        this.status = FeedbackStatus.FAILED;
     }
 }
 
