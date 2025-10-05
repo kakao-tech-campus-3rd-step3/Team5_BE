@@ -7,7 +7,6 @@ import com.knuissant.dailyq.dto.users.UserCreateRequest;
 import lombok.Getter;
 
 import com.knuissant.dailyq.domain.users.User;
-import com.knuissant.dailyq.domain.users.UserRole;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 
