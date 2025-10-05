@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -41,10 +43,14 @@ public class AnswerController {
 
     private final AnswerService answerService;
 
+    private Long getUserId(User principal) {
+        return Long.parseLong(principal.getUsername());
+    }
+
     @GetMapping
     public ResponseEntity<AnswerListResponse.CursorResult<AnswerListResponse.Summary>> getAnswers(
 
-            @RequestParam Long userId,
+            @AuthenticationPrincipal User principal,
 
             @ModelAttribute AnswerSearchConditionRequest condition,
 
@@ -52,6 +58,8 @@ public class AnswerController {
             @RequestParam(required = false) LocalDateTime lastCreatedAt,
 
             @RequestParam(defaultValue = "10") int limit) {
+
+        Long userId = getUserId(principal);
 
         //정렬 조건 단일 파라미터 검증
         long filterCount = Stream.of(
@@ -73,19 +81,24 @@ public class AnswerController {
 
     @GetMapping("/{answerId}")
     public ResponseEntity<AnswerDetailResponse> getAnswerDetail(
+            @AuthenticationPrincipal User principal,
             @PathVariable Long answerId) {
 
-        AnswerDetailResponse result = answerService.getAnswerDetail(answerId);
+        Long userId = getUserId(principal);
+
+        AnswerDetailResponse result = answerService.getAnswerDetail(answerId,userId);
 
         return ResponseEntity.ok(result);
     }
 
     @PatchMapping("/{answerId}")
     public ResponseEntity<AnswerArchiveUpdateResponse> updateAnswerDetail(
+            @AuthenticationPrincipal User principal,
             @PathVariable Long answerId,
-            @RequestBody AnswerArchiveUpdateRequest request) {
+            @RequestBody AnswerArchiveUpdateRequest request
+            ) {
 
-        Long userId = 1L; // 임시
+        Long userId = getUserId(principal);
 
         AnswerArchiveUpdateResponse responseDto = answerService.updateAnswer(userId, answerId,
                 request);
@@ -93,20 +106,26 @@ public class AnswerController {
         return ResponseEntity.ok(responseDto);
     }
 
-    // userId 추후 제거
     @PostMapping
     public ResponseEntity<AnswerCreateResponse> submitAnswer(
-            @RequestParam("user_id") Long userId,
+            @AuthenticationPrincipal User principal,
             @Valid @RequestBody AnswerCreateRequest request) {
+
+        Long userId = getUserId(principal);
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(answerService.submitAnswer(request, userId));
     }
 
     @PatchMapping("/{answerId}/level")
     public ResponseEntity<AnswerLevelUpdateResponse> updateAnswerLevel(
+            @AuthenticationPrincipal User principal,
             @PathVariable Long answerId,
             @Valid @RequestBody AnswerLevelUpdateRequest request) {
-        return ResponseEntity.ok(answerService.updateAnswerLevel(answerId, request));
+
+        Long userId = getUserId(principal);
+
+        return ResponseEntity.ok(answerService.updateAnswerLevel(answerId, request,userId));
     }
 
 }
