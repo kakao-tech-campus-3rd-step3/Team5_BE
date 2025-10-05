@@ -43,10 +43,6 @@ public class AnswerController {
 
     private final AnswerService answerService;
 
-    private Long getUserId(User principal) {
-        return Long.parseLong(principal.getUsername());
-    }
-
     @GetMapping
     public ResponseEntity<AnswerListResponse.CursorResult<AnswerListResponse.Summary>> getAnswers(
 
@@ -126,6 +122,10 @@ public class AnswerController {
         Long userId = getUserId(principal);
 
         return ResponseEntity.ok(answerService.updateAnswerLevel(userId, answerId, request));
+    }
+
+    private Long getUserId(User principal) {
+        return Long.parseLong(principal.getUsername());
     }
 
 }
