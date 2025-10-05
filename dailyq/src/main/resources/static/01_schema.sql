@@ -21,7 +21,7 @@ CREATE TABLE users (
                        name VARCHAR(100),
                        role VARCHAR(20) NOT NULL DEFAULT 'FREE',
                        streak INT NOT NULL DEFAULT 0,
-                       solved_today TINYINT(1) NOT NULL DEFAULT 0,
+                       solved_today TINYINT NOT NULL DEFAULT 0,
                        refresh_token VARCHAR(512) NULL,
                        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -57,7 +57,7 @@ CREATE TABLE user_preferences (
                              user_response_type VARCHAR(20) NOT NULL DEFAULT 'TEXT',
                              time_limit_seconds INT DEFAULT 180,
                              notify_time TIME NULL,
-                             allow_push TINYINT(1) NOT NULL DEFAULT 0,
+                             allow_push TINYINT NOT NULL DEFAULT 0,
                              user_job BIGINT NOT NULL,
                              CONSTRAINT fk_user_prefs_user
                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -73,7 +73,7 @@ CREATE TABLE questions (
                            question_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                            question_type VARCHAR(20) NOT NULL,
                            question_text MEDIUMTEXT NOT NULL,
-                           enabled TINYINT(1) NOT NULL DEFAULT 1,
+                           enabled TINYINT NOT NULL DEFAULT 1,
                            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                            CONSTRAINT uq_questions_text UNIQUE (question_text(255)),
@@ -114,7 +114,7 @@ CREATE TABLE answers (
                          question_id BIGINT NOT NULL,
                          answer_text MEDIUMTEXT NOT NULL, -- 오디오 변환 후 answer 생성
                          level TINYINT NULL,
-                         starred TINYINT(1) NOT NULL DEFAULT 0, -- default 0
+                         starred TINYINT NOT NULL DEFAULT 0, -- default 0
                          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                          memo MEDIUMTEXT NULL, -- 메모 필드 추가
                          CONSTRAINT ck_answers_level CHECK (level IS NULL OR (level BETWEEN 1 AND 5)),
