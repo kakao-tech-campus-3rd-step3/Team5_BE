@@ -1,7 +1,9 @@
 package com.knuissant.dailyq.dto.oauth;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import com.knuissant.dailyq.dto.users.UserCreateRequest;
 import lombok.Getter;
 
 import com.knuissant.dailyq.domain.users.User;
@@ -48,19 +50,27 @@ public class OAuthAttributes {
      * Kakao 사용자 정보를 받아 OAuthAttributes 객체를 생성하는 정적 팩토리 메소드입니다.
      */
     private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
+        // 수정 가능한 새 맵을 만들어 원본 속성을 복사합니다.
+        Map<String, Object> modifiableAttributes = new HashMap<>(attributes);
+
         Object kakaoAccountObj = attributes.get("kakao_account");
-        if (!(kakaoAccountObj instanceof Map<?, ?> kakaoAccount)) {
+        if (!(kakaoAccountObj instanceof Map<?,?> kakaoAccount)) {
             throw new BusinessException(ErrorCode.INVALID_SOCIAL_LOGIN, "Invalid kakao account structure");
         }
-        
+
         Object kakaoProfileObj = kakaoAccount.get("profile");
-        if (!(kakaoProfileObj instanceof Map<?, ?> kakaoProfile)) {
+        if (!(kakaoProfileObj instanceof Map<?,?> kakaoProfile)) {
             throw new BusinessException(ErrorCode.INVALID_SOCIAL_LOGIN, "Invalid kakao profile structure");
         }
 
-        return new OAuthAttributes(attributes, userNameAttributeName,
-                (String) kakaoProfile.get("nickname"),
-                (String) kakaoAccount.get("email"));
+        String email = (String) kakaoAccount.get("email");
+        String nickname = (String) kakaoProfile.get("nickname");
+
+        // 최상위 속성으로 'email'과 'name'을 추가하여 데이터 구조를 통일합니다.
+        modifiableAttributes.put("email", email);
+        modifiableAttributes.put("name", nickname);
+
+        return new OAuthAttributes(modifiableAttributes, userNameAttributeName, nickname, email);
     }
 
     /**
@@ -68,13 +78,10 @@ public class OAuthAttributes {
      * @return User 엔티티
      */
     public User toEntity() {
-        return User.builder()
-                .name(name)
-                .email(email)
-                .role(UserRole.FREE)
-                .streak(0)
-                .solvedToday(false)
-                .build();
+        // OAuthAttributes에서 얻은 이메일과 이름으로 UserCreateRequest를 생성합니다.
+        UserCreateRequest createRequest = new UserCreateRequest(this.email, this.name);
+        // User의 정적 팩토리 메소드를 호출하여 User 엔티티를 생성합니다.
+        return User.create(createRequest);
     }
 }
 

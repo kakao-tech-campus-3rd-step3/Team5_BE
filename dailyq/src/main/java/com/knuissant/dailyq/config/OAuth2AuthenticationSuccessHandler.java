@@ -1,14 +1,13 @@
 package com.knuissant.dailyq.config;
 
 import java.io.IOException;
-import java.util.Map;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -63,7 +62,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         try {
             // OAuth2User에서 사용자 정보 추출
             OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-            String email = extractEmail(oAuth2User);
+
+            // 이제 CustomOAuth2UserService에서 통일된 속성을 전달하므로, 제공자와 무관하게 'email'을 바로 조회할 수 있습니다.
+            String email = oAuth2User.getAttribute("email");
 
             // 이메일이 없는 경우 예외 처리
             if (email == null || email.isEmpty()) {
@@ -99,38 +100,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
     }
 
-
-    // OAuth2User로부터 이메일 정보를 추출
-    private String extractEmail(OAuth2User oAuth2User) {
-        // 일반적인 OAuth2 응답에서 이메일 추출 시도
-        String email = oAuth2User.getAttribute("email");
-
-        // 카카오 계정의 경우 다른 구조로 이메일 정보가 제공됨
-        if (email == null) {
-            Object kakaoAccountObj = oAuth2User.getAttribute("kakao_account");
-            if (kakaoAccountObj instanceof Map<?, ?> kakaoAccount) {
-                Object emailObj = kakaoAccount.get("email");
-                if (emailObj instanceof String) {
-                    email = (String) emailObj;
-                }
-            }
-        }
-
-        return email;
-    }
-
     /**
-     * 리프레시 토큰을 HTTP Only 쿠키로 설정
-     * 7일간 유효한 보안 쿠키 생성
+     * 리프레시 토큰을 SameSite=Lax 속성이 적용된 보안 쿠키로 설정합니다.
      */
     private void addRefreshTokenToCookie(HttpServletResponse response, String refreshToken) {
-        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);  // XSS 공격 방지
-        refreshTokenCookie.setSecure(true);    // HTTPS에서만 전송
-        refreshTokenCookie.setPath("/");       // 모든 경로에서 접근 가능
-        // 주입받은 만료 시간(밀리초)을 초 단위로 변환하여 설정
-        refreshTokenCookie.setMaxAge((int) (refreshTokenExpirationMillis / 1000));
-        response.addCookie(refreshTokenCookie);
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+                .maxAge(refreshTokenExpirationMillis / 1000)
+                .path("/")
+                .secure(true)
+                .httpOnly(true)
+                .sameSite("Lax")
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     // 액세스 토큰을 포함한 리다이렉트 URL 생성
