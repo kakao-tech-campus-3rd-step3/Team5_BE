@@ -86,7 +86,7 @@ public class AnswerController {
 
         Long userId = getUserId(principal);
 
-        AnswerDetailResponse result = answerService.getAnswerDetail(answerId,userId);
+        AnswerDetailResponse result = answerService.getAnswerDetail(userId, answerId);
 
         return ResponseEntity.ok(result);
     }
@@ -114,7 +114,7 @@ public class AnswerController {
         Long userId = getUserId(principal);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(answerService.submitAnswer(request, userId));
+                .body(answerService.submitAnswer(userId, request));
     }
 
     @PatchMapping("/{answerId}/level")
@@ -125,7 +125,7 @@ public class AnswerController {
 
         Long userId = getUserId(principal);
 
-        return ResponseEntity.ok(answerService.updateAnswerLevel(answerId, request,userId));
+        return ResponseEntity.ok(answerService.updateAnswerLevel(userId, answerId, request));
     }
 
 }
