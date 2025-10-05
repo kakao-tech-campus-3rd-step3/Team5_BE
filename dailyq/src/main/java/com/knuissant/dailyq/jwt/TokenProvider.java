@@ -5,18 +5,15 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.ExpiredJwtException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +30,7 @@ public class TokenProvider {
     private final Key key;                              // 토큰 서명에 사용되는 키
     private final long accessTokenExpirationMillis;     // 액세스 토큰 만료 시간
     private final long refreshTokenExpirationMillis;    // 리프레시 토큰 만료 시간
+    private final JwtParser jwtParser;                  // 재사용할 JwtParser 필드
 
     /**
      * TokenProvider 생성자
@@ -51,7 +49,7 @@ public class TokenProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenExpirationMillis = accessTokenExpirationMillis;
         this.refreshTokenExpirationMillis = refreshTokenExpirationMillis;
-    }
+        this.jwtParser = Jwts.parserBuilder().setSigningKey(this.key).build();}
 
     /**
      * 사용자 정보를 기반으로 액세스 토큰을 생성
@@ -130,7 +128,7 @@ public class TokenProvider {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            jwtParser.parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             log.error("Invalid JWT token: {}", e.getMessage());
@@ -141,11 +139,7 @@ public class TokenProvider {
     // 토큰에서 클레임 정보를 추출
     private Claims parseClaims(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+            return jwtParser.parseClaimsJws(token).getBody();
         } catch (ExpiredJwtException e) {
             // 토큰이 만료되었더라도 클레임 정보는 필요할 수 있으므로, 예외에서 클레임을 추출하여 반환합니다.
             return e.getClaims();
