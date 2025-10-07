@@ -1,6 +1,8 @@
 use dailyq;
 
-/* ----- 안전한 재생성을 위해 FK 역순으로 드롭 ----- */
+/* ----- 안전한 재생성을 위해 FK 검사 비활성화 후 드롭 ----- */
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS follow_up_questions;
 DROP TABLE IF EXISTS feedbacks;
 DROP TABLE IF EXISTS answers;
 DROP TABLE IF EXISTS user_flow_progress;
@@ -117,13 +119,15 @@ CREATE TABLE answers (
                          starred TINYINT NOT NULL DEFAULT 0, -- default 0
                          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                          memo MEDIUMTEXT NULL, -- 메모 필드 추가
+                         follow_up_question_id BIGINT NULL,
                          CONSTRAINT ck_answers_level CHECK (level IS NULL OR (level BETWEEN 1 AND 5)),
     CONSTRAINT fk_answers_user
         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     CONSTRAINT fk_answers_question
         FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE RESTRICT,
     INDEX idx_answers_user_time (user_id, created_at DESC),
-    INDEX idx_answers_q_time (question_id, created_at DESC)
+    INDEX idx_answers_q_time (question_id, created_at DESC),
+    INDEX idx_answers_followup (follow_up_question_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
@@ -158,4 +162,36 @@ CREATE TABLE rivals (
                             REFERENCES users(user_id) ON DELETE CASCADE,
                         CONSTRAINT uq_rival_pair UNIQUE (sender_id, receiver_id)
 );
+
+/* =========================
+   FOLLOW-UP QUESTIONS
+   - 사용자 답변 기반 꼬리질문 생성
+   - 꼬리질문의 꼬리질문은 생성하지 않음
+   ========================= */
+CREATE TABLE follow_up_questions (
+    follow_up_question_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    answer_id BIGINT NOT NULL,
+    question_text MEDIUMTEXT NOT NULL,
+    is_answered TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_followup_user 
+        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_followup_answer 
+        FOREIGN KEY (answer_id) REFERENCES answers(answer_id) ON DELETE CASCADE,
+    
+    INDEX idx_followup_user_answered (user_id, is_answered, created_at ASC),
+    INDEX idx_followup_user_desc (user_id, created_at DESC),
+    INDEX idx_followup_answer (answer_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- answers.follow_up_question_id FK는 양방향 의존으로 인해 마지막에 추가
+ALTER TABLE answers
+  ADD CONSTRAINT fk_answers_followup
+    FOREIGN KEY (follow_up_question_id)
+    REFERENCES follow_up_questions(follow_up_question_id);
+
+-- 모든 객체 생성 이후 FK 검사 재활성화
+SET FOREIGN_KEY_CHECKS = 1;
 

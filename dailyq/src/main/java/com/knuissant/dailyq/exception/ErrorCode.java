@@ -19,6 +19,7 @@ public enum ErrorCode {
     ANSWER_NOT_FOUND("ANSWER_NOT_FOUND", "해당 답변을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     QUESTION_NOT_FOUND("QUESTION_NOT_FOUND", "해당 질문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     FEEDBACK_NOT_FOUND("FEEDBACK_NOT_FOUND", "해당 피드백을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    FOLLOWUP_QUESTION_NOT_FOUND("FOLLOWUP_QUESTION_NOT_FOUND", "해당 꼬리질문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     NO_QUESTION_AVAILABLE("NO_QUESTION_AVAILABLE", "조건에 맞는 질문이 없습니다.", HttpStatus.NOT_FOUND),
     OCCUPATION_NOT_FOUND("OCCUPATION_NOT_FOUND", "직군을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     JOB_NOT_FOUND("JOB_NOT_FOUND", "직업을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -26,6 +27,9 @@ public enum ErrorCode {
     // etc 4xx
     FORBIDDEN_ACCESS("FORBIDDEN_ACCESS", "리소스에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
     DAILY_LIMIT_REACHED("DAILY_LIMIT_REACHED", "오늘 가능한 질문을 모두 소진했습니다.", HttpStatus.TOO_MANY_REQUESTS),
+    RIVAL_REQUEST_ALREADY_EXIST("RIVAL_REQUEST_ALREADY_EXIST", "이미 라이벌 요청이 존재합니다.", HttpStatus.CONFLICT),
+    FOLLOWUP_QUESTION_ALREADY_EXISTS("FOLLOWUP_QUESTION_ALREADY_EXISTS", "이미 꼬리질문이 존재합니다.", HttpStatus.CONFLICT),
+    FOLLOWUP_GENERATION_NOT_ALLOWED("FOLLOWUP_GENERATION_NOT_ALLOWED", "해당 답변에는 꼬리질문을 생성할 수 없습니다.", HttpStatus.CONFLICT),
     ALREADY_FOLLOWING_RIVAL("ALREADY_FOLLOWING_RIVAL", "이미 팔로우 중인 라이벌입니다.", HttpStatus.CONFLICT),
     USER_PREFERENCES_ALREADY_EXISTS("USER_PREFERENCES_ALREADY_EXISTS", "사용자 설정 정보가 이미 존재합니다.", HttpStatus.CONFLICT),
     INVALID_TOKEN("INVALID_TOKEN", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED),

@@ -60,6 +60,7 @@ public class FeedbackService {
             long latencyMs = System.currentTimeMillis() - startTime;
 
             feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackResponse, latencyMs);
+            
             return feedbackResponse;
 
         } catch (Exception e) {

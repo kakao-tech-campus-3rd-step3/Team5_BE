@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import com.knuissant.dailyq.domain.questions.Question;
+import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 import com.knuissant.dailyq.domain.users.User;
 
 @Getter
@@ -29,7 +30,8 @@ import com.knuissant.dailyq.domain.users.User;
 @Entity
 @Table(name = "answers", indexes = {
         @Index(name = "idx_answers_user_time", columnList = "user_id, created_at DESC"),
-        @Index(name = "idx_answers_q_time", columnList = "question_id, created_at DESC")
+        @Index(name = "idx_answers_q_time", columnList = "question_id, created_at DESC"),
+        @Index(name = "idx_answers_followup", columnList = "follow_up_question_id")
 })
 public class Answer {
 
@@ -61,6 +63,10 @@ public class Answer {
     @Column(name = "memo", columnDefinition = "MEDIUMTEXT")
     private String memo;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "follow_up_question_id")
+    private FollowUpQuestion followUpQuestion;
+
     public static Answer create(User user, Question question, String answerText) {
         return Answer.builder()
                 .user(user)
@@ -79,6 +85,10 @@ public class Answer {
 
     public void updateLevel(Integer level) {
         this.level = level;
+    }
+
+    public void setFollowUpQuestion(FollowUpQuestion followUpQuestion) {
+        this.followUpQuestion = followUpQuestion;
     }
 }
 

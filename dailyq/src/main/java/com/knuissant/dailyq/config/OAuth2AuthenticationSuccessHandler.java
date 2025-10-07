@@ -35,17 +35,20 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UserRepository userRepository;
     private final OAuth2AuthenticationFailureHandler failureHandler;
     private final long refreshTokenExpirationMillis; // 설정 파일에서 주입받을 필드 추가
+    private final String frontendUrl; // Frontend URL 주입받을 필드 추가
 
     // @RequiredArgsConstructor 대신 명시적 생성자로 변경하여 @Value 주입
     public OAuth2AuthenticationSuccessHandler(
             TokenProvider tokenProvider,
             UserRepository userRepository,
             OAuth2AuthenticationFailureHandler failureHandler,
-            @Value("${jwt.refresh-token-expiration-millis}") long refreshTokenExpirationMillis) {
+            @Value("${jwt.refresh-token-expiration-millis}") long refreshTokenExpirationMillis,
+            @Value("${frontend.url}") String frontendUrl) {
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
         this.failureHandler = failureHandler;
         this.refreshTokenExpirationMillis = refreshTokenExpirationMillis;
+        this.frontendUrl = frontendUrl;
     }
     /**
      * OAuth2 인증 성공 시 호출되는 핸들러 메서드
@@ -135,7 +138,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     // 액세스 토큰을 포함한 리다이렉트 URL 생성
     private String getTargetUrl(String accessToken) {
-        return UriComponentsBuilder.fromUriString("https://dailyq.my")
+        return UriComponentsBuilder.fromUriString(frontendUrl)
                 .queryParam("token", accessToken)
                 .build()
                 .toUriString();
