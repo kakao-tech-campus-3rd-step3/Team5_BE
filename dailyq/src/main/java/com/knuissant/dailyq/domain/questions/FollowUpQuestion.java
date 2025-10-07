@@ -62,7 +62,6 @@ public class FollowUpQuestion {
                 .user(user)
                 .answer(answer)
                 .questionText(questionText)
-                .isAnswered(false)
                 .build();
     }
 
