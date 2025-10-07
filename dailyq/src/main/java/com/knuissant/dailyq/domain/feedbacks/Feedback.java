@@ -75,6 +75,15 @@ public class Feedback {
                 .build();
     }
 
+    public static Feedback createCultureFitFeedback(Answer answer, Company company, FeedbackStatus status) {
+        return Feedback.builder()
+                .answer(answer)
+                .company(company)
+                .feedbackType(FeedbackType.CULTURE_FIT)
+                .status(status)
+                .build();
+    }
+
     public void startProcessing() {
         this.status = FeedbackStatus.PROCESSING;
     }
