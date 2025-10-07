@@ -106,33 +106,36 @@ public class QuestionService {
     }
 
     private Optional<Question> findRandomTechQuestion(Long jobId, Long userId) {
-        // count 조회 후 랜덤 offset 생성
-        long count = questionRepository.countAvailableTechQuestions(jobId, userId);
-        if (count == 0) {
+        // MAX ID 조회
+        Long maxId = questionRepository.findMaxAvailableTechQuestionId(jobId, userId);
+        if (maxId == null) {
             return Optional.empty();
         }
         
-        // count가 int 범위를 넘으면 int 최대값(약 21억)으로 제한
-        int safeCount = count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
-        int randomOffset = ThreadLocalRandom.current().nextInt(safeCount);
-        Pageable pageable = PageRequest.of(randomOffset, 1);
-        List<Question> questions = questionRepository.findAvailableTechQuestionsByJobId(jobId, userId, pageable);
+        // 랜덤 ID 생성 (1부터 maxId까지)
+        long randomId = ThreadLocalRandom.current().nextLong(1, maxId + 1);
+        
+        // cursor 기반 조회 (id >= randomId인 첫 번째 질문)
+        Pageable pageable = PageRequest.of(0, 1);
+        List<Question> questions = questionRepository.findAvailableTechQuestionsFromCursor(jobId, randomId, userId, pageable);
         return questions.isEmpty() ? Optional.empty() : Optional.of(questions.get(0));
     }
 
     private Optional<Question> findRandomFlowQuestion(FlowPhase phase, Long userId) {
         QuestionType questionType = mapPhaseToType(phase);
         
-        long count = questionRepository.countAvailableQuestions(questionType, userId);
-        if (count == 0) {
+        // MAX ID 조회
+        Long maxId = questionRepository.findMaxAvailableQuestionId(questionType, userId);
+        if (maxId == null) {
             return Optional.empty();
         }
         
-        // count가 int 범위를 넘으면 int 최대값(약 21억)으로 제한
-        int safeCount = count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
-        int randomOffset = ThreadLocalRandom.current().nextInt(safeCount);
-        Pageable pageable = PageRequest.of(randomOffset, 1);
-        List<Question> questions = questionRepository.findAvailableQuestionsByType(questionType, userId, pageable);
+        // 랜덤 ID 생성 (1부터 maxId까지)
+        long randomId = ThreadLocalRandom.current().nextLong(1, maxId + 1);
+        
+        // cursor 기반 조회 (id >= randomId인 첫 번째 질문)
+        Pageable pageable = PageRequest.of(0, 1);
+        List<Question> questions = questionRepository.findAvailableQuestionsFromCursor(questionType, randomId, userId, pageable);
         return questions.isEmpty() ? Optional.empty() : Optional.of(questions.get(0));
     }
 
