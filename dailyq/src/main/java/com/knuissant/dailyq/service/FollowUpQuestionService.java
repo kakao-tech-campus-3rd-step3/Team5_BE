@@ -60,7 +60,7 @@ public class FollowUpQuestionService {
             FollowUpQuestionResponse response = gptClient.callForFollowUp(systemPrompt, userPrompt);
 
             // 꼬리질문들을 DB에 저장
-            List<FollowUpQuestion> followUpQuestions = response.getQuestions().stream()
+            List<FollowUpQuestion> followUpQuestions = response.questions().stream()
                 .map(questionText -> FollowUpQuestion.create(answer.getUser(), answer, questionText))
                 .toList();
 
