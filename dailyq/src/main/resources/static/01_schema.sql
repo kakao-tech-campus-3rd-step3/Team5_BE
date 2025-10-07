@@ -145,7 +145,7 @@ CREATE TABLE feedbacks (
                            answer_id BIGINT NOT NULL,
                            company_id BIGINT NULL,
                            status ENUM('PENDING', 'PROCESSING', 'DONE','FAILED') NOT NULL DEFAULT 'PENDING',
-                           feedback_type VARCHAR(20),
+                           feedback_type VARCHAR(20) DEFAULT 'GENERAL',
                            content MEDIUMTEXT NULL, -- entity 생성 후
                            latency_ms BIGINT NULL, -- entity 생성 후, 지연 시간 측정 필요
                                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
