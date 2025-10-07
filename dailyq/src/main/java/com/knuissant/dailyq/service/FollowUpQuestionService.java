@@ -31,9 +31,14 @@ public class FollowUpQuestionService {
     private final PromptManager promptManager;
 
     @Transactional
-    public void generateFollowUpQuestions(Long answerId) {
+    public int generateFollowUpQuestions(Long answerId, Long requestUserId) {
         Answer answer = answerRepository.findById(answerId)
             .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+
+        // 권한 검증: 본인의 답변인지 확인
+        if (!answer.getUser().getId().equals(requestUserId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
+        }
 
         // 꼬리질문의 꼬리질문은 생성하지 않음(한번 더 예외처리)
         if (isAnswerToFollowUpQuestion(answer)) {
@@ -60,6 +65,8 @@ public class FollowUpQuestionService {
                 .toList();
 
             followUpQuestionRepository.saveAll(followUpQuestions);
+
+            return followUpQuestions.size();
 
         } catch (Exception e) {
             log.error("Failed to generate follow-up questions for answer {}", answerId, e);

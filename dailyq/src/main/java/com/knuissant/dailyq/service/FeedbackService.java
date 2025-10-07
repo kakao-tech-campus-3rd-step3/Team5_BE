@@ -1,6 +1,5 @@
 package com.knuissant.dailyq.service;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,12 +14,10 @@ import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
-import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.external.gpt.GptClient;
 import com.knuissant.dailyq.external.gpt.PromptManager;
 import com.knuissant.dailyq.external.gpt.PromptType;
 import com.knuissant.dailyq.repository.FeedbackRepository;
-import com.knuissant.dailyq.service.event.FeedbackCompletedEvent;
 
 @Slf4j
 @Service
@@ -31,7 +28,6 @@ public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final PromptManager promptManager;
     private final FeedbackUpdateService feedbackUpdateService;
-    private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
 
     @Transactional
@@ -64,14 +60,6 @@ public class FeedbackService {
             long latencyMs = System.currentTimeMillis() - startTime;
 
             feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackResponse, latencyMs);
-            
-            // 응답 반환을 우선: 이벤트 발행 (커밋 후 리스너에서 비동기 처리)
-            if (feedback.getAnswer().getFollowUpQuestion() == null) {
-                log.info("Publishing FeedbackCompletedEvent for answerId: {}", feedback.getAnswer().getId());
-                eventPublisher.publishEvent(new FeedbackCompletedEvent(feedback.getId(), feedback.getAnswer().getId()));
-            } else {
-                log.info("[FollowUp] Skip generating follow-ups: answer {} is a follow-up answer", feedback.getAnswer().getId());
-            }
             
             return feedbackResponse;
 
