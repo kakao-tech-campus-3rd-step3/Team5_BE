@@ -45,11 +45,11 @@ public class UserPreferences {
     private Integer dailyQuestionLimit;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "question_mode", nullable = false, length = 10)
+    @Column(name = "question_mode", nullable = false, columnDefinition = "VARCHAR(20)")
     private QuestionMode questionMode;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_response_type", nullable = false, length = 10)
+    @Column(name = "user_response_type", nullable = false, columnDefinition = "VARCHAR(20)")
     private UserResponseType userResponseType;
 
     @Column(name = "time_limit_seconds")
