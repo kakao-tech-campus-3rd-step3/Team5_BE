@@ -2,6 +2,7 @@ use dailyq;
 
 /* ----- 안전한 재생성을 위해 FK 역순으로 드롭 ----- */
 DROP TABLE IF EXISTS feedbacks;
+DROP TABLE IF EXISTS companies;
 DROP TABLE IF EXISTS answers;
 DROP TABLE IF EXISTS user_flow_progress;
 DROP TABLE IF EXISTS question_jobs;
@@ -25,6 +26,16 @@ CREATE TABLE users (
                        refresh_token VARCHAR(512) NULL,
                        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*
+ COMPANIES
+ -
+ */
+CREATE TABLE companies (
+                           company_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                           company_name VARCHAR(100) NOT NULL UNIQUE,
+                           culture_fit_text MEDIUMTEXT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
@@ -132,13 +143,18 @@ CREATE TABLE answers (
 CREATE TABLE feedbacks (
                            feedback_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                            answer_id BIGINT NOT NULL,
+                           company_id BIGINT NULL,
                            status ENUM('PENDING', 'PROCESSING', 'DONE','FAILED') NOT NULL DEFAULT 'PENDING',
+                           feedback_type VARCHAR(20),
                            content MEDIUMTEXT NULL, -- entity 생성 후
                            latency_ms BIGINT NULL, -- entity 생성 후, 지연 시간 측정 필요
                                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                            CONSTRAINT fk_feedback_answer
                                FOREIGN KEY (answer_id) REFERENCES answers(answer_id) ON DELETE CASCADE,
+                           CONSTRAINT fk_feedback_company
+                               FOREIGN KEY (company_id) REFERENCES companies(company_id) ON DELETE CASCADE,
+                           INDEX idx_feedback_answer_company (answer_id, company_id),
                            INDEX idx_feedback_answer_status (answer_id, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
