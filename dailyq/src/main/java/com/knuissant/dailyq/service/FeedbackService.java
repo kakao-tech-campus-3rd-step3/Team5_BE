@@ -33,7 +33,7 @@ public class FeedbackService {
     @Transactional
     public Feedback createPendingFeedback(Answer answer) {
 
-        Feedback feedback = Feedback.create(answer, FeedbackStatus.PENDING);
+        Feedback feedback = Feedback.createGeneralFeedback(answer, FeedbackStatus.PENDING);
         return feedbackRepository.save(feedback);
     }
 

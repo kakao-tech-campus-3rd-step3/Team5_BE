@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import com.knuissant.dailyq.domain.answers.Answer;
+import com.knuissant.dailyq.domain.companies.Company;
 
 @Getter
 @Builder
@@ -42,6 +43,14 @@ public class Feedback {
     @JoinColumn(name = "answer_id", nullable = false)
     private Answer answer;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "feedback_type", nullable = false, length = 20)
+    private FeedbackType feedbackType;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private FeedbackStatus status;
@@ -58,9 +67,10 @@ public class Feedback {
     @Column(name = "updated_at", nullable = false, insertable = false)
     private LocalDateTime updatedAt;
 
-    public static Feedback create(Answer answer, FeedbackStatus status) {
+    public static Feedback createGeneralFeedback(Answer answer, FeedbackStatus status) {
         return Feedback.builder()
                 .answer(answer)
+                .feedbackType(FeedbackType.GENERAL)
                 .status(status)
                 .build();
     }
