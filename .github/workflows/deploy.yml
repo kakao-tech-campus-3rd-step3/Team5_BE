@@ -20,6 +20,7 @@ jobs:
         timeout: 30s
         command_timeout: 10m
         script: |
+          set -euo pipefail
           echo "=== 배포 시작 ==="
           cd ${{ secrets.PROJECT_PATH }}
           echo "=== 현재 브랜치: $(git branch --show-current) ==="
