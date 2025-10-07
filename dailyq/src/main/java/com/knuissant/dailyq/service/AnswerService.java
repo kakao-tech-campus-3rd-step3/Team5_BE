@@ -126,28 +126,42 @@ public class AnswerService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        Question question;
-        FollowUpQuestion followUpQuestion = null;
-        if (request.questionId() < 0) {
-            Long followUpQuestionId = Math.abs(request.questionId());
-            followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
-            question = followUpQuestion.getAnswer().getQuestion();
-        } else {
-            question = questionRepository.findById(request.questionId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
-        }
 
-        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, request.answerText());
-        if (followUpQuestion != null) {
-            answer.setFollowUpQuestion(followUpQuestion);
-            followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestion.getId());
-        }
-        Answer savedAnswer = answerRepository.save(answer);
+        Answer savedAnswer = isFollowUpQuestion(request.questionId())
+                ? handleFollowUpQuestionAnswer(request, user)
+                : handleRegularQuestionAnswer(request, user);
 
         Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
 
         return AnswerCreateResponse.from(savedAnswer, savedFeedback);
+    }
+
+    private boolean isFollowUpQuestion(Long questionId) {
+        return questionId < 0;
+    }
+
+    private Answer handleFollowUpQuestionAnswer(AnswerCreateRequest request, User user) {
+        Long followUpQuestionId = Math.abs(request.questionId());
+        FollowUpQuestion followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
+        Question question = followUpQuestion.getAnswer().getQuestion();
+
+        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
+        Answer answer = Answer.create(user, question, request.answerText());
+        answer.setFollowUpQuestion(followUpQuestion);
+
+        Answer savedAnswer = answerRepository.save(answer);
+        followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestionId);
+
+        return savedAnswer;
+    }
+
+    private Answer handleRegularQuestionAnswer(AnswerCreateRequest request, User user) {
+        Question question = questionRepository.findById(request.questionId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
+
+        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
+        Answer answer = Answer.create(user, question, request.answerText());
+        return answerRepository.save(answer);
     }
 
     @Transactional
