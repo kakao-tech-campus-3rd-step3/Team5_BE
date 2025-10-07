@@ -43,7 +43,7 @@ public class Feedback {
     private Answer answer;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     private FeedbackStatus status;
 
     @Column(columnDefinition = "MEDIUMTEXT")

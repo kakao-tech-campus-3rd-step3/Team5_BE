@@ -19,9 +19,9 @@ CREATE TABLE users (
                        user_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                        email VARCHAR(255) NOT NULL UNIQUE,
                        name VARCHAR(100),
-                       role ENUM('FREE','PAID','ADMIN') NOT NULL DEFAULT 'FREE',
+                       role VARCHAR(20) NOT NULL DEFAULT 'FREE',
                        streak INT NOT NULL DEFAULT 0,
-                       solved_today TINYINT(1) NOT NULL DEFAULT 0,
+                       solved_today TINYINT NOT NULL DEFAULT 0,
                        refresh_token VARCHAR(512) NULL,
                        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -53,11 +53,11 @@ CREATE TABLE jobs (
 CREATE TABLE user_preferences (
                              user_id BIGINT PRIMARY KEY,
                              daily_question_limit INT NOT NULL DEFAULT 1,
-                             question_mode ENUM('TECH','FLOW') NOT NULL DEFAULT 'TECH',
-                             user_response_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
+                             question_mode VARCHAR(20) NOT NULL DEFAULT 'TECH',
+                             user_response_type VARCHAR(20) NOT NULL DEFAULT 'TEXT',
                              time_limit_seconds INT DEFAULT 180,
                              notify_time TIME NULL,
-                             allow_push TINYINT(1) NOT NULL DEFAULT 0,
+                             allow_push TINYINT NOT NULL DEFAULT 0,
                              user_job BIGINT NOT NULL,
                              CONSTRAINT fk_user_prefs_user
                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -71,9 +71,9 @@ CREATE TABLE user_preferences (
    ========================= */
 CREATE TABLE questions (
                            question_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                           question_type ENUM('TECH','INTRO','MOTIVATION','PERSONALITY') NOT NULL,
+                           question_type VARCHAR(20) NOT NULL,
                            question_text MEDIUMTEXT NOT NULL,
-                           enabled TINYINT(1) NOT NULL DEFAULT 1,
+                           enabled TINYINT NOT NULL DEFAULT 1,
                            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                            CONSTRAINT uq_questions_text UNIQUE (question_text(255)),
@@ -98,7 +98,7 @@ CREATE TABLE question_jobs (
    ========================= */
 CREATE TABLE user_flow_progress (
                                     user_id BIGINT PRIMARY KEY,
-                                    next_phase ENUM('INTRO','MOTIVATION','TECH1','TECH2','PERSONALITY') NOT NULL DEFAULT 'INTRO',
+                                    next_phase VARCHAR(20) NOT NULL DEFAULT 'INTRO',
                                     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                     CONSTRAINT fk_flow_progress_user
                                         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -114,7 +114,7 @@ CREATE TABLE answers (
                          question_id BIGINT NOT NULL,
                          answer_text MEDIUMTEXT NOT NULL, -- 오디오 변환 후 answer 생성
                          level TINYINT NULL,
-                         starred TINYINT(1) NOT NULL DEFAULT 0, -- default 0
+                         starred TINYINT NOT NULL DEFAULT 0, -- default 0
                          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                          memo MEDIUMTEXT NULL, -- 메모 필드 추가
                          CONSTRAINT ck_answers_level CHECK (level IS NULL OR (level BETWEEN 1 AND 5)),
@@ -132,7 +132,7 @@ CREATE TABLE answers (
 CREATE TABLE feedbacks (
                            feedback_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                            answer_id BIGINT NOT NULL,
-                           status ENUM('PENDING', 'PROCESSING', 'DONE','FAILED') NOT NULL DEFAULT 'PENDING',
+                           status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
                            content MEDIUMTEXT NULL, -- entity 생성 후
                            latency_ms BIGINT NULL, -- entity 생성 후, 지연 시간 측정 필요
                                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
