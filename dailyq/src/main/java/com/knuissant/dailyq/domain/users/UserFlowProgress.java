@@ -40,7 +40,7 @@ public class UserFlowProgress {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "next_phase", nullable = false, length = 15)
+    @Column(name = "next_phase", nullable = false, columnDefinition = "VARCHAR(20)")
     private FlowPhase nextPhase;
 
     @Column(name = "updated_at", nullable = false)

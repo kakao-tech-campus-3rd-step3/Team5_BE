@@ -43,7 +43,7 @@ public class User {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     private UserRole role;
 
     @Column(nullable = false)
