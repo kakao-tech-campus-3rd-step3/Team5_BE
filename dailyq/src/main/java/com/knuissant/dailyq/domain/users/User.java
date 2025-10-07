@@ -52,10 +52,13 @@ public class User {
     @Column(name = "solved_today", nullable = false)
     private Boolean solvedToday;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "refresh_token", length = 512)
+    private String refreshToken;
+
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false, insertable = false)
     private LocalDateTime updatedAt;
 
     public static User create(UserCreateRequest request) {
@@ -66,6 +69,10 @@ public class User {
                 .streak(0)
                 .solvedToday(false)
                 .build();
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public void updateName(String newName) {

@@ -65,6 +65,7 @@ public class UserPreferences {
     @JoinColumn(name = "user_job", nullable = false)
     private Job userJob;
 
+
     public void updatePreferences(Integer dailyQuestionLimit, QuestionMode questionMode, UserResponseType answerType, Integer timeLimitSeconds, Boolean allowPush) {
         this.dailyQuestionLimit = dailyQuestionLimit;
         this.questionMode = questionMode;

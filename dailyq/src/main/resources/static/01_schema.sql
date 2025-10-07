@@ -1,3 +1,5 @@
+use dailyq;
+
 /* ----- 안전한 재생성을 위해 FK 검사 비활성화 후 드롭 ----- */
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS follow_up_questions;
@@ -22,8 +24,28 @@ CREATE TABLE users (
                        role ENUM('FREE','PAID','ADMIN') NOT NULL DEFAULT 'FREE',
                        streak INT NOT NULL DEFAULT 0,
                        solved_today TINYINT(1) NOT NULL DEFAULT 0,
+                       refresh_token VARCHAR(512) NULL,
                        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/* =========================
+   OCCUPATIONS (상위 카테고리)
+   ========================= */
+CREATE TABLE occupations (
+                            occupation_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                            occupation_name VARCHAR(100) NOT NULL UNIQUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/* =========================
+   JOBS (세부 직군)
+   ========================= */
+CREATE TABLE jobs (
+                     job_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                     job_name VARCHAR(100) NOT NULL UNIQUE,
+                     occupation_id BIGINT NOT NULL,
+                     CONSTRAINT fk_jobs_parent
+                         FOREIGN KEY (occupation_id) REFERENCES occupations(occupation_id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
@@ -31,35 +53,18 @@ CREATE TABLE users (
    - 사용자 대표 직군 1개 선택 (FK: jobs)
    ========================= */
 CREATE TABLE user_preferences (
-                              user_id BIGINT PRIMARY KEY,
-                              daily_question_limit INT NOT NULL DEFAULT 1,
-                              question_mode ENUM('TECH','FLOW') NOT NULL DEFAULT 'TECH',
-                              user_response_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
-                              time_limit_seconds INT DEFAULT 180,
-                              notify_time TIME NULL,
-                              allow_push TINYINT(1) NOT NULL DEFAULT 0,
-                              user_job BIGINT NOT NULL,
-                              CONSTRAINT fk_user_prefs_user
-                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-/* =========================
-   OCCUPATIONS (상위 카테고리)
-   ========================= */
-CREATE TABLE occupations (
-                             occupation_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                             occupation_name VARCHAR(100) NOT NULL UNIQUE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-/* =========================
-   JOBS (세부 직군)
-   ========================= */
-CREATE TABLE jobs (
-                      job_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                      job_name VARCHAR(100) NOT NULL UNIQUE,
-                      occupation_id BIGINT NOT NULL,
-                      CONSTRAINT fk_jobs_parent
-                          FOREIGN KEY (occupation_id) REFERENCES occupations(occupation_id) ON DELETE RESTRICT
+                             user_id BIGINT PRIMARY KEY,
+                             daily_question_limit INT NOT NULL DEFAULT 1,
+                             question_mode ENUM('TECH','FLOW') NOT NULL DEFAULT 'TECH',
+                             user_response_type ENUM('VOICE','TEXT') NOT NULL DEFAULT 'TEXT',
+                             time_limit_seconds INT DEFAULT 180,
+                             notify_time TIME NULL,
+                             allow_push TINYINT(1) NOT NULL DEFAULT 0,
+                             user_job BIGINT NOT NULL,
+                             CONSTRAINT fk_user_prefs_user
+                                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                             CONSTRAINT fk_user_prefs_job
+                                 FOREIGN KEY (user_job) REFERENCES jobs(job_id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
@@ -131,7 +136,7 @@ CREATE TABLE answers (
 CREATE TABLE feedbacks (
                            feedback_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                            answer_id BIGINT NOT NULL,
-                           status ENUM('PENDING','DONE','FAILED') NOT NULL DEFAULT 'PENDING',
+                           status ENUM('PENDING', 'PROCESSING', 'DONE','FAILED') NOT NULL DEFAULT 'PENDING',
                            content MEDIUMTEXT NULL, -- entity 생성 후
                            latency_ms BIGINT NULL, -- entity 생성 후, 지연 시간 측정 필요
                                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

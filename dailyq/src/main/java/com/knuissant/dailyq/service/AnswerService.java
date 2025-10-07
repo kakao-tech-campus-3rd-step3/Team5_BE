@@ -19,10 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
-import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
@@ -53,6 +53,8 @@ public class AnswerService {
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
     private final FollowUpQuestionService followUpQuestionService;
+    private final FeedbackService feedbackService;
+    private final ObjectMapper objectMapper;
 
     //API 스펙과 무관하며(오로지,내부사용) 재사용 가능성이 없다고 생각하여 따로 DTO를 만들지 않았습니다.
     private record CursorRequest(LocalDateTime createdAt, Long id) {
@@ -115,7 +117,7 @@ public class AnswerService {
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
         Feedback feedback = feedbackRepository.findByAnswerId(answerId).orElse(null);
-        return AnswerDetailResponse.of(answer, feedback);
+        return AnswerDetailResponse.of(answer, feedback, objectMapper);
 
     }
 
@@ -143,8 +145,7 @@ public class AnswerService {
         }
         Answer savedAnswer = answerRepository.save(answer);
 
-        Feedback feedback = Feedback.create(savedAnswer, FeedbackStatus.PENDING);
-        Feedback savedFeedback = feedbackRepository.save(feedback);
+        Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
 
         return AnswerCreateResponse.from(savedAnswer, savedFeedback);
     }
