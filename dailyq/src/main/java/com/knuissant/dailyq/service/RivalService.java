@@ -1,9 +1,13 @@
 package com.knuissant.dailyq.service;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -13,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.rivals.Rival;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.rivals.RivalListResponse;
@@ -44,15 +49,12 @@ public class RivalService {
         User sender = findUserByIdOrThrow(senderId);
         User receiver = findUserByIdOrThrow(receiverId);
 
-        if (rivalRepository.existsBySenderIdAndReceiverId(senderId, receiverId)) {
-
-            throw new BusinessException(ErrorCode.ALREADY_FOLLOWING_RIVAL, senderId,
-                    receiverId);
+        try {
+            Rival rivalShip = rivalRepository.save(Rival.create(sender, receiver));
+            return RivalResponse.from(rivalShip);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.ALREADY_FOLLOWING_RIVAL, senderId, receiverId);
         }
-
-        Rival rivalShip = rivalRepository.save(Rival.create(sender, receiver));
-
-        return RivalResponse.from(rivalShip);
     }
 
     public void unfollowRival(Long senderId, Long receiverId) {
@@ -70,14 +72,19 @@ public class RivalService {
         long totalAnswerCount = answerRepository.countByUserId(userId);
 
         LocalDateTime forOneYear = LocalDateTime.now().minusYears(1);
-        List<Object[]> rawResults = answerRepository.findDailySolveCountsByUserId(
-                userId, forOneYear);
+        List<Answer> answers = answerRepository.findByUserIdAndCreatedAtGreaterThanEqual(userId,
+                forOneYear);
 
-        List<DailySolveCount> dailySolveCounts = rawResults.stream()
-                .map(row -> new DailySolveCount(
-                        ((Date) row[0]).toLocalDate(),
-                        ((Number) row[1]).longValue()
-                ))
+        Map<LocalDate, Long> countByDate = answers.stream()
+                .collect(Collectors.groupingBy(
+                        answer -> answer.getCreatedAt().toLocalDate(),
+                        Collectors.counting()
+                ));
+
+        List<DailySolveCount> dailySolveCounts = countByDate.entrySet().stream()
+                //Map은 직접 stream()이 불가 -> entrySet()을 거치기
+                .map(entry -> new DailySolveCount(entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparing(DailySolveCount::date).reversed())
                 .toList();
 
         return RivalProfileResponse.from(user, totalAnswerCount, dailySolveCounts);
@@ -89,14 +96,14 @@ public class RivalService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        return RivalSearchResponse.from(user);
+        return RivalSearchResponse.from(user.getId(), user.getName(), user.getEmail());
     }
 
     @Transactional(readOnly = true)
     public RivalListResponse.CursorResult getFollowingRivalList(Long userId, Long lastId,
             int limit) {
 
-        Pageable pageable = PageRequest.of(0, limit + 1, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(0, limit + 1);
 
         Slice<Rival> rivalsSlice = (lastId == null)
                 ? rivalRepository.findAllBySenderId(userId, pageable)
@@ -125,19 +132,21 @@ public class RivalService {
 
     private RivalListResponse.CursorResult createCursorResult(Slice<Rival> rivalsSlice, int limit,
             boolean isFollowingList) {
-        List<Rival> rivals = rivalsSlice.getContent();
-        boolean hasNext = rivals.size() > limit;
 
-        List<RivalListResponse> items = rivals.stream()
+        boolean hasNext = rivalsSlice.hasNext();
+
+        List<RivalListResponse> items = rivalsSlice.getContent().stream()
                 .limit(limit)
                 .map(rival -> {
                     // boolean 플래그 값에 따라 sender를 가져올지 receiver를 가져올지 결정
                     User userToShow = isFollowingList ? rival.getReceiver() : rival.getSender();
-                    return RivalListResponse.from(userToShow);
+                    return RivalListResponse.from(userToShow.getId(), userToShow.getName(),
+                            userToShow.getEmail());
                 })
                 .toList();
 
-        Long nextCursor = hasNext ? rivals.get(limit).getId() : null;
+        Long nextCursor = hasNext && !items.isEmpty()
+                ? items.getLast().userId() : null;
 
         return new RivalListResponse.CursorResult(items, nextCursor, hasNext);
     }

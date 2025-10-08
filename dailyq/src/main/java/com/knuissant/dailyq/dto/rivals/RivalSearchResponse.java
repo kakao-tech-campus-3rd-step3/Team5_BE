@@ -1,18 +1,14 @@
 package com.knuissant.dailyq.dto.rivals;
 
-import com.knuissant.dailyq.domain.users.User;
-
 public record RivalSearchResponse(
         Long userId,
         String email,
         String name
 ) {
 
-    public static RivalSearchResponse from(User user) {
+    public static RivalSearchResponse from(Long userId, String name, String email) {
         return new RivalSearchResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getName()
+                userId, name, email
         );
     }
 }

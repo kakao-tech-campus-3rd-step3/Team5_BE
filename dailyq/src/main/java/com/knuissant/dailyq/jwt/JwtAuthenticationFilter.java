@@ -74,18 +74,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @return 추출된 토큰 문자열 (없으면 null)
      */
     private String resolveToken(HttpServletRequest request) {
-        // [1순위] URL 쿼리 파라미터에서 'token'을 찾습니다.
-        String tokenFromParam = request.getParameter("token");
-        if (StringUtils.hasText(tokenFromParam)) {
-            return tokenFromParam;
-        }
-
-        // [2순위] HTTP Authorization 헤더에서 'Bearer' 토큰을 찾습니다.
+        // HTTP Authorization 헤더에서 'Bearer' 토큰을 찾습니다.
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            // "Bearer " 접두사를 제거한 순수 토큰 값을 반환합니다.
             return bearerToken.substring(7);
         }
-
+        // 헤더에 유효한 Bearer 토큰이 없으면 null을 반환합니다.
         return null;
     }
 

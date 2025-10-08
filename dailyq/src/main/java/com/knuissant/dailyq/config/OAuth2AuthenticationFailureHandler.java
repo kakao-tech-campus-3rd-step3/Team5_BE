@@ -2,20 +2,20 @@ package com.knuissant.dailyq.config;
 
 import java.io.IOException;
 
-import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
-import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.knuissant.dailyq.exception.ErrorCode;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+
 import lombok.extern.slf4j.Slf4j;
+
+import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.ErrorCode;
 
 /**
  * OAuth2 소셜 로그인 실패 시 호출되는 커스텀 핸들러입니다.
@@ -23,28 +23,29 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
-    private final ObjectMapper objectMapper;
+public class OAuth2AuthenticationFailureHandler implements AuthenticationFailureHandler {
+
+    private final HandlerExceptionResolver handlerExceptionResolver;
+
+    // @Qualifier를 사용하여 Spring이 기본으로 등록하는 handlerExceptionResolver를 명시적으로 주입받습니다.
+    public OAuth2AuthenticationFailureHandler(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
+        this.handlerExceptionResolver = handlerExceptionResolver;
+    }
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
         log.warn("OAuth2 Login Failed: {}", exception.getMessage(), exception);
 
-        // 소셜 로그인 실패 시 INVALID_SOCIAL_LOGIN 에러 코드를 사용합니다.
-        ErrorCode errorCode = ErrorCode.INVALID_SOCIAL_LOGIN;
-
-        response.setStatus(errorCode.getStatus().value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding("UTF-8");
-
-        ProblemDetail problemDetail = errorCode.toProblemDetail();
-        // 에러의 상세 원인을 ProblemDetail에 추가해 클라이언트가 더 자세한 정보를 알 수 있게 합니다.
-        problemDetail.setProperty("error_message", exception.getLocalizedMessage());
-
-        String jsonResponse = objectMapper.writeValueAsString(problemDetail);
-        response.getWriter().write(jsonResponse);
+        // 직접 응답을 만드는 대신, BusinessException을 생성하여 예외 처리를 위임합니다.
+        // 이렇게 하면 ExceptionHandlerAdvice의 handleBusinessException 메소드가 호출되어 일관된 응답을 보낼 수 있습니다.
+        handlerExceptionResolver.resolveException(
+                request,
+                response,
+                null,
+                new BusinessException(ErrorCode.INVALID_SOCIAL_LOGIN, exception.getLocalizedMessage())
+        );
     }
 }
+

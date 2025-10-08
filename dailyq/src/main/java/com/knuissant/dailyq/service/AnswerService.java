@@ -19,10 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.Question;
+import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
@@ -49,11 +52,19 @@ public class AnswerService {
     private final FeedbackRepository feedbackRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final FollowUpQuestionService followUpQuestionService;
     private final FeedbackService feedbackService;
+    private final ObjectMapper objectMapper;
 
     //API 스펙과 무관하며(오로지,내부사용) 재사용 가능성이 없다고 생각하여 따로 DTO를 만들지 않았습니다.
     private record CursorRequest(LocalDateTime createdAt, Long id) {
 
+    }
+
+    private void checkAnswerOwnership(Long userId, Answer answer) {
+        if (!answer.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -87,9 +98,7 @@ public class AnswerService {
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
         // 인가
-        if (!answer.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
-        }
+        checkAnswerOwnership(userId, answer);
 
         if (request.memo() != null) {
             answer.updateMemo(request.memo());
@@ -107,42 +116,71 @@ public class AnswerService {
     }
 
     @Transactional(readOnly = true)
-    public AnswerDetailResponse getAnswerDetail(Long answerId) {
+    public AnswerDetailResponse getAnswerDetail(Long userId, Long answerId) {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+
+        checkAnswerOwnership(userId, answer);
+
         Feedback feedback = feedbackRepository.findByAnswerId(answerId).orElse(null);
-        return AnswerDetailResponse.of(answer, feedback);
+        return AnswerDetailResponse.of(answer, feedback, objectMapper);
 
     }
 
     @Transactional
-    public AnswerCreateResponse submitAnswer(AnswerCreateRequest request, Long userId) {
+    public AnswerCreateResponse submitAnswer(Long userId, AnswerCreateRequest request) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        Question question = questionRepository.findById(request.questionId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
 
-        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, request.answerText());
-        Answer savedAnswer = answerRepository.save(answer);
+        Answer savedAnswer = isFollowUpQuestion(request.questionId())
+                ? handleFollowUpQuestionAnswer(request, user)
+                : handleRegularQuestionAnswer(request, user);
 
         Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
 
         return AnswerCreateResponse.from(savedAnswer, savedFeedback);
     }
 
+    private boolean isFollowUpQuestion(Long questionId) {
+        return questionId < 0;
+    }
+
+    private Answer handleFollowUpQuestionAnswer(AnswerCreateRequest request, User user) {
+        Long followUpQuestionId = Math.abs(request.questionId());
+        FollowUpQuestion followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
+        Question question = followUpQuestion.getAnswer().getQuestion();
+
+        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
+        Answer answer = Answer.create(user, question, request.answerText());
+        answer.setFollowUpQuestion(followUpQuestion);
+
+        Answer savedAnswer = answerRepository.save(answer);
+        followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestionId);
+
+        return savedAnswer;
+    }
+
+    private Answer handleRegularQuestionAnswer(AnswerCreateRequest request, User user) {
+        Question question = questionRepository.findById(request.questionId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
+
+        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
+        Answer answer = Answer.create(user, question, request.answerText());
+        return answerRepository.save(answer);
+    }
+
     @Transactional
-    public AnswerLevelUpdateResponse updateAnswerLevel(Long answerId,
+    public AnswerLevelUpdateResponse updateAnswerLevel(Long userId, Long answerId,
             AnswerLevelUpdateRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
 
-        // 답변의 user와 현재 user가 같은지 확인 추가
-        answer.updateLevel(request.level());
+        checkAnswerOwnership(userId, answer);
 
+        answer.updateLevel(request.level());
         return AnswerLevelUpdateResponse.from(answer);
     }
 

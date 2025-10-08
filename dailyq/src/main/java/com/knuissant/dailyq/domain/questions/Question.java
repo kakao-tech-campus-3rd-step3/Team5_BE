@@ -39,7 +39,7 @@ public class Question {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "question_type", nullable = false, length = 15)
+    @Column(name = "question_type", nullable = false, columnDefinition = "VARCHAR(20)")
     private QuestionType questionType;
 
     @Column(name = "question_text", columnDefinition = "MEDIUMTEXT", nullable = false)
@@ -56,9 +56,9 @@ public class Question {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "question_jobs",
-        joinColumns = @JoinColumn(name = "question_id"),
-        inverseJoinColumns = @JoinColumn(name = "job_id")
+            name = "question_jobs",
+            joinColumns = @JoinColumn(name = "question_id"),
+            inverseJoinColumns = @JoinColumn(name = "job_id")
     )
     @Builder.Default
     private Set<Job> jobs = new LinkedHashSet<>();

@@ -5,8 +5,6 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 
@@ -19,16 +17,6 @@ public interface AnswerRepository extends JpaRepository<Answer, Long>,
 
     long countByUserId(Long userId);
 
-    @Query(value = """
-            SELECT DATE(a.created_at) as date, COUNT(*) as count 
-            FROM answers a 
-            WHERE a.user_id = :userId 
-              AND a.created_at >= :startDate 
-            GROUP BY DATE(a.created_at)
-            ORDER BY date DESC
-            """, nativeQuery = true)
-    List<Object[]> findDailySolveCountsByUserId(
-            @Param("userId") Long userId,
-            @Param("startDate") LocalDateTime startDate);
+    List<Answer> findByUserIdAndCreatedAtGreaterThanEqual(Long userId, LocalDateTime startOfDay);
 }
 
