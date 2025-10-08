@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
@@ -33,18 +34,22 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UserRepository userRepository;
     private final OAuth2AuthenticationFailureHandler failureHandler;
     private final JwtProperties jwtProperties;
+    private final String frontendUrl; // Frontend URL 주입받을 필드 추가
 
     // @RequiredArgsConstructor 대신 명시적 생성자로 변경하여 @Value 주입
     public OAuth2AuthenticationSuccessHandler(
             TokenProvider tokenProvider,
             UserRepository userRepository,
             OAuth2AuthenticationFailureHandler failureHandler,
-            JwtProperties jwtProperties) { // @Value 대신 JwtProperties 주입
+            JwtProperties jwtProperties,
+            @Value("${frontend.url}") String frontendUrl) { // @Value 대신 JwtProperties 주입
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
         this.failureHandler = failureHandler;
         this.jwtProperties = jwtProperties;
+        this.frontendUrl = frontendUrl;
     }
+
     /**
      * OAuth2 인증 성공 시 호출되는 핸들러 메서드
      * 1. OAuth2User로부터 이메일 정보를 추출
