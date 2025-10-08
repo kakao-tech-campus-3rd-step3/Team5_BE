@@ -12,14 +12,14 @@ public enum ErrorCode {
     // Bad Request(400)
     VALIDATION_FAILED("VALIDATION_FAILED", "입력값에 대한 유효성 검사에 실패했습니다.", HttpStatus.BAD_REQUEST),
     MULTIPLE_FILTER_NOT_ALLOWED("MULTIPLE_FILTER_NOT_ALLOWED", "조회 필터는 단 하나만 설정할 수 있습니다.", HttpStatus.BAD_REQUEST),
-
-      CANNOT_RIVAL_YOURSELF("CANNOT_RIVAL_YOURSELF","자기 자신에게는 라이벌 신청을 할 수 없습니다.",HttpStatus.BAD_REQUEST),
+    CANNOT_RIVAL_YOURSELF("CANNOT_RIVAL_YOURSELF", "자기 자신에게는 라이벌 신청을 할 수 없습니다.", HttpStatus.BAD_REQUEST),
 
     // Not Found(404)
     USER_NOT_FOUND("USER_NOT_FOUND", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     ANSWER_NOT_FOUND("ANSWER_NOT_FOUND", "해당 답변을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     QUESTION_NOT_FOUND("QUESTION_NOT_FOUND", "해당 질문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     FEEDBACK_NOT_FOUND("FEEDBACK_NOT_FOUND", "해당 피드백을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    FOLLOWUP_QUESTION_NOT_FOUND("FOLLOWUP_QUESTION_NOT_FOUND", "해당 꼬리질문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     NO_QUESTION_AVAILABLE("NO_QUESTION_AVAILABLE", "조건에 맞는 질문이 없습니다.", HttpStatus.NOT_FOUND),
     OCCUPATION_NOT_FOUND("OCCUPATION_NOT_FOUND", "직군을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     JOB_NOT_FOUND("JOB_NOT_FOUND", "직업을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -27,6 +27,9 @@ public enum ErrorCode {
     // etc 4xx
     FORBIDDEN_ACCESS("FORBIDDEN_ACCESS", "리소스에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
     DAILY_LIMIT_REACHED("DAILY_LIMIT_REACHED", "오늘 가능한 질문을 모두 소진했습니다.", HttpStatus.TOO_MANY_REQUESTS),
+    RIVAL_REQUEST_ALREADY_EXIST("RIVAL_REQUEST_ALREADY_EXIST", "이미 라이벌 요청이 존재합니다.", HttpStatus.CONFLICT),
+    FOLLOWUP_QUESTION_ALREADY_EXISTS("FOLLOWUP_QUESTION_ALREADY_EXISTS", "이미 꼬리질문이 존재합니다.", HttpStatus.CONFLICT),
+    FOLLOWUP_GENERATION_NOT_ALLOWED("FOLLOWUP_GENERATION_NOT_ALLOWED", "해당 답변에는 꼬리질문을 생성할 수 없습니다.", HttpStatus.CONFLICT),
     ALREADY_FOLLOWING_RIVAL("ALREADY_FOLLOWING_RIVAL", "이미 팔로우 중인 라이벌입니다.", HttpStatus.CONFLICT),
     USER_PREFERENCES_ALREADY_EXISTS("USER_PREFERENCES_ALREADY_EXISTS", "사용자 설정 정보가 이미 존재합니다.", HttpStatus.CONFLICT),
     INVALID_TOKEN("INVALID_TOKEN", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED),
@@ -36,6 +39,7 @@ public enum ErrorCode {
     LOGIN_FAILED("LOGIN_FAILED", "로그인에 실패했습니다.", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS", "인증되지 않은 접근입니다.", HttpStatus.UNAUTHORIZED),
     INVALID_CREDENTIALS("INVALID_CREDENTIALS", "잘못된 인증 정보입니다.", HttpStatus.UNAUTHORIZED),
+    FEEDBACK_ALREADY_PROCESSED("FEEDBACK_ALREADY_PROCESSED", "이미 처리 중인 피드백입니다.", HttpStatus.CONFLICT),
     //5xx System Errors
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부에 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     CURSOR_GENERATION_FAILED("CURSOR_GENERATION_FAILED", "커서 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
