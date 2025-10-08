@@ -1,3 +1,5 @@
+use dailyq;
+
 /* ----- 안전한 재생성을 위해 FK 역순으로 드롭 ----- */
 DROP TABLE IF EXISTS feedbacks;
 DROP TABLE IF EXISTS answers;
@@ -20,6 +22,7 @@ CREATE TABLE users (
                        role ENUM('FREE','PAID','ADMIN') NOT NULL DEFAULT 'FREE',
                        streak INT NOT NULL DEFAULT 0,
                        solved_today TINYINT(1) NOT NULL DEFAULT 0,
+                       refresh_token VARCHAR(512) NULL,
                        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

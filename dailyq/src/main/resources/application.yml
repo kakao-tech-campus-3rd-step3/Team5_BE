@@ -1,3 +1,4 @@
+
 spring:
   application:
     name: DailyQ
@@ -18,19 +19,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-
-  ai:
-    openai:
-      api-key: ${OPENAI_API_KEY}
-      chat:
-        options:
-          model: gpt-4.1-nano
-    retry:
-      max-attempts: 3
-      backoff:
-        initial-interval: 2000ms
-        multiplier: 2
-      on-http-codes: [ 429, 500, 503 ]
 
   # OAuth2 클라이언트 설정
   security:
@@ -61,6 +49,19 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4.1-nano
+    retry:
+      max-attempts: 3
+      backoff:
+        initial-interval: 2000ms
+        multiplier: 2
+      on-http-codes: [ 429, 500, 503 ]
+
 springdoc:
   api-docs:
     path: /api-docs
@@ -70,6 +71,17 @@ springdoc:
     tagsSorter: alpha
     # HTTPS 환경에서 Mixed Content 오류 방지
     use-root-path: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration-millis: ${JWT_ACCESS_TOKEN_EXPIRATION_MILLIS}   # 1시간
+  refresh-token-expiration-millis: ${JWT_REFRESH_TOKEN_EXPIRATION_MILLIS} # 7일
+
+# OpenAPI 서버 설정
+openapi:
+  server:
+    url: http://localhost:8080
+    description: Development Server
 
 # CORS 설정
 cors:
@@ -89,16 +101,24 @@ management:
     env:
       enabled: true
 
-jwt:
-  secret: ${jwt.secret}
-  access-token-expiration-millis: ${jwt.access-token-expiration-millis}   # 1시간
-  refresh-token-expiration-millis: ${jwt.refresh-token-expiration-millis} # 7일
-
+---
 # 프로덕션 환경 설정
 spring:
   config:
     activate:
       on-profile: prod
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: https://be.dailyq.my/login/oauth2/code/google
+          kakao:
+            redirect-uri: https://be.dailyq.my/login/oauth2/code/kakao
+
+server:
+  # 프록시/로드밸런서 포워드 헤더 신뢰 (X-Forwarded-Proto 등)
+  forward-headers-strategy: native
 
 # OpenAPI 서버 설정 (프로덕션)
 openapi:
