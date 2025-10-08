@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.Set;
 
 import io.jsonwebtoken.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,6 +17,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.domain.users.User;
+import com.knuissant.dailyq.config.JwtProperties;
 
 /**
  * JWT 토큰 생성, 검증 및 관련 작업을 처리하는 서비스
@@ -34,22 +34,14 @@ public class TokenProvider {
 
     /**
      * TokenProvider 생성자
-     * 설정 파일에서 시크릿 키와 토큰 만료 시간을 주입받아 초기화
-     *
-     * @param secret BASE64로 인코딩된 시크릿 키
-     * @param accessTokenExpirationMillis 액세스 토큰 만료 시간(밀리초)
-     * @param refreshTokenExpirationMillis 리프레시 토큰 만료 시간(밀리초)
      */
-    public TokenProvider(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.access-token-expiration-millis}") long accessTokenExpirationMillis,
-            @Value("${jwt.refresh-token-expiration-millis}") long refreshTokenExpirationMillis
-    ) {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
+    public TokenProvider(JwtProperties jwtProperties) {
+        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.secret());
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.accessTokenExpirationMillis = accessTokenExpirationMillis;
-        this.refreshTokenExpirationMillis = refreshTokenExpirationMillis;
-        this.jwtParser = Jwts.parserBuilder().setSigningKey(this.key).build();}
+        this.accessTokenExpirationMillis = jwtProperties.accessTokenExpirationMillis();
+        this.refreshTokenExpirationMillis = jwtProperties.refreshTokenExpirationMillis();
+        this.jwtParser = Jwts.parserBuilder().setSigningKey(this.key).build();
+    }
 
     /**
      * 사용자 정보를 기반으로 액세스 토큰을 생성

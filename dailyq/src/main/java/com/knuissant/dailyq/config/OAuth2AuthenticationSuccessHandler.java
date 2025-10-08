@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
@@ -33,18 +32,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final TokenProvider tokenProvider;
     private final UserRepository userRepository;
     private final OAuth2AuthenticationFailureHandler failureHandler;
-    private final long refreshTokenExpirationMillis; // 설정 파일에서 주입받을 필드 추가
+    private final JwtProperties jwtProperties;
 
     // @RequiredArgsConstructor 대신 명시적 생성자로 변경하여 @Value 주입
     public OAuth2AuthenticationSuccessHandler(
             TokenProvider tokenProvider,
             UserRepository userRepository,
             OAuth2AuthenticationFailureHandler failureHandler,
-            @Value("${jwt.refresh-token-expiration-millis}") long refreshTokenExpirationMillis) {
+            JwtProperties jwtProperties) { // @Value 대신 JwtProperties 주입
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
         this.failureHandler = failureHandler;
-        this.refreshTokenExpirationMillis = refreshTokenExpirationMillis;
+        this.jwtProperties = jwtProperties;
     }
     /**
      * OAuth2 인증 성공 시 호출되는 핸들러 메서드
@@ -105,7 +104,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
      */
     private void addRefreshTokenToCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
-                .maxAge(refreshTokenExpirationMillis / 1000)
+                .maxAge(jwtProperties.refreshTokenExpirationMillis() / 1000)
                 .path("/")
                 .secure(true)
                 .httpOnly(true)
