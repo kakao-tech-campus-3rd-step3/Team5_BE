@@ -10,7 +10,9 @@ reviews:
   # 자동 리뷰 활성화 여부
   # 옵션: true, false
   # true면 PR이 생성되거나 업데이트될 때 자동으로 리뷰 수행
-  auto_review: true
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
   
   # 자동 Approve 비활성화
   # 옵션: true, false
