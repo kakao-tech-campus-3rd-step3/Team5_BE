@@ -6,48 +6,36 @@
 language: ko-KR
 
 # 리뷰 설정
+# CodeRabbit 스키마에 맞춘 설정 (additionalProperties: false)
 reviews:
-  # 자동 리뷰 활성화 여부
-  # 옵션: true, false
-  # true면 PR이 생성되거나 업데이트될 때 자동으로 리뷰 수행
+  # 리뷰 프로필 설정
+  # 옵션: chill (관대), assertive (엄격)
+  # chill: 코멘트만 남기고 상태 변경 안 함
+  profile: chill
+  
+  # Request Changes 워크플로우 비활성화
+  # false로 설정하면 CodeRabbit이 자동으로 "변경 요청"을 제출하지 않음
+  request_changes_workflow: false
+  
+  # 높은 수준의 요약 생성
+  # true면 PR 전체에 대한 요약 코멘트 생성
+  high_level_summary: true
+  
+  # 시 형식 요약 비활성화
+  # false로 설정하면 일반 텍스트로 요약 작성
+  poem: false
+  
+  # 리뷰 상태 변경 비활성화 (Approve/Request Changes 하지 않음)
+  # false로 설정하면 코멘트만 남기고 PR 상태를 변경하지 않음
+  review_status: false
+  
+  # Walkthrough 섹션 접기 여부
+  collapse_walkthrough: false
+  
+  # 자동 리뷰 설정
   auto_review:
     enabled: true
     auto_incremental_review: true
-  
-  # 자동 Approve 비활성화
-  # 옵션: true, false
-  # false로 설정하면 CodeRabbit이 자동으로 PR을 approve하지 않음
-  auto_approve: false
-  
-  # 자동 Request Changes 비활성화
-  # 옵션: true, false
-  # false로 설정하면 CodeRabbit이 자동으로 "변경 요청"을 제출하지 않음
-  auto_request_changes: false
-  
-  # PR이 draft일 때도 리뷰 수행 여부
-  # 옵션: true, false
-  # true면 draft PR도 리뷰, false면 ready 상태의 PR만 리뷰
-  review_on_draft: false
-  
-  # 리뷰 요약 생성 여부
-  # 옵션: true, false
-  # true면 PR 전체에 대한 요약 코멘트 생성
-  summary: true
-  
-  # 세부 코멘트 생성 여부
-  # 옵션: true, false
-  # true면 코드 라인별 상세 코멘트 작성
-  detailed_comments: true
-  
-  # 시 리뷰 생성 여부 (재미있는 시 형식의 PR 요약)
-  # 옵션: true, false
-  # true면 PR 요약을 시 형식으로 작성
-  poem: false
-  
-  # 리뷰 우선순위 설정
-  # 옵션: high, medium, low
-  # high: 모든 이슈 리포트, medium: 중요 이슈만, low: 심각한 이슈만
-  priority: medium
 
 # 체크 항목 설정
 checks:
