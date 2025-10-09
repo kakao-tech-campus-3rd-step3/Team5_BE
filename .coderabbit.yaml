@@ -1,0 +1,261 @@
+# CodeRabbit 설정 파일
+
+# 언어 설정
+# 옵션: en-US, ko-KR, ja-JP 등
+# CodeRabbit이 리뷰 코멘트를 작성할 때 사용할 언어
+language: ko-KR
+
+# 리뷰 설정
+reviews:
+  # 자동 리뷰 활성화 여부
+  # 옵션: true, false
+  # true면 PR이 생성되거나 업데이트될 때 자동으로 리뷰 수행
+  auto_review: true
+  
+  # PR이 draft일 때도 리뷰 수행 여부
+  # 옵션: true, false
+  # true면 draft PR도 리뷰, false면 ready 상태의 PR만 리뷰
+  review_on_draft: false
+  
+  # 리뷰 요약 생성 여부
+  # 옵션: true, false
+  # true면 PR 전체에 대한 요약 코멘트 생성
+  summary: true
+  
+  # 세부 코멘트 생성 여부
+  # 옵션: true, false
+  # true면 코드 라인별 상세 코멘트 작성
+  detailed_comments: true
+  
+  # 시 리뷰 생성 여부 (재미있는 시 형식의 PR 요약)
+  # 옵션: true, false
+  # true면 PR 요약을 시 형식으로 작성
+  poem: false
+  
+  # 리뷰 우선순위 설정
+  # 옵션: high, medium, low
+  # high: 모든 이슈 리포트, medium: 중요 이슈만, low: 심각한 이슈만
+  priority: medium
+
+# 체크 항목 설정
+checks:
+  # 보안 취약점 검사
+  # 옵션: true, false
+  # SQL injection, XSS, 하드코딩된 비밀번호 등 검사
+  security: true
+  
+  # 성능 이슈 검사
+  # 옵션: true, false
+  # N+1 쿼리, 불필요한 반복문 등 성능 문제 검사
+  performance: true
+  
+  # 코드 스타일 검사
+  # 옵션: true, false
+  # 네이밍 규칙, 포맷팅 등 스타일 가이드 준수 여부 검사
+  style: true
+  
+  # 베스트 프랙티스 검사
+  # 옵션: true, false
+  # 디자인 패턴, 안티패턴 등 모범 사례 준수 여부 검사
+  best_practices: true
+  
+  # 버그 가능성 검사
+  # 옵션: true, false
+  # null pointer, 예외 처리 누락 등 잠재적 버그 검사
+  bugs: true
+  
+  # 테스트 커버리지 검사
+  # 옵션: true, false
+  # 테스트 코드 존재 여부 및 충분성 검사
+  test_coverage: true
+  
+  # 문서화 검사
+  # 옵션: true, false
+  # JavaDoc, 주석 등 문서화 충실도 검사
+  documentation: true
+
+# 무시 패턴 설정
+ignore:
+  # 리뷰에서 제외할 파일/디렉토리 패턴 (glob 패턴 사용)
+  paths:
+    - "*.txt"                   # 텍스트 파일 제외
+    - "**/build/**"             # 빌드 결과물 제외
+    - "**/target/**"            # Maven 빌드 결과물 제외
+    - "**/node_modules/**"      # NPM 의존성 제외
+    - "**/dist/**"              # 배포 파일 제외
+    - "**/*.min.js"             # 압축된 JS 파일 제외
+    - "**/generated/**"         # 자동 생성된 파일 제외
+    - "**/migrations/**"        # DB 마이그레이션 스크립트 제외
+    
+  # 리뷰에서 제외할 규칙 (특정 타입의 코멘트 비활성화)
+  # 옵션: security, performance, style, best_practices, bugs, documentation
+  rules: []
+
+# 커스텀 규칙 설정
+custom_rules:
+  # 프로젝트별 특별한 규칙 정의
+  # 예: 특정 라이브러리 사용 금지, 네이밍 규칙 등
+  enabled: true
+  
+  # 커스텀 규칙 목록
+  rules:
+    # 1. Lombok @Data 어노테이션 사용 금지
+    # DTO는 record 타입, 엔티티/설정 클래스는 @Getter 사용
+    - name: "no-lombok-data"
+      pattern: "@Data"
+      message: "@Data는 사용하지 않습니다. DTO는 record 타입을, 엔티티는 @Getter와 필요시 @Setter를 사용하세요."
+      severity: error
+    
+    # 2. 서비스 레이어에서 필드 주입 금지 (@Autowired 직접 사용)
+    # @RequiredArgsConstructor + private final 패턴 강제
+    - name: "no-field-injection-in-service"
+      pattern: "@Autowired\\s+private\\s+\\w+\\s+\\w+Service"
+      message: "필드 주입 대신 생성자 주입을 사용하세요. @RequiredArgsConstructor와 private final을 사용하세요."
+      severity: error
+    
+    # 3. 예외 처리 시 직접 throw new RuntimeException 금지
+    # BusinessException + ErrorCode 패턴 사용
+    - name: "use-business-exception"
+      pattern: "throw new RuntimeException\\("
+      message: "RuntimeException 대신 BusinessException과 ErrorCode를 사용하세요."
+      severity: error
+    
+    # 4. 예외 처리 시 직접 throw new Exception 금지
+    - name: "no-generic-exception"
+      pattern: "throw new Exception\\("
+      message: "Generic Exception 대신 BusinessException, InfraException 등 도메인에 맞는 예외를 사용하세요."
+      severity: error
+    
+    # 5. 서비스 메서드에 @Transactional 누락 검사
+    # 조회용 메서드는 @Transactional(readOnly = true) 사용
+    - name: "service-needs-transactional"
+      pattern: "public class \\w+Service"
+      message: "Service 클래스의 public 메서드는 @Transactional을 명시해야 합니다. 조회는 @Transactional(readOnly = true)를 사용하세요."
+      severity: warning
+    
+    # 6. DTO는 record 타입 사용 권장
+    - name: "dto-should-use-record"
+      pattern: "public class \\w+(Request|Response|Dto)\\s*\\{"
+      message: "DTO는 불변 객체인 record 타입을 사용하는 것을 권장합니다."
+      severity: warning
+    
+    # 7. 컨트롤러 응답은 ResponseEntity 사용
+    - name: "controller-use-response-entity"
+      pattern: "@(Get|Post|Put|Patch|Delete)Mapping.*\\s+public\\s+(?!ResponseEntity)\\w+"
+      message: "컨트롤러 메서드는 ResponseEntity를 반환하도록 작성하세요."
+      severity: warning
+    
+    # 8. System.out.println 사용 금지 (로거 사용)
+    - name: "no-system-out"
+      pattern: "System\\.out\\.print"
+      message: "System.out.println 대신 Logger를 사용하세요. (예: log.info, log.error)"
+      severity: error
+    
+    # 9. 하드코딩된 문자열 URL 경고
+    - name: "no-hardcoded-urls"
+      pattern: "\"https?://[^\"]+\""
+      message: "URL은 application.yml이나 상수로 관리하세요."
+      severity: warning
+    
+    # 10. Validation 어노테이션 없는 Request DTO 경고
+    - name: "request-dto-needs-validation"
+      pattern: "record \\w+Request\\([^)]*\\)\\s*\\{"
+      message: "Request DTO는 @NotNull, @NotBlank, @Size 등 validation 어노테이션을 추가하세요."
+      severity: info
+    
+    # 11. 빈 catch 블록 금지
+    - name: "no-empty-catch"
+      pattern: "catch\\s*\\([^)]+\\)\\s*\\{\\s*\\}"
+      message: "빈 catch 블록은 피하세요. 최소한 로깅을 추가하거나 적절한 예외 처리를 하세요."
+      severity: error
+    
+    # 12. TODO/FIXME 주석 추적
+    - name: "track-todo-comments"
+      pattern: "(TODO|FIXME):"
+      message: "TODO/FIXME 주석이 발견되었습니다. 이슈로 등록하거나 즉시 해결하세요."
+      severity: info
+    
+    # 13. 테스트 코드에서 @Disabled 사용 경고
+    - name: "warn-disabled-tests"
+      pattern: "@Disabled"
+      message: "비활성화된 테스트가 있습니다. 사유를 명확히 하고 가능한 빨리 활성화하세요."
+      severity: warning
+    
+    # 14. 민감정보 하드코딩 금지 (패스워드, API 키 등)
+    - name: "no-hardcoded-credentials"
+      pattern: "(password|apiKey|secretKey|accessToken)\\s*=\\s*\"[^\"]+\""
+      message: "민감정보를 하드코딩하지 마세요. 환경변수나 application.yml을 사용하세요."
+      severity: error
+    
+    # 15. 커밋 컨벤션 준수 (feat, fix, docs, style, refactor, test, chore)
+    - name: "commit-convention"
+      pattern: "^(?!feat:|fix:|docs:|style:|refactor:|test:|chore:)"
+      message: "커밋 메시지는 'type: 설명' 형식을 따라야 합니다. (feat, fix, docs, style, refactor, test, chore)"
+      severity: info
+
+# 파일 크기 제한
+# 옵션: 숫자 (KB 단위)
+# 이 크기를 초과하는 파일은 리뷰에서 제외
+max_file_size: 1000
+
+# 리뷰 깊이 설정
+# 옵션: basic, standard, thorough
+# basic: 기본적인 이슈만, standard: 일반적인 리뷰, thorough: 상세한 심층 리뷰
+depth: thorough
+
+# 학습 모드 설정
+# 옵션: true, false
+# true면 개발자에게 교육적인 설명 추가
+educational_mode: true
+
+# 긍정적인 피드백 포함 여부
+# 옵션: true, false
+# true면 잘 작성된 코드에 대해서도 긍정적인 코멘트 작성
+positive_feedback: true
+
+# PR 크기 경고
+# 옵션: true, false
+# true면 PR이 너무 클 때 경고 메시지 표시
+warn_on_large_pr: true
+
+# 대규모 PR 기준 (변경된 라인 수)
+# 옵션: 숫자
+# 이 라인 수를 초과하면 대규모 PR로 간주
+large_pr_threshold: 700
+
+# 코드 소유자 태그 지정
+# 옵션: true, false
+# true면 특정 파일 변경 시 해당 코드 소유자를 자동으로 태그
+tag_code_owners: false
+
+# 자동 레이블 추가
+# 옵션: true, false
+# true면 리뷰 결과에 따라 PR에 자동으로 레이블 추가
+# (예: needs-work, looks-good, security-issue 등)
+auto_label: true
+
+# 리뷰 타임아웃 설정 (분 단위)
+# 옵션: 숫자
+# 이 시간 내에 리뷰를 완료해야 함
+timeout: 10
+
+# 병렬 처리 설정
+# 옵션: true, false
+# true면 여러 파일을 병렬로 리뷰하여 속도 향상
+parallel_processing: true
+
+# 이모지 사용 여부
+# 옵션: true, false
+# true면 코멘트에 이모지 추가하여 가독성 향상
+use_emoji: true
+
+# 코드 제안 생성 여부
+# 옵션: true, false
+# true면 문제가 있는 코드에 대해 수정 제안 코드 제공
+suggest_fixes: true
+
+# 관련 이슈/PR 연결
+# 옵션: true, false
+# true면 관련된 이슈나 이전 PR을 자동으로 찾아 링크
+link_related_issues: true
+
