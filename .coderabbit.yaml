@@ -12,6 +12,16 @@ reviews:
   # true면 PR이 생성되거나 업데이트될 때 자동으로 리뷰 수행
   auto_review: true
   
+  # 자동 Approve 비활성화
+  # 옵션: true, false
+  # false로 설정하면 CodeRabbit이 자동으로 PR을 approve하지 않음
+  auto_approve: false
+  
+  # 자동 Request Changes 비활성화
+  # 옵션: true, false
+  # false로 설정하면 CodeRabbit이 자동으로 "변경 요청"을 제출하지 않음
+  auto_request_changes: false
+  
   # PR이 draft일 때도 리뷰 수행 여부
   # 옵션: true, false
   # true면 draft PR도 리뷰, false면 ready 상태의 PR만 리뷰
