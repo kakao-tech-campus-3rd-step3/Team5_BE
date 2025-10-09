@@ -33,6 +33,9 @@ public class SecurityConfig {
 
     @Value("${cors.allowed-origins}")
     private List<String> allowedOrigins;
+    
+    @Value("${security.hsts.enabled:false}")
+    private boolean hstsEnabled;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -41,14 +44,6 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // CSRF 보호 기능 비활성화 (JWT 사용 시 불필요)
                 .csrf(csrf -> csrf.disable())
-                // 보안 헤더 설정
-                .headers(headers -> headers
-                        // HSTS: HTTPS로 강제 접속 (1년)
-                        .httpStrictTransportSecurity(hsts -> hsts
-                                .maxAgeInSeconds(31536000)
-                                .includeSubDomains(true)
-                        )
-                )
                 // 세션을 사용하지 않고, STATELESS 상태로 관리
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -73,6 +68,17 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService)
                         )
                 );
+        
+        // HSTS 설정 (Production 환경에서만 활성화)
+        // 모든 서브도메인이 HTTPS를 지원하는 경우에만 includeSubDomains(true) 사용
+        if (hstsEnabled) {
+            http.headers(headers -> headers
+                    .httpStrictTransportSecurity(hsts -> hsts
+                            .maxAgeInSeconds(31536000)  // 1년
+                            .includeSubDomains(true)    // 서브도메인 포함
+                    )
+            );
+        }
 
         // 모든 요청 처리 이전에 JWT 인증 필터를 먼저 실행합니다.
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
