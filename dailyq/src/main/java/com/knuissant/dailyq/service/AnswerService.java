@@ -61,6 +61,12 @@ public class AnswerService {
 
     }
 
+    private void checkAnswerOwnership(Long userId, Answer answer) {
+        if (!answer.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+    }
+
     @Transactional(readOnly = true)
     public CursorResult<Summary> getArchives(Long userId, AnswerSearchConditionRequest condition,
             Long lastId, LocalDateTime lastCreatedAt, int limit) {
@@ -92,9 +98,7 @@ public class AnswerService {
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
         // 인가
-        if (!answer.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
-        }
+        checkAnswerOwnership(userId, answer);
 
         if (request.memo() != null) {
             answer.updateMemo(request.memo());
@@ -112,17 +116,20 @@ public class AnswerService {
     }
 
     @Transactional(readOnly = true)
-    public AnswerDetailResponse getAnswerDetail(Long answerId) {
+    public AnswerDetailResponse getAnswerDetail(Long userId, Long answerId) {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+
+        checkAnswerOwnership(userId, answer);
+
         Feedback feedback = feedbackRepository.findByAnswerId(answerId).orElse(null);
         return AnswerDetailResponse.of(answer, feedback, objectMapper);
 
     }
 
     @Transactional
-    public AnswerCreateResponse submitAnswer(AnswerCreateRequest request, Long userId) {
+    public AnswerCreateResponse submitAnswer(Long userId, AnswerCreateRequest request) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
@@ -165,15 +172,15 @@ public class AnswerService {
     }
 
     @Transactional
-    public AnswerLevelUpdateResponse updateAnswerLevel(Long answerId,
+    public AnswerLevelUpdateResponse updateAnswerLevel(Long userId, Long answerId,
             AnswerLevelUpdateRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
 
-        // 답변의 user와 현재 user가 같은지 확인 추가
-        answer.updateLevel(request.level());
+        checkAnswerOwnership(userId, answer);
 
+        answer.updateLevel(request.level());
         return AnswerLevelUpdateResponse.from(answer);
     }
 
