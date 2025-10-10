@@ -66,13 +66,14 @@ public class RivalService {
     }
 
     @Transactional(readOnly = true)
-    public RivalProfileResponse getProfile(Long userId) {
-        User user = findUserByIdOrThrow(userId);
+    public RivalProfileResponse getProfile(Long profileUserId, Long loginUserId) {
+        User user = findUserByIdOrThrow(profileUserId);
 
-        long totalAnswerCount = answerRepository.countByUserId(userId);
+        long totalAnswerCount = answerRepository.countByUserId(profileUserId);
 
         LocalDateTime forOneYear = LocalDateTime.now().minusYears(1);
-        List<Answer> answers = answerRepository.findByUserIdAndCreatedAtGreaterThanEqual(userId,
+        List<Answer> answers = answerRepository.findByUserIdAndCreatedAtGreaterThanEqual(
+                profileUserId,
                 forOneYear);
 
         Map<LocalDate, Long> countByDate = answers.stream()
@@ -87,7 +88,9 @@ public class RivalService {
                 .sorted(Comparator.comparing(DailySolveCount::date).reversed())
                 .toList();
 
-        return RivalProfileResponse.from(user, totalAnswerCount, dailySolveCounts);
+        boolean isMe = profileUserId.equals(loginUserId);
+
+        return RivalProfileResponse.from(user, totalAnswerCount, dailySolveCounts, isMe);
     }
 
     @Transactional(readOnly = true)
