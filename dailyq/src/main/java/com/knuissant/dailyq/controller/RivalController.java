@@ -2,6 +2,8 @@ package com.knuissant.dailyq.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,9 +29,10 @@ public class RivalController {
 
     @PostMapping("/{targetUserId}")
     public ResponseEntity<RivalResponse> followRival(
+            @AuthenticationPrincipal User principal,
             @PathVariable Long targetUserId) {
 
-        Long senderId = 1L; // 임시
+        Long senderId = Long.parseLong(principal.getUsername());
 
         RivalResponse rivalResponseDto = rivalService.followRival(senderId, targetUserId);
 
@@ -37,9 +40,11 @@ public class RivalController {
     }
 
     @DeleteMapping("/{targetUserId}")
-    public ResponseEntity<Void> unfollowRival(@PathVariable Long targetUserId) {
+    public ResponseEntity<Void> unfollowRival(
+            @AuthenticationPrincipal User principal,
+            @PathVariable Long targetUserId) {
 
-        Long currentUserId = 1L; // 임시
+        Long currentUserId = Long.parseLong(principal.getUsername());
 
         rivalService.unfollowRival(currentUserId, targetUserId);
 
@@ -47,9 +52,13 @@ public class RivalController {
     }
 
     @GetMapping("/{userId}/profile")
-    public ResponseEntity<RivalProfileResponse> getProfile(@PathVariable Long userId) {
+    public ResponseEntity<RivalProfileResponse> getProfile(
+            @AuthenticationPrincipal User principal,
+            @PathVariable Long userId) {
 
-        RivalProfileResponse response = rivalService.getProfile(userId);
+        Long loginUserId = Long.parseLong(principal.getUsername());
+
+        RivalProfileResponse response = rivalService.getProfile(userId, loginUserId);
 
         return ResponseEntity.ok(response);
     }
@@ -64,10 +73,11 @@ public class RivalController {
 
     @GetMapping("/following")
     public ResponseEntity<RivalListResponse.CursorResult> getFollowingRivalList(
+            @AuthenticationPrincipal User principal,
             @RequestParam(required = false) Long lastId,
             @RequestParam(defaultValue = "20") int limit) {
 
-        Long userId = 1L; // 임시
+        Long userId = Long.parseLong(principal.getUsername());
 
         RivalListResponse.CursorResult response = rivalService.getFollowingRivalList(userId, lastId,
                 limit);
@@ -77,9 +87,11 @@ public class RivalController {
 
     @GetMapping("/followed")
     public ResponseEntity<RivalListResponse.CursorResult> getFollowedRivalList(
+            @AuthenticationPrincipal User principal,
             @RequestParam(required = false) Long lastId,
             @RequestParam(defaultValue = "20") int limit) {
-        Long userId = 1L;// 임시
+
+        Long userId = Long.parseLong(principal.getUsername());
 
         RivalListResponse.CursorResult response = rivalService.getFollowedRivalList(userId, lastId,
                 limit);
