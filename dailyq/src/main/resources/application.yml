@@ -76,10 +76,19 @@ jwt:
   access-token-expiration-millis: ${JWT_ACCESS_TOKEN_EXPIRATION_MILLIS}   # 1시간
   refresh-token-expiration-millis: ${JWT_REFRESH_TOKEN_EXPIRATION_MILLIS} # 7일
 
+# Cookie 설정
+cookie:
+  domain: ${COOKIE_DOMAIN:.dailyq.my}
+
+# Security 설정
+security:
+  hsts:
+    enabled: false  # 개발 환경에서는 HSTS 비활성화 (HTTP 허용)
+
 # 개발용 API 설정
 dev:
   api:
-    password: ${DEV_API_PASSWORD}  # 기본값: dailyq123
+    password: ${DEV_API_PASSWORD}  # 별도 공유 예정
 
 # OpenAPI 서버 설정
 openapi:
@@ -127,6 +136,11 @@ spring:
 server:
   # 프록시/로드밸런서 포워드 헤더 신뢰 (X-Forwarded-Proto 등)
   forward-headers-strategy: native
+
+# Security 설정 (프로덕션)
+security:
+  hsts:
+    enabled: true  # 프로덕션에서는 HSTS 활성화
 
 # OpenAPI 서버 설정 (프로덕션)
 openapi:
