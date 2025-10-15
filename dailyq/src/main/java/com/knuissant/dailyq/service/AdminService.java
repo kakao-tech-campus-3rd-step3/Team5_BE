@@ -19,10 +19,7 @@ import com.knuissant.dailyq.dto.admin.QuestionManagementDto;
 import com.knuissant.dailyq.dto.admin.UserManagementDto;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
-import com.knuissant.dailyq.repository.JobRepository;
-import com.knuissant.dailyq.repository.OccupationRepository;
-import com.knuissant.dailyq.repository.QuestionRepository;
-import com.knuissant.dailyq.repository.UserRepository;
+import com.knuissant.dailyq.repository.*;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +30,8 @@ public class AdminService {
     private final OccupationRepository occupationRepository;
     private final JobRepository jobRepository;
     private final QuestionRepository questionRepository;
-
+    private final UserPreferencesRepository userPreferencesRepository;
+    private final AnswerRepository answerRepository;
 
     /* =========================
        User Management
@@ -52,7 +50,6 @@ public class AdminService {
         return UserManagementDto.UserDetailResponse.from(user);
     }
 
-
     public UserManagementDto.UserResponse updateUser(Long userId, UserManagementDto.UserUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
@@ -60,10 +57,8 @@ public class AdminService {
         user.updateName(request.name());
         user.updateRole(request.role());
 
-        User updatedUser = userRepository.save(user);
-        return UserManagementDto.UserResponse.from(updatedUser);
+        return UserManagementDto.UserResponse.from(user);
     }
-
 
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
@@ -77,10 +72,10 @@ public class AdminService {
        ========================= */
 
     public OccupationManagementDto.OccupationResponse createOccupation(OccupationManagementDto.OccupationCreateRequest request) {
-        Occupation newOccupation = Occupation.builder()
-                .name(request.occupationName())
-                .build();
-        Occupation savedOccupation = occupationRepository.save(newOccupation);
+        if (occupationRepository.existsByName(request.occupationName())) {
+            throw new BusinessException(ErrorCode.OCCUPATION_ALREADY_EXISTS);
+        }
+        Occupation savedOccupation = occupationRepository.save(Occupation.create(request.occupationName()));
         return OccupationManagementDto.OccupationResponse.from(savedOccupation);
     }
 
@@ -88,16 +83,18 @@ public class AdminService {
         Occupation occupation = occupationRepository.findById(occupationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND));
 
-        Occupation updatedOccupation = occupationRepository.save(Occupation.builder()
-                .id(occupation.getId())
-                .name(request.occupationName())
-                .build());
-        return OccupationManagementDto.OccupationResponse.from(updatedOccupation);
+        if (!occupation.getName().equals(request.occupationName()) && occupationRepository.existsByName(request.occupationName())) {
+            throw new BusinessException(ErrorCode.OCCUPATION_ALREADY_EXISTS);
+        }
+        occupation.updateName(request.occupationName());
+        return OccupationManagementDto.OccupationResponse.from(occupation);
     }
 
     public void deleteOccupation(Long occupationId) {
-        if (!occupationRepository.existsById(occupationId)) {
-            throw new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND);
+        Occupation occupation = occupationRepository.findById(occupationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND));
+        if (jobRepository.existsByOccupation(occupation)) {
+            throw new BusinessException(ErrorCode.CANNOT_DELETE_OCCUPATION_WITH_JOBS);
         }
         occupationRepository.deleteById(occupationId);
     }
@@ -108,15 +105,13 @@ public class AdminService {
        ========================= */
 
     public JobManagementDto.JobResponse createJob(JobManagementDto.JobCreateRequest request) {
+        if (jobRepository.existsByName(request.jobName())) {
+            throw new BusinessException(ErrorCode.JOB_ALREADY_EXISTS);
+        }
         Occupation occupation = occupationRepository.findById(request.occupationId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND));
 
-        Job newJob = Job.builder()
-                .name(request.jobName())
-                .occupation(occupation)
-                .build();
-
-        Job savedJob = jobRepository.save(newJob);
+        Job savedJob = jobRepository.save(Job.create(request.jobName(), occupation));
         return JobManagementDto.JobResponse.from(savedJob);
     }
 
@@ -124,21 +119,21 @@ public class AdminService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
 
+        if (!job.getName().equals(request.jobName()) && jobRepository.existsByName(request.jobName())) {
+            throw new BusinessException(ErrorCode.JOB_ALREADY_EXISTS);
+        }
         Occupation occupation = occupationRepository.findById(request.occupationId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND));
 
-        Job updatedJob = jobRepository.save(Job.builder()
-                .id(job.getId())
-                .name(request.jobName())
-                .occupation(occupation)
-                .build());
-
-        return JobManagementDto.JobResponse.from(updatedJob);
+        job.update(request.jobName(), occupation);
+        return JobManagementDto.JobResponse.from(job);
     }
 
     public void deleteJob(Long jobId) {
-        if (!jobRepository.existsById(jobId)) {
-            throw new BusinessException(ErrorCode.JOB_NOT_FOUND);
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
+        if (userPreferencesRepository.existsByUserJob(job)) {
+            throw new BusinessException(ErrorCode.CANNOT_DELETE_JOB_IN_USE);
         }
         jobRepository.deleteById(jobId);
     }
@@ -155,19 +150,15 @@ public class AdminService {
     }
 
     public QuestionManagementDto.QuestionDetailResponse createQuestion(QuestionManagementDto.QuestionCreateRequest request) {
+        if (questionRepository.existsByQuestionText(request.questionText())) {
+            throw new BusinessException(ErrorCode.QUESTION_ALREADY_EXISTS);
+        }
         List<Job> jobs = jobRepository.findAllById(request.jobIds());
         if (jobs.size() != request.jobIds().size()) {
             throw new BusinessException(ErrorCode.JOB_NOT_FOUND, "일부 직업을 찾을 수 없습니다.");
         }
 
-        Question newQuestion = Question.builder()
-                .questionText(request.questionText())
-                .questionType(request.questionType())
-                .enabled(true)
-                .jobs(new HashSet<>(jobs))
-                .build();
-
-        Question savedQuestion = questionRepository.save(newQuestion);
+        Question savedQuestion = questionRepository.save(Question.create(request.questionText(), request.questionType(), new HashSet<>(jobs)));
         return QuestionManagementDto.QuestionDetailResponse.from(savedQuestion);
     }
 
@@ -175,25 +166,23 @@ public class AdminService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
 
+        if (!question.getQuestionText().equals(request.questionText()) && questionRepository.existsByQuestionText(request.questionText())) {
+            throw new BusinessException(ErrorCode.QUESTION_ALREADY_EXISTS);
+        }
         List<Job> jobs = jobRepository.findAllById(request.jobIds());
         if (jobs.size() != request.jobIds().size()) {
             throw new BusinessException(ErrorCode.JOB_NOT_FOUND, "일부 직업을 찾을 수 없습니다.");
         }
 
-        Question updatedQuestion = questionRepository.save(Question.builder()
-                .id(question.getId())
-                .questionText(request.questionText())
-                .questionType(request.questionType())
-                .enabled(request.enabled())
-                .jobs(new HashSet<>(jobs))
-                .build());
-
-        return QuestionManagementDto.QuestionDetailResponse.from(updatedQuestion);
+        question.update(request.questionText(), request.questionType(), request.enabled(), new HashSet<>(jobs));
+        return QuestionManagementDto.QuestionDetailResponse.from(question);
     }
 
     public void deleteQuestion(Long questionId) {
-        if (!questionRepository.existsById(questionId)) {
-            throw new BusinessException(ErrorCode.QUESTION_NOT_FOUND);
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
+        if (answerRepository.existsByQuestion(question)) {
+            throw new BusinessException(ErrorCode.CANNOT_DELETE_QUESTION_WITH_ANSWERS);
         }
         questionRepository.deleteById(questionId);
     }
