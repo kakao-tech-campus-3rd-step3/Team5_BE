@@ -1,8 +1,11 @@
 package com.knuissant.dailyq.dto.admin;
 
-import com.knuissant.dailyq.domain.jobs.Occupation;
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.Builder;
+
+import com.knuissant.dailyq.domain.jobs.Occupation;
+
 
 public class OccupationManagementDto {
 

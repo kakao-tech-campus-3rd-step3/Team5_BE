@@ -1,9 +1,11 @@
 package com.knuissant.dailyq.dto.admin;
 
-import com.knuissant.dailyq.domain.jobs.Job;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Builder;
+
+import com.knuissant.dailyq.domain.jobs.Job;
 
 public class JobManagementDto {
 

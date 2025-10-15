@@ -1,5 +1,14 @@
 package com.knuissant.dailyq.service;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.jobs.Occupation;
 import com.knuissant.dailyq.domain.questions.Question;
@@ -14,13 +23,6 @@ import com.knuissant.dailyq.repository.JobRepository;
 import com.knuissant.dailyq.repository.OccupationRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
