@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.StringUtils;
 
 import lombok.AccessLevel;
@@ -87,5 +88,8 @@ public class User {
         if (name.length() > MAX_NAME_LENGTH) {
             throw new IllegalArgumentException("이름은 " + MAX_NAME_LENGTH + "자를 초과할 수 없습니다.");
         }
+    }
+
+    public void updateRole(@NotNull(message = "역할은 필수입니다.") UserRole role) {
     }
 }
