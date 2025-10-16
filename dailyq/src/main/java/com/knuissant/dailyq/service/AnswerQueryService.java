@@ -76,7 +76,7 @@ public class AnswerQueryService {
     public AnswerDetailResponse getAnswerDetail(Long userId, Long answerId) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
 
         checkAnswerOwnership(userId, answer);
 
@@ -84,7 +84,6 @@ public class AnswerQueryService {
         return AnswerDetailResponse.of(answer, feedback, objectMapper);
 
     }
-
 
     private Specification<Answer> createSpecification(Long userId,
             AnswerSearchConditionRequest condition, AnswerQueryService.CursorRequest cursorRequest,
@@ -168,7 +167,7 @@ public class AnswerQueryService {
 
     private void checkAnswerOwnership(Long userId, Answer answer) {
         if (!answer.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
+            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS, "userId:", userId, "answerId:", answer.getId());
         }
     }
 }

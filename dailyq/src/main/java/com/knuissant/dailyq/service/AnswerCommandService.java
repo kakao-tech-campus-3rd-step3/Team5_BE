@@ -37,7 +37,7 @@ public class AnswerCommandService {
     public AnswerCreateResponse submitAnswer(Long userId, AnswerCreateRequest request) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
         Answer savedAnswer = isFollowUpQuestion(request.questionId())
                 ? handleFollowUpQuestionAnswer(request, user)
@@ -53,7 +53,7 @@ public class AnswerCommandService {
             AnswerLevelUpdateRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
 
         checkAnswerOwnership(userId, answer);
 
@@ -66,7 +66,7 @@ public class AnswerCommandService {
             AnswerArchiveUpdateRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
         // 인가
         checkAnswerOwnership(userId, answer);
 
@@ -106,7 +106,7 @@ public class AnswerCommandService {
 
     private Answer handleRegularQuestionAnswer(AnswerCreateRequest request, User user) {
         Question question = questionRepository.findById(request.questionId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND, request.questionId()));
 
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
         Answer answer = Answer.create(user, question, request.answerText());
@@ -115,7 +115,7 @@ public class AnswerCommandService {
 
     private void checkAnswerOwnership(Long userId, Answer answer) {
         if (!answer.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
+            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS, "userId:", userId, "answerId:", answer.getId());
         }
     }
 }
