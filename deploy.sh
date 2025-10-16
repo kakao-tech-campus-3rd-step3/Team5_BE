@@ -58,11 +58,13 @@ docker volume prune -f || true
 echo "📊 정리 후 디스크 사용량:"
 df -h / || true
 
-echo "🏗️  Dockerfile로 이미지 빌드..."
-if ! docker build -t dailyq-app:latest ./dailyq; then
-    echo "❌ Docker 이미지 빌드 실패"
+echo "🏗️  Jib으로 이미지 빌드..."
+cd dailyq
+if ! ./gradlew jibDockerBuild --no-daemon; then
+    echo "❌ Jib 빌드 실패"
     exit 1
 fi
+cd ..
 
 echo "🚀 컨테이너 기동..."
 if ! $COMPOSE_CMD up -d; then
