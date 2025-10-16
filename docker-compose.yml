@@ -84,6 +84,34 @@ services:
       retries: 6
       start_period: 150s
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: dailyq-prometheus
+    restart: unless-stopped # 서버 자동 재부팅
+    ports:
+      - "9090:9090" # 외부 내부 일단 다 9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # 설정 파일 연결
+      - ./prometheus_data:/prometheus   # 수집한 데이터를 저장할 공간 일단 Bind Mound
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - dailyq-network
+    depends_on:
+      - app #app service가 먼저 실행
+  grafana:
+    image: grafana/grafana:latest
+    container_name: dailyq-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000" # 표준
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+    networks:
+      - dailyq-network
+    depends_on:
+      - prometheus
+
 volumes:
   mysql_data:
 
