@@ -26,7 +26,7 @@ public class FeedbackUpdateService {
     @Transactional
     public void changeStatusToProcessing(Long feedbackId) {
         Feedback feedback = feedbackRepository.findById(feedbackId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
 
         if (feedback.getStatus() != FeedbackStatus.PENDING) {
             throw new BusinessException(ErrorCode.FEEDBACK_ALREADY_PROCESSED, feedbackId);
@@ -37,7 +37,7 @@ public class FeedbackUpdateService {
     @Transactional
     public void updateFeedbackSuccess(Long feedbackId, FeedbackResponse feedbackResponse, long latencyMs) {
         Feedback feedback = feedbackRepository.findById(feedbackId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
         try {
             String content = objectMapper.writeValueAsString(feedbackResponse);
             feedback.updateSuccess(content, latencyMs);
@@ -49,7 +49,7 @@ public class FeedbackUpdateService {
     @Transactional
     public void updateFeedbackFailure(Long feedbackId) {
         Feedback feedback = feedbackRepository.findById(feedbackId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
         feedback.updateFailure();
     }
 
