@@ -82,7 +82,10 @@ public class ExceptionHandlerAdvice {
         ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
         ProblemDetail problemDetail = errorCode.toProblemDetail();
 
-        log.error("Unpredicted Error URI : {}, Method : {} ", request.getRequestURI(), request.getRequestURI(), ex);
+        log.error("Unpredicted Error URI : {}, Method : {} ",
+                request.getRequestURI(),
+                request.getMethod(),
+                ex);
 
         return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
     }
