@@ -89,7 +89,7 @@ services:
     container_name: dailyq-prometheus
     restart: unless-stopped # 서버 자동 재부팅
     ports:
-      - "9090:9090" # 외부 내부 일단 다 9090
+      - "127.0.0.1:9090:9090" # 외부는 반드시 서버에서 접속
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml # 설정 파일 연결
       - ./prometheus_data:/prometheus   # 수집한 데이터를 저장할 공간 일단 Bind Mound
@@ -112,7 +112,7 @@ services:
     container_name: dailyq-grafana
     restart: unless-stopped
     ports:
-      - "3000:3000" # 표준
+      - "127.0.0.1:3000:3000" # 표준
     volumes:
       - grafana-data:/var/lib/grafana
     deploy:
