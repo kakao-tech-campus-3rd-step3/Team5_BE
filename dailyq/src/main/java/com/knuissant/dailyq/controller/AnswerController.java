@@ -6,11 +6,14 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Positive;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -37,6 +40,7 @@ import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.service.AnswerCommandService;
 import com.knuissant.dailyq.service.AnswerQueryService;
 
+@Validated
 @RestController
 @RequestMapping("/api/answers")
 @RequiredArgsConstructor
@@ -51,7 +55,7 @@ public class AnswerController {
             @ModelAttribute AnswerSearchConditionRequest condition,
             @RequestParam(required = false) Long lastId,
             @RequestParam(required = false) LocalDateTime lastCreatedAt,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "10") @Positive @Max(50) int limit) {
 
         Long userId = getUserId(principal);
 
