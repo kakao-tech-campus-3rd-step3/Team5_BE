@@ -34,6 +34,7 @@ import com.knuissant.dailyq.dto.answers.AnswerListResponse;
 import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.service.AnswerCommandService;
 import com.knuissant.dailyq.service.AnswerService;
 
 @RestController
@@ -42,6 +43,7 @@ import com.knuissant.dailyq.service.AnswerService;
 public class AnswerController {
 
     private final AnswerService answerService;
+    private final AnswerCommandService answerCommandService;
 
     @GetMapping
     public ResponseEntity<AnswerListResponse.CursorResult<AnswerListResponse.Summary>> getAnswers(
@@ -92,11 +94,11 @@ public class AnswerController {
             @AuthenticationPrincipal User principal,
             @PathVariable Long answerId,
             @RequestBody AnswerArchiveUpdateRequest request
-            ) {
+    ) {
 
         Long userId = getUserId(principal);
 
-        AnswerArchiveUpdateResponse responseDto = answerService.updateAnswer(userId, answerId,
+        AnswerArchiveUpdateResponse responseDto = answerCommandService.updateAnswer(userId, answerId,
                 request);
 
         return ResponseEntity.ok(responseDto);
@@ -110,7 +112,7 @@ public class AnswerController {
         Long userId = getUserId(principal);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(answerService.submitAnswer(userId, request));
+                .body(answerCommandService.submitAnswer(userId, request));
     }
 
     @PatchMapping("/{answerId}/level")
@@ -121,7 +123,7 @@ public class AnswerController {
 
         Long userId = getUserId(principal);
 
-        return ResponseEntity.ok(answerService.updateAnswerLevel(userId, answerId, request));
+        return ResponseEntity.ok(answerCommandService.updateAnswerLevel(userId, answerId, request));
     }
 
     private Long getUserId(User principal) {

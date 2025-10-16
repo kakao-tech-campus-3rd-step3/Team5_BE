@@ -24,8 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.jobs.Job;
-import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
+import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
@@ -61,6 +61,7 @@ public class AnswerService {
 
     }
 
+    // command
     private void checkAnswerOwnership(Long userId, Answer answer) {
         if (!answer.getUser().getId().equals(userId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
@@ -91,6 +92,7 @@ public class AnswerService {
         return convertToCursorResult(slice.getContent(), limit);
     }
 
+    // command
     @Transactional
     public AnswerArchiveUpdateResponse updateAnswer(Long userId, Long answerId,
             AnswerArchiveUpdateRequest request) {
@@ -128,6 +130,7 @@ public class AnswerService {
 
     }
 
+    // command
     @Transactional
     public AnswerCreateResponse submitAnswer(Long userId, AnswerCreateRequest request) {
 
@@ -143,10 +146,12 @@ public class AnswerService {
         return AnswerCreateResponse.from(savedAnswer, savedFeedback);
     }
 
+    // command
     private boolean isFollowUpQuestion(Long questionId) {
         return questionId < 0;
     }
 
+    // command
     private Answer handleFollowUpQuestionAnswer(AnswerCreateRequest request, User user) {
         Long followUpQuestionId = Math.abs(request.questionId());
         FollowUpQuestion followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
@@ -162,6 +167,7 @@ public class AnswerService {
         return savedAnswer;
     }
 
+    // command
     private Answer handleRegularQuestionAnswer(AnswerCreateRequest request, User user) {
         Question question = questionRepository.findById(request.questionId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
@@ -171,6 +177,7 @@ public class AnswerService {
         return answerRepository.save(answer);
     }
 
+    // command
     @Transactional
     public AnswerLevelUpdateResponse updateAnswerLevel(Long userId, Long answerId,
             AnswerLevelUpdateRequest request) {
