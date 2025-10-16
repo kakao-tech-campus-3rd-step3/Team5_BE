@@ -24,16 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.jobs.Job;
-import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 import com.knuissant.dailyq.domain.questions.Question;
-import com.knuissant.dailyq.domain.users.User;
-import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
-import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
-import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
-import com.knuissant.dailyq.dto.answers.AnswerCreateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerDetailResponse;
-import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateRequest;
-import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerListResponse.CursorResult;
 import com.knuissant.dailyq.dto.answers.AnswerListResponse.Summary;
 import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
@@ -41,35 +33,21 @@ import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.FeedbackRepository;
-import com.knuissant.dailyq.repository.QuestionRepository;
-import com.knuissant.dailyq.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
-public class AnswerService {
+public class AnswerQueryService {
 
     private final AnswerRepository answerRepository;
     private final FeedbackRepository feedbackRepository;
-    private final QuestionRepository questionRepository;
-    private final UserRepository userRepository;
-    private final FollowUpQuestionService followUpQuestionService;
-    private final FeedbackService feedbackService;
     private final ObjectMapper objectMapper;
 
-    // query
-    //API 스펙과 무관하며(오로지,내부사용) 재사용 가능성이 없다고 생각하여 따로 DTO를 만들지 않았습니다.
+
+    // 일회성 Record
     private record CursorRequest(LocalDateTime createdAt, Long id) {
 
     }
 
-    // command, query
-    private void checkAnswerOwnership(Long userId, Answer answer) {
-        if (!answer.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
-        }
-    }
-
-    // query
     @Transactional(readOnly = true)
     public CursorResult<Summary> getArchives(Long userId, AnswerSearchConditionRequest condition,
             Long lastId, LocalDateTime lastCreatedAt, int limit) {
@@ -94,32 +72,6 @@ public class AnswerService {
         return convertToCursorResult(slice.getContent(), limit);
     }
 
-    // command
-    @Transactional
-    public AnswerArchiveUpdateResponse updateAnswer(Long userId, Long answerId,
-            AnswerArchiveUpdateRequest request) {
-
-        Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
-        // 인가
-        checkAnswerOwnership(userId, answer);
-
-        if (request.memo() != null) {
-            answer.updateMemo(request.memo());
-        }
-
-        if (request.starred() != null) {
-            answer.updateStarred(request.starred());
-        }
-
-        if (request.level() != null) {
-            answer.updateLevel(request.level());
-        }
-
-        return AnswerArchiveUpdateResponse.from(answer);
-    }
-
-    // query
     @Transactional(readOnly = true)
     public AnswerDetailResponse getAnswerDetail(Long userId, Long answerId) {
 
@@ -133,70 +85,9 @@ public class AnswerService {
 
     }
 
-    // command
-    @Transactional
-    public AnswerCreateResponse submitAnswer(Long userId, AnswerCreateRequest request) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
-        Answer savedAnswer = isFollowUpQuestion(request.questionId())
-                ? handleFollowUpQuestionAnswer(request, user)
-                : handleRegularQuestionAnswer(request, user);
-
-        Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
-
-        return AnswerCreateResponse.from(savedAnswer, savedFeedback);
-    }
-
-    // command
-    private boolean isFollowUpQuestion(Long questionId) {
-        return questionId < 0;
-    }
-
-    // command
-    private Answer handleFollowUpQuestionAnswer(AnswerCreateRequest request, User user) {
-        Long followUpQuestionId = Math.abs(request.questionId());
-        FollowUpQuestion followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
-        Question question = followUpQuestion.getAnswer().getQuestion();
-
-        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, request.answerText());
-        answer.setFollowUpQuestion(followUpQuestion);
-
-        Answer savedAnswer = answerRepository.save(answer);
-        followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestionId);
-
-        return savedAnswer;
-    }
-
-    // command
-    private Answer handleRegularQuestionAnswer(AnswerCreateRequest request, User user) {
-        Question question = questionRepository.findById(request.questionId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
-
-        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, request.answerText());
-        return answerRepository.save(answer);
-    }
-
-    // command
-    @Transactional
-    public AnswerLevelUpdateResponse updateAnswerLevel(Long userId, Long answerId,
-            AnswerLevelUpdateRequest request) {
-
-        Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
-
-        checkAnswerOwnership(userId, answer);
-
-        answer.updateLevel(request.level());
-        return AnswerLevelUpdateResponse.from(answer);
-    }
-
-    // query
     private Specification<Answer> createSpecification(Long userId,
-            AnswerSearchConditionRequest condition, AnswerService.CursorRequest cursorRequest,
+            AnswerSearchConditionRequest condition, AnswerQueryService.CursorRequest cursorRequest,
             boolean isDesc) {
         return (root, query, cb) -> {
 
@@ -255,7 +146,6 @@ public class AnswerService {
         };
     }
 
-    // query
     private CursorResult<Summary> convertToCursorResult(List<Answer> answers, int limit) {
         boolean hasNext = answers.size() > limit;
         List<Answer> content = hasNext ? answers.subList(0, limit) : answers;
@@ -274,5 +164,11 @@ public class AnswerService {
         }
 
         return new CursorResult<>(summaries, nextId, nextCreatedAt, hasNext);
+    }
+
+    private void checkAnswerOwnership(Long userId, Answer answer) {
+        if (!answer.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
+        }
     }
 }

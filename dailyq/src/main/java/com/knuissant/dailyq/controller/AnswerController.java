@@ -35,6 +35,7 @@ import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.service.AnswerCommandService;
+import com.knuissant.dailyq.service.AnswerQueryService;
 import com.knuissant.dailyq.service.AnswerService;
 
 @RestController
@@ -44,6 +45,7 @@ public class AnswerController {
 
     private final AnswerService answerService;
     private final AnswerCommandService answerCommandService;
+    private final AnswerQueryService answerQueryService;
 
     @GetMapping
     public ResponseEntity<AnswerListResponse.CursorResult<AnswerListResponse.Summary>> getAnswers(
@@ -72,7 +74,7 @@ public class AnswerController {
                 .filter(count -> count <= 1)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MULTIPLE_FILTER_NOT_ALLOWED));
 
-        AnswerListResponse.CursorResult<AnswerListResponse.Summary> result = answerService.getArchives(
+        AnswerListResponse.CursorResult<AnswerListResponse.Summary> result = answerQueryService.getArchives(
                 userId, condition, lastId, lastCreatedAt, limit);
         return ResponseEntity.ok(result);
     }
@@ -84,7 +86,7 @@ public class AnswerController {
 
         Long userId = getUserId(principal);
 
-        AnswerDetailResponse result = answerService.getAnswerDetail(userId, answerId);
+        AnswerDetailResponse result = answerQueryService.getAnswerDetail(userId, answerId);
 
         return ResponseEntity.ok(result);
     }
