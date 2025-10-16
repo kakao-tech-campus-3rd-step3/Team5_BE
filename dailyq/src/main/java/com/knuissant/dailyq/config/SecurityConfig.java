@@ -59,6 +59,7 @@ public class SecurityConfig {
                                 "/api/dev/**").permitAll()
                         // ADMIN 권한을 가진 사람만 관리자 API 접근 권한 허용
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/", "/admin.html", "/templates/**", "/css/**", "/js/**").permitAll()
                         // 그 외 모든 요청은 인증이 필요합니다.
                         .anyRequest().authenticated()
                 )
