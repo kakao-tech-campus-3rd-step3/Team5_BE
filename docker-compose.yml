@@ -91,8 +91,8 @@ services:
     ports:
       - "127.0.0.1:9090:9090" # 외부는 반드시 서버에서 접속
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml # 설정 파일 연결
-      - ./prometheus_data:/prometheus   # 수집한 데이터를 저장할 공간 일단 Bind Mound
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     deploy:
@@ -114,7 +114,7 @@ services:
     ports:
       - "127.0.0.1:3000:3000" # 표준
     volumes:
-      - grafana-data:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
     deploy:
       resources:
         limits:
@@ -130,6 +130,8 @@ services:
 
 volumes:
   mysql_data:
+  prometheus_data:
+  grafana_data:
 
 networks:
   dailyq-network:
