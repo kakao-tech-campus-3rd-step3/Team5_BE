@@ -50,8 +50,6 @@ docker system df || true
 
 # 사용하지 않는 이미지 정리 (dangling images)
 docker image prune -f || true
-# 모든 빌드 캐시 정리
-docker builder prune -a -f || true
 # 사용하지 않는 볼륨 정리
 docker volume prune -f || true
 
