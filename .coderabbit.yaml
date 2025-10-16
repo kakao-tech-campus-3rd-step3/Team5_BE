@@ -1,0 +1,70 @@
+# CodeRabbit 설정 파일
+
+# 언어 설정
+language: ko-KR
+
+# 리뷰 설정
+reviews:
+  # 리뷰 프로필: chill (부드럽고 친근한 톤)
+  profile: chill
+  
+  # Request Changes 비활성화
+  request_changes_workflow: false
+  
+  # PR 요약 생성
+  high_level_summary: true
+  
+  # 시 형식 비활성화
+  poem: false
+  
+  # 리뷰 상태 변경 비활성화 (코멘트만)
+  review_status: false
+  
+  # Walkthrough 섹션 표시
+  collapse_walkthrough: false
+  
+  # 자동 리뷰 설정
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false  # Draft PR은 리뷰하지 않음
+  
+  # 팀 코딩 컨벤션
+  instructions: |
+    우리 팀의 코딩 컨벤션을 준수하는지 확인해주세요:
+    
+    **필수 규칙:**
+    - DTO는 record 타입을 사용합니다
+    - Lombok @Data 어노테이션은 사용하지 않습니다 (엔티티는 @Getter만 사용)
+    - 의존성 주입은 생성자 주입(@RequiredArgsConstructor + private final)을 사용합니다
+    - 예외 처리는 BusinessException, InfraException과 ErrorCode 패턴을 사용합니다
+    - 컨트롤러 메서드는 ResponseEntity를 반환합니다
+    - System.out.println 대신 Logger를 사용합니다
+    - 서비스 메서드에는 @Transactional을 명시합니다 (조회는 readOnly=true)
+    
+    **경고:**
+    - Request DTO에는 validation 어노테이션(@NotNull, @NotBlank 등) 사용을 권장합니다
+    - 빈 catch 블록은 피하고 최소한 로깅을 추가합니다
+    - URL은 하드코딩하지 말고 application.yml이나 상수로 관리합니다
+    - TODO/FIXME 주석은 이슈로 등록하거나 즉시 해결합니다
+    
+    **보안:**
+    - 민감정보(password, apiKey 등)를 하드코딩하지 마세요
+    - SQL injection, XSS 등 보안 취약점을 체크해주세요
+
+# 리뷰에서 제외할 파일 패턴
+path_filters:
+  excluded:
+    - "*.txt"
+    - "**/build/**"
+    - "**/target/**"
+    - "**/node_modules/**"
+    - "**/dist/**"
+    - "**/*.min.js"
+    - "**/generated/**"
+    - "**/.gradle/**"
+    - "**/bin/**"
+
+# 채팅 설정
+chat:
+  auto_reply: true
