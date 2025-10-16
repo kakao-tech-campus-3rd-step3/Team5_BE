@@ -95,6 +95,14 @@ services:
       - ./prometheus_data:/prometheus   # 수집한 데이터를 저장할 공간 일단 Bind Mound
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     networks:
       - dailyq-network
     depends_on:
@@ -106,7 +114,15 @@ services:
     ports:
       - "3000:3000" # 표준
     volumes:
-      - ./grafana-data:/var/lib/grafana
+      - grafana-data:/var/lib/grafana
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     networks:
       - dailyq-network
     depends_on:
