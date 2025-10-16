@@ -106,7 +106,8 @@ services:
     networks:
       - dailyq-network
     depends_on:
-      - app #app service가 먼저 실행
+       app: #app service가 먼저 실행
+         condition: service_healthy
   grafana:
     image: grafana/grafana:latest
     container_name: dailyq-grafana
