@@ -109,7 +109,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
       base-path: /actuator
   endpoint:
     health:
@@ -117,7 +117,10 @@ management:
   info:
     env:
       enabled: true
-
+  prometheus:
+      metrics:
+        export:
+          enabled: true
 ---
 # 프로덕션 환경 설정
 spring:
