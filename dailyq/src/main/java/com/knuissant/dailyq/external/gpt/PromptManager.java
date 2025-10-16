@@ -10,12 +10,9 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import lombok.extern.slf4j.Slf4j;
-
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.exception.InfraException;
 
-@Slf4j
 @Component
 public class PromptManager {
 
@@ -37,7 +34,7 @@ public class PromptManager {
     public String load(PromptType promptType) {
         String content = promptMap.get(promptType);
         if (content == null) {
-            throw new InfraException(ErrorCode.FILE_IO_ERROR, promptType.getFileName());
+            throw new InfraException(ErrorCode.PROMPT_NOT_FOUND_IN_CACHE, promptType.name());
         }
         return content;
     }
