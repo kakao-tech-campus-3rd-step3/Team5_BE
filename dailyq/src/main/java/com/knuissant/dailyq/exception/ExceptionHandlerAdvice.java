@@ -23,17 +23,12 @@ public class ExceptionHandlerAdvice {
         ErrorCode errorCode = ex.getErrorCode();
         ProblemDetail problemDetail = errorCode.toProblemDetail();
 
-        String logMessage = String.format(
-                "BusinessException URI : %s, Code : %s, Message : %s",
+        log.warn("BusinessException URI : {}, Code : {}, Message : {}, Args: {}",
                 request.getRequestURI(),
                 errorCode.getCode(),
-                errorCode.getMessage());
+                errorCode.getMessage(),
+                ex.getArgs());
 
-        if (ex.getArgs() != null && ex.getArgs().length > 0) {
-            log.warn(logMessage, ex.getArgs());
-        } else {
-            log.warn(logMessage);
-        }
         return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
     }
 
@@ -72,10 +67,11 @@ public class ExceptionHandlerAdvice {
         ErrorCode errorCode = ex.getErrorCode();
         ProblemDetail problemDetail = errorCode.toProblemDetail();
 
-        log.error("SystemException URI : {}, Code : {}, Message : {}",
+        log.error("SystemException URI : {}, Code : {}, Message : {}, Args : {}",
                 request.getRequestURI(),
                 errorCode.getCode(),
                 errorCode.getMessage(),
+                ex.getArgs(),
                 ex);
 
         return ResponseEntity.status(errorCode.getStatus()).body(problemDetail);
