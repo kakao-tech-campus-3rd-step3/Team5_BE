@@ -13,4 +13,10 @@ public class InfraException extends RuntimeException {
         this.errorCode = errorCode;
         this.args = args;
     }
+
+    public InfraException(ErrorCode errorcode, Throwable cause, Object... args) {
+        super(errorcode.getMessage(), cause);
+        this.errorCode = errorcode;
+        this.args = args;
+    }
 }
