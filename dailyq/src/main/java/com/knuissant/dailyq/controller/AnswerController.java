@@ -36,27 +36,21 @@ import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.service.AnswerCommandService;
 import com.knuissant.dailyq.service.AnswerQueryService;
-import com.knuissant.dailyq.service.AnswerService;
 
 @RestController
 @RequestMapping("/api/answers")
 @RequiredArgsConstructor
 public class AnswerController {
 
-    private final AnswerService answerService;
     private final AnswerCommandService answerCommandService;
     private final AnswerQueryService answerQueryService;
 
     @GetMapping
     public ResponseEntity<AnswerListResponse.CursorResult<AnswerListResponse.Summary>> getAnswers(
-
             @AuthenticationPrincipal User principal,
-
             @ModelAttribute AnswerSearchConditionRequest condition,
-
             @RequestParam(required = false) Long lastId,
             @RequestParam(required = false) LocalDateTime lastCreatedAt,
-
             @RequestParam(defaultValue = "10") int limit) {
 
         Long userId = getUserId(principal);
