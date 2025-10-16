@@ -59,6 +59,10 @@ public class AnswerController {
 
         Long userId = getUserId(principal);
 
+        if ((lastId == null) != (lastCreatedAt == null)) {
+            throw new BusinessException(ErrorCode.INVALID_CURSOR_PARAMETERS);
+        }
+
         //정렬 조건 단일 파라미터 검증
         long filterCount = Stream.of(
                 condition.date(),
