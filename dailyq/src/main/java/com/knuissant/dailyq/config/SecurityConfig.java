@@ -54,11 +54,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/login/oauth2/**",
-                                "/api/dev/**",
-                                "/actuator/**",
-                                "localhost:9090",
-                                "localhost:3030").permitAll()
-                        .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
+                                "/api/dev/**").permitAll()
+                        //actuator url 분리
+                        .requestMatchers(EndpointRequest.to("prometheus", "health")).permitAll()
                         // 그 외 모든 요청은 인증이 필요합니다.
                         .anyRequest().authenticated()
                 )
