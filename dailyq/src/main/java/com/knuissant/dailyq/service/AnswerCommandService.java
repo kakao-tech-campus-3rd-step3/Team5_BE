@@ -54,8 +54,7 @@ public class AnswerCommandService {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
-
-        checkAnswerOwnership(userId, answer);
+        answer.checkOwnership(userId);
 
         answer.updateLevel(request.level());
         return AnswerLevelUpdateResponse.from(answer);
@@ -67,8 +66,7 @@ public class AnswerCommandService {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
-        // 인가
-        checkAnswerOwnership(userId, answer);
+        answer.checkOwnership(userId);
 
         if (request.memo() != null) {
             answer.updateMemo(request.memo());
@@ -111,11 +109,5 @@ public class AnswerCommandService {
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
         Answer answer = Answer.create(user, question, request.answerText());
         return answerRepository.save(answer);
-    }
-
-    private void checkAnswerOwnership(Long userId, Answer answer) {
-        if (!answer.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS, "userId:", userId, "answerId:", answer.getId());
-        }
     }
 }

@@ -77,8 +77,7 @@ public class AnswerQueryService {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
-
-        checkAnswerOwnership(userId, answer);
+        answer.checkOwnership(userId);
 
         Feedback feedback = feedbackRepository.findByAnswerId(answerId).orElse(null);
         return AnswerDetailResponse.of(answer, feedback, objectMapper);
@@ -163,11 +162,5 @@ public class AnswerQueryService {
         }
 
         return new CursorResult<>(summaries, nextId, nextCreatedAt, hasNext);
-    }
-
-    private void checkAnswerOwnership(Long userId, Answer answer) {
-        if (!answer.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS, "userId:", userId, "answerId:", answer.getId());
-        }
     }
 }
