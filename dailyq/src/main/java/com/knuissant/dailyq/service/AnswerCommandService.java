@@ -90,6 +90,10 @@ public class AnswerCommandService {
     private Answer handleFollowUpQuestionAnswer(AnswerCreateRequest request, User user) {
         Long followUpQuestionId = Math.abs(request.questionId());
         FollowUpQuestion followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
+
+        if (!followUpQuestion.getAnswer().getUser().getId().equals(user.getId())) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS, "userId:", user.getId(), "followUpQuestionId:", followUpQuestionId);
+        }
         Question question = followUpQuestion.getAnswer().getQuestion();
 
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
