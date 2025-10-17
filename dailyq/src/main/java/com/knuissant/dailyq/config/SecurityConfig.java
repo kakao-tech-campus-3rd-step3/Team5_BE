@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -57,6 +58,8 @@ public class SecurityConfig {
                                 "/api-docs/**",
                                 "/login/oauth2/**",
                                 "/api/dev/**").permitAll()
+                        //actuator url 분리
+                        .requestMatchers(EndpointRequest.to("prometheus", "health")).permitAll()
                         // 그 외 모든 요청은 인증이 필요합니다.
                         .anyRequest().authenticated()
                 )
