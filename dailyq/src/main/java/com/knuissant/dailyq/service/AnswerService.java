@@ -24,8 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.jobs.Job;
-import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
+import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
@@ -96,7 +96,7 @@ public class AnswerService {
             AnswerArchiveUpdateRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
         // 인가
         checkAnswerOwnership(userId, answer);
 
@@ -119,7 +119,7 @@ public class AnswerService {
     public AnswerDetailResponse getAnswerDetail(Long userId, Long answerId) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
 
         checkAnswerOwnership(userId, answer);
 
@@ -132,7 +132,7 @@ public class AnswerService {
     public AnswerCreateResponse submitAnswer(Long userId, AnswerCreateRequest request) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
         Answer savedAnswer = isFollowUpQuestion(request.questionId())
                 ? handleFollowUpQuestionAnswer(request, user)
@@ -164,7 +164,7 @@ public class AnswerService {
 
     private Answer handleRegularQuestionAnswer(AnswerCreateRequest request, User user) {
         Question question = questionRepository.findById(request.questionId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND, request.questionId()));
 
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
         Answer answer = Answer.create(user, question, request.answerText());
@@ -176,7 +176,7 @@ public class AnswerService {
             AnswerLevelUpdateRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
 
         checkAnswerOwnership(userId, answer);
 
