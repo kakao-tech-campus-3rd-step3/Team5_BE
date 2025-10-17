@@ -86,8 +86,55 @@ services:
       retries: 6
       start_period: 150s
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: dailyq-prometheus
+    restart: unless-stopped # 서버 자동 재부팅
+    ports:
+      - "127.0.0.1:9090:9090" # 외부는 반드시 서버에서 접속
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    networks:
+      - dailyq-network
+    depends_on:
+       app: #app service가 먼저 실행
+         condition: service_healthy
+  grafana:
+    image: grafana/grafana:latest
+    container_name: dailyq-grafana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000" # 표준
+    volumes:
+      - grafana_data:/var/lib/grafana
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    networks:
+      - dailyq-network
+    depends_on:
+      - prometheus
+
 volumes:
   mysql_data:
+  prometheus_data:
+  grafana_data:
 
 networks:
   dailyq-network:

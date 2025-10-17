@@ -24,7 +24,7 @@ public class JobService {
 
     public List<JobResponse> findJobsByOccupation(Long occupationId) {
         if (!occupationRepository.existsById(occupationId)) {
-            throw new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND);
+            throw new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND, occupationId);
         }
 
         return jobRepository.findByOccupationId(occupationId).stream()
