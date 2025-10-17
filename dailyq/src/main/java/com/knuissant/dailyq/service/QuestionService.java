@@ -9,27 +9,26 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.questions.FlowPhase;
+import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.questions.QuestionType;
 import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.dto.questions.RandomQuestionResponse;
-import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
-import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 
 @Service
 @RequiredArgsConstructor
@@ -44,30 +43,31 @@ public class QuestionService {
     @Transactional(readOnly = true)
     public RandomQuestionResponse getRandomQuestion(Long userId) {
         UserPreferences prefs = userPreferencesRepository.findById(userId)
-            .orElseThrow(() -> new InfraException(ErrorCode.USER_PREFERENCES_NOT_FOUND));
+                .orElseThrow(() -> new InfraException(ErrorCode.USER_PREFERENCES_NOT_FOUND, userId));
 
         validateDailyQuestionLimit(userId, prefs);
 
         // Use user preferences
         QuestionMode mode = prefs.getQuestionMode();
         Long jobId = Optional.ofNullable(prefs.getUserJob())
-            .map(job -> job.getId())
-            .orElseThrow(() -> new InfraException(ErrorCode.USER_JOB_NOT_SET));
+                .map(job -> job.getId())
+                .orElseThrow(() -> new InfraException(ErrorCode.USER_JOB_NOT_SET));
 
         // Resolve phase when FLOW
         final FlowPhase phase = resolvePhase(userId, mode);
 
         return selectRandomQuestion(mode, phase, jobId, userId, prefs.getTimeLimitSeconds())
-            .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE, mode.name(), phase.name(), jobId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE,
+                        "mode:", mode.name(), "phase:", phase.name(), "jobId:", jobId));
     }
 
     private FlowPhase resolvePhase(Long userId, QuestionMode mode) {
         if (mode != QuestionMode.FLOW) {
             return null;
         }
-        
+
         UserFlowProgress progress = userFlowProgressRepository.findById(userId)
-            .orElseThrow(() -> new InfraException(ErrorCode.USER_FLOW_PROGRESS_NOT_FOUND));
+                .orElseThrow(() -> new InfraException(ErrorCode.USER_FLOW_PROGRESS_NOT_FOUND, userId));
         return progress.getNextPhase();
     }
 
@@ -90,10 +90,10 @@ public class QuestionService {
         LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
         long answeredToday = answerRepository.countByUserIdAndCreatedAtBetween(userId, startOfDay, endOfDay);
         int remain = userPreferences.getDailyQuestionLimit() - (int) answeredToday;
-        
+
         Optional.of(remain)
-            .filter(r -> r > 0)
-            .orElseThrow(() -> new BusinessException(ErrorCode.DAILY_LIMIT_REACHED, remain));
+                .filter(r -> r > 0)
+                .orElseThrow(() -> new BusinessException(ErrorCode.DAILY_LIMIT_REACHED, remain));
     }
 
     private Optional<RandomQuestionResponse> findRandomTechQuestion(Long jobId, Long userId, QuestionMode mode, FlowPhase phase, int timeLimitSeconds) {
@@ -102,42 +102,42 @@ public class QuestionService {
         if (maxId == null) {
             return Optional.empty();
         }
-        
+
         // 랜덤 ID 생성 (1부터 maxId까지)
         long randomId = ThreadLocalRandom.current().nextLong(1, maxId + 1);
-        
+
         // cursor 기반 조회 (id >= randomId인 첫 번째 질문)
         Pageable pageable = PageRequest.of(0, 1);
         List<Question> questions = questionRepository.findAvailableTechQuestionsFromCursor(jobId, randomId, userId, pageable);
-        
+
         if (questions.isEmpty()) {
             return Optional.empty();
         }
-        
+
         Question q = questions.get(0);
         return Optional.of(RandomQuestionResponse.from(q, mode, phase, jobId, timeLimitSeconds));
     }
 
     private Optional<RandomQuestionResponse> findRandomFlowQuestion(FlowPhase phase, Long userId, Long jobId, QuestionMode mode, int timeLimitSeconds) {
         QuestionType questionType = mapPhaseToType(phase);
-        
+
         // MAX ID 조회
         Long maxId = questionRepository.findMaxAvailableQuestionId(questionType, userId);
         if (maxId == null) {
             return Optional.empty();
         }
-        
+
         // 랜덤 ID 생성 (1부터 maxId까지)
         long randomId = ThreadLocalRandom.current().nextLong(1, maxId + 1);
-        
+
         // cursor 기반 조회 (id >= randomId인 첫 번째 질문)
         Pageable pageable = PageRequest.of(0, 1);
         List<Question> questions = questionRepository.findAvailableQuestionsFromCursor(questionType, randomId, userId, pageable);
-        
+
         if (questions.isEmpty()) {
             return Optional.empty();
         }
-        
+
         Question q = questions.get(0);
         return Optional.of(RandomQuestionResponse.from(q, mode, phase, jobId, timeLimitSeconds));
     }
@@ -156,11 +156,11 @@ public class QuestionService {
      */
     private Optional<RandomQuestionResponse> findUnansweredFollowUpQuestion(Long userId, Long jobId, int timeLimitSeconds) {
         List<FollowUpQuestion> unansweredFollowUps = followUpQuestionService.getUnansweredFollowUpQuestions(userId);
-        
+
         if (unansweredFollowUps.isEmpty()) {
             return Optional.empty();
         }
-        
+
         FollowUpQuestion fq = unansweredFollowUps.get(0);
         return Optional.of(RandomQuestionResponse.fromFollowUp(fq, jobId, timeLimitSeconds));
     }

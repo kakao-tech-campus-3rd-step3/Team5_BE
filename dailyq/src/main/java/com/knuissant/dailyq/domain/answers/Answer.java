@@ -19,9 +19,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
+import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
+import com.knuissant.dailyq.exception.BusinessException;
+import com.knuissant.dailyq.exception.ErrorCode;
 
 @Getter
 @Builder
@@ -89,6 +91,12 @@ public class Answer {
 
     public void setFollowUpQuestion(FollowUpQuestion followUpQuestion) {
         this.followUpQuestion = followUpQuestion;
+    }
+
+    public void checkOwnership(Long userId) {
+        if (!this.user.getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS, "userId:", userId, "answerId:", this.id);
+        }
     }
 }
 

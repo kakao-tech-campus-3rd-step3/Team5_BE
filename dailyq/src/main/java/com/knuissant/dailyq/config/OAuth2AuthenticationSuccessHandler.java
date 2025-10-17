@@ -34,7 +34,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UserRepository userRepository;
     private final OAuth2AuthenticationFailureHandler failureHandler;
     private final JwtProperties jwtProperties;
-    private final String frontendUrl; // Frontend URL 주입받을 필드 추가
+    private final String cookieDomain;
+    private final String frontendUrl;
 
     // @RequiredArgsConstructor 대신 명시적 생성자로 변경하여 @Value 주입
     public OAuth2AuthenticationSuccessHandler(
@@ -42,11 +43,13 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             UserRepository userRepository,
             OAuth2AuthenticationFailureHandler failureHandler,
             JwtProperties jwtProperties,
-            @Value("${frontend.url}") String frontendUrl) { // @Value 대신 JwtProperties 주입
+            @Value("${cookie.domain}") String cookieDomain,
+            @Value("${frontend.url}") String frontendUrl) {
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
         this.failureHandler = failureHandler;
         this.jwtProperties = jwtProperties;
+        this.cookieDomain = cookieDomain;
         this.frontendUrl = frontendUrl;
     }
 
@@ -105,15 +108,20 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     /**
-     * 리프레시 토큰을 SameSite=Lax 속성이 적용된 보안 쿠키로 설정합니다.
+     * 리프레시 토큰을 크로스 사이트에서 사용 가능한 보안 쿠키로 설정합니다.
+     * - SameSite=None: 크로스 사이트(서브도메인 간) 요청에서 쿠키 전송 허용
+     * - Secure: HTTPS에서만 쿠키 전송
+     * - HttpOnly: JavaScript에서 접근 불가 (XSS 방지)
+     * - Domain: 서브도메인 간 쿠키 공유 (.dailyq.my)
      */
     private void addRefreshTokenToCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
                 .maxAge(jwtProperties.refreshTokenExpirationMillis() / 1000)
                 .path("/")
+                .domain(cookieDomain)
                 .secure(true)
                 .httpOnly(true)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
     }

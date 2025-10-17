@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -33,6 +34,9 @@ public class SecurityConfig {
 
     @Value("${cors.allowed-origins}")
     private List<String> allowedOrigins;
+    
+    @Value("${security.hsts.enabled:false}")
+    private boolean hstsEnabled;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -54,6 +58,12 @@ public class SecurityConfig {
                                 "/api-docs/**",
                                 "/login/oauth2/**",
                                 "/api/dev/**").permitAll()
+                        // ADMIN 권한을 가진 사람만 관리자 API 접근 권한 허용
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // 임시로 admin.html에 접속 허용 추후 바꿀 예정
+                        .requestMatchers("/", "/admin.html", "/templates/**", "/css/**", "/js/**").permitAll()
+                        //actuator url 분리
+                        .requestMatchers(EndpointRequest.to("prometheus", "health")).permitAll()
                         // 그 외 모든 요청은 인증이 필요합니다.
                         .anyRequest().authenticated()
                 )
@@ -65,6 +75,17 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService)
                         )
                 );
+        
+        // HSTS 설정 (Production 환경에서만 활성화)
+        // 모든 서브도메인이 HTTPS를 지원하는 경우에만 includeSubDomains(true) 사용
+        if (hstsEnabled) {
+            http.headers(headers -> headers
+                    .httpStrictTransportSecurity(hsts -> hsts
+                            .maxAgeInSeconds(31536000)  // 1년
+                            .includeSubDomains(true)    // 서브도메인 포함
+                    )
+            );
+        }
 
         // 모든 요청 처리 이전에 JWT 인증 필터를 먼저 실행합니다.
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

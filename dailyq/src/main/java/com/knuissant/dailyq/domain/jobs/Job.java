@@ -35,6 +35,18 @@ public class Job {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "occupation_id", nullable = false)
     private Occupation occupation;
+
+    public static Job create(String name, Occupation occupation) {
+        Job job = new Job();
+        job.name = name;
+        job.occupation = occupation;
+        return job;
+    }
+
+    public void update(String newName, Occupation newOccupation) {
+        this.name = newName;
+        this.occupation = newOccupation;
+    }
 }
 
 

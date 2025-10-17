@@ -33,7 +33,7 @@ public class FollowUpQuestionService {
     @Transactional
     public int generateFollowUpQuestions(Long answerId, Long requestUserId) {
         Answer answer = answerRepository.findById(answerId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
 
         // 권한 검증: 본인의 답변인지 확인
         if (!answer.getUser().getId().equals(requestUserId)) {
@@ -53,16 +53,16 @@ public class FollowUpQuestionService {
         try {
             // AI로 꼬리질문 생성
             String systemPrompt = promptManager.load(PromptType.FOLLOWUP_SYSTEM);
-            String userPrompt = promptManager.load(PromptType.FOLLOWUP_USER, 
-                answer.getQuestion().getQuestionText(), 
-                answer.getAnswerText());
+            String userPrompt = promptManager.load(PromptType.FOLLOWUP_USER,
+                    answer.getQuestion().getQuestionText(),
+                    answer.getAnswerText());
 
             FollowUpQuestionResponse response = gptClient.callForFollowUp(systemPrompt, userPrompt);
 
             // 꼬리질문들을 DB에 저장
             List<FollowUpQuestion> followUpQuestions = response.questions().stream()
-                .map(questionText -> FollowUpQuestion.create(answer.getUser(), answer, questionText))
-                .toList();
+                    .map(questionText -> FollowUpQuestion.create(answer.getUser(), answer, questionText))
+                    .toList();
 
             followUpQuestionRepository.saveAll(followUpQuestions);
 
@@ -86,8 +86,8 @@ public class FollowUpQuestionService {
      */
     @Transactional(readOnly = true)
     public List<FollowUpQuestion> getUnansweredFollowUpQuestions(Long userId) {
-        return followUpQuestionRepository.findByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(userId, 
-            org.springframework.data.domain.PageRequest.of(0, 10));
+        return followUpQuestionRepository.findByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(userId,
+                org.springframework.data.domain.PageRequest.of(0, 10));
     }
 
     /**
@@ -96,8 +96,8 @@ public class FollowUpQuestionService {
     @Transactional
     public void markFollowUpQuestionAsAnswered(Long followUpQuestionId) {
         FollowUpQuestion followUpQuestion = followUpQuestionRepository.findById(followUpQuestionId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.FOLLOWUP_QUESTION_NOT_FOUND));
-        
+                .orElseThrow(() -> new BusinessException(ErrorCode.FOLLOWUP_QUESTION_NOT_FOUND, followUpQuestionId));
+
         followUpQuestion.markAsAnswered();
     }
 
@@ -107,6 +107,6 @@ public class FollowUpQuestionService {
     @Transactional(readOnly = true)
     public FollowUpQuestion getFollowUpQuestion(Long followUpQuestionId) {
         return followUpQuestionRepository.findById(followUpQuestionId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.FOLLOWUP_QUESTION_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.FOLLOWUP_QUESTION_NOT_FOUND, followUpQuestionId));
     }
 }

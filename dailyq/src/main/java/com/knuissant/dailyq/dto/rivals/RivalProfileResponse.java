@@ -9,7 +9,8 @@ public record RivalProfileResponse(
         String name,
         Integer streak,
         Long totalAnswerCount,
-        List<DailySolveCount> dailySolveCounts
+        List<DailySolveCount> dailySolveCounts,
+        boolean isMe
 ) {
 
     public record DailySolveCount(
@@ -20,12 +21,13 @@ public record RivalProfileResponse(
     }
 
     public static RivalProfileResponse from(User user, long totalAnswerCount,
-            List<DailySolveCount> dailySolveCounts) {
+            List<DailySolveCount> dailySolveCounts, boolean isMe) {
         return new RivalProfileResponse(
                 user.getName(),
                 user.getStreak(),
                 totalAnswerCount,
-                dailySolveCounts
+                dailySolveCounts,
+                isMe
         );
     }
 }

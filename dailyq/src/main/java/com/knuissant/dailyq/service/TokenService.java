@@ -20,6 +20,7 @@ public class TokenService {
 
     /**
      * 클라이언트로부터 받은 Refresh Token을 사용하여 새로운 Access Token을 생성하는 메소드입니다.
+     *
      * @param refreshToken 클라이언트의 쿠키에 담겨있던 Refresh Token 문자열
      * @return 검증 성공 시, 새로 발급된 Access Token 문자열
      * @throws BusinessException 검증 과정에서 하나라도 실패하면 예외 발생
@@ -40,7 +41,7 @@ public class TokenService {
         // 토큰은 유효하지만, 해당 ID의 사용자가 DB에 없는 경우(탈퇴 등) 예외를 발생시킵니다.
         Long userId = tokenProvider.getUserIdFromToken(refreshToken);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
         // --- 3단계 검증 (가장 중요!): DB에 저장된 토큰과 일치 여부 확인 ---
         // DB에 저장된 토큰과 클라이언트가 보낸 토큰이 일치하지 않는다면,
