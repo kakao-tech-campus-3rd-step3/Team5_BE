@@ -29,6 +29,7 @@ import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
+import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +39,7 @@ public class QuestionService {
     private final AnswerRepository answerRepository;
     private final UserPreferencesRepository userPreferencesRepository;
     private final UserFlowProgressRepository userFlowProgressRepository;
+    private final FollowUpQuestionService followUpQuestionService;
 
     @Transactional(readOnly = true)
     public RandomQuestionResponse getRandomQuestion(Long userId) {
@@ -55,17 +57,8 @@ public class QuestionService {
         // Resolve phase when FLOW
         final FlowPhase phase = resolvePhase(userId, mode);
 
-        Question q = selectRandomQuestion(mode, phase, jobId, userId)
+        return selectRandomQuestion(mode, phase, jobId, userId, prefs.getTimeLimitSeconds())
             .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE, mode.name(), phase.name(), jobId));
-
-        return new RandomQuestionResponse(
-            q.getId(),
-            q.getQuestionType(),
-            mode == QuestionMode.FLOW ? phase : null,
-            q.getQuestionText(),
-            jobId,
-            prefs.getTimeLimitSeconds()
-        );
     }
 
     private FlowPhase resolvePhase(Long userId, QuestionMode mode) {
@@ -78,10 +71,17 @@ public class QuestionService {
         return progress.getNextPhase();
     }
 
-    private Optional<Question> selectRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId) {
+    private Optional<RandomQuestionResponse> selectRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId, int timeLimitSeconds) {
+        // 1. 먼저 미답변 꼬리질문 확인
+        Optional<RandomQuestionResponse> followUpQuestion = findUnansweredFollowUpQuestion(userId, jobId, timeLimitSeconds);
+        if (followUpQuestion.isPresent()) {
+            return followUpQuestion;
+        }
+
+        // 2. 일반 질문 제공
         return switch (mode) {
-            case TECH -> findRandomTechQuestion(jobId, userId);
-            case FLOW -> findRandomFlowQuestion(phase, userId);
+            case TECH -> findRandomTechQuestion(jobId, userId, mode, phase, timeLimitSeconds);
+            case FLOW -> findRandomFlowQuestion(phase, userId, jobId, mode, timeLimitSeconds);
         };
     }
 
@@ -96,35 +96,50 @@ public class QuestionService {
             .orElseThrow(() -> new BusinessException(ErrorCode.DAILY_LIMIT_REACHED, remain));
     }
 
-    private Optional<Question> findRandomTechQuestion(Long jobId, Long userId) {
-        // count 조회 후 랜덤 offset 생성
-        long count = questionRepository.countAvailableTechQuestions(jobId, userId);
-        if (count == 0) {
+    private Optional<RandomQuestionResponse> findRandomTechQuestion(Long jobId, Long userId, QuestionMode mode, FlowPhase phase, int timeLimitSeconds) {
+        // MAX ID 조회
+        Long maxId = questionRepository.findMaxAvailableTechQuestionId(jobId, userId);
+        if (maxId == null) {
             return Optional.empty();
         }
         
-        // count가 int 범위를 넘으면 int 최대값(약 21억)으로 제한
-        int safeCount = count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
-        int randomOffset = ThreadLocalRandom.current().nextInt(safeCount);
-        Pageable pageable = PageRequest.of(randomOffset, 1);
-        List<Question> questions = questionRepository.findAvailableTechQuestionsByJobId(jobId, userId, pageable);
-        return questions.isEmpty() ? Optional.empty() : Optional.of(questions.get(0));
+        // 랜덤 ID 생성 (1부터 maxId까지)
+        long randomId = ThreadLocalRandom.current().nextLong(1, maxId + 1);
+        
+        // cursor 기반 조회 (id >= randomId인 첫 번째 질문)
+        Pageable pageable = PageRequest.of(0, 1);
+        List<Question> questions = questionRepository.findAvailableTechQuestionsFromCursor(jobId, randomId, userId, pageable);
+        
+        if (questions.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        Question q = questions.get(0);
+        return Optional.of(RandomQuestionResponse.from(q, mode, phase, jobId, timeLimitSeconds));
     }
 
-    private Optional<Question> findRandomFlowQuestion(FlowPhase phase, Long userId) {
+    private Optional<RandomQuestionResponse> findRandomFlowQuestion(FlowPhase phase, Long userId, Long jobId, QuestionMode mode, int timeLimitSeconds) {
         QuestionType questionType = mapPhaseToType(phase);
         
-        long count = questionRepository.countAvailableQuestions(questionType, userId);
-        if (count == 0) {
+        // MAX ID 조회
+        Long maxId = questionRepository.findMaxAvailableQuestionId(questionType, userId);
+        if (maxId == null) {
             return Optional.empty();
         }
         
-        // count가 int 범위를 넘으면 int 최대값(약 21억)으로 제한
-        int safeCount = count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
-        int randomOffset = ThreadLocalRandom.current().nextInt(safeCount);
-        Pageable pageable = PageRequest.of(randomOffset, 1);
-        List<Question> questions = questionRepository.findAvailableQuestionsByType(questionType, userId, pageable);
-        return questions.isEmpty() ? Optional.empty() : Optional.of(questions.get(0));
+        // 랜덤 ID 생성 (1부터 maxId까지)
+        long randomId = ThreadLocalRandom.current().nextLong(1, maxId + 1);
+        
+        // cursor 기반 조회 (id >= randomId인 첫 번째 질문)
+        Pageable pageable = PageRequest.of(0, 1);
+        List<Question> questions = questionRepository.findAvailableQuestionsFromCursor(questionType, randomId, userId, pageable);
+        
+        if (questions.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        Question q = questions.get(0);
+        return Optional.of(RandomQuestionResponse.from(q, mode, phase, jobId, timeLimitSeconds));
     }
 
     private QuestionType mapPhaseToType(FlowPhase phase) {
@@ -134,6 +149,20 @@ public class QuestionService {
             case TECH1, TECH2 -> QuestionType.TECH;
             case PERSONALITY -> QuestionType.PERSONALITY;
         };
+    }
+
+    /**
+     * 사용자의 미답변 꼬리질문 조회 및 DTO 변환
+     */
+    private Optional<RandomQuestionResponse> findUnansweredFollowUpQuestion(Long userId, Long jobId, int timeLimitSeconds) {
+        List<FollowUpQuestion> unansweredFollowUps = followUpQuestionService.getUnansweredFollowUpQuestions(userId);
+        
+        if (unansweredFollowUps.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        FollowUpQuestion fq = unansweredFollowUps.get(0);
+        return Optional.of(RandomQuestionResponse.fromFollowUp(fq, jobId, timeLimitSeconds));
     }
 }
 

@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PromptType {
     FEEDBACK_SYSTEM("feedback_system.prompt"),
-    FEEDBACK_USER("feedback_user.prompt");
+    FEEDBACK_USER("feedback_user.prompt"),
+    FOLLOWUP_SYSTEM("followup_system.prompt"),
+    FOLLOWUP_USER("followup_user.prompt");
 
     private final String fileName;
 }
