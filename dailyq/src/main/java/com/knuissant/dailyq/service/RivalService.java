@@ -97,7 +97,7 @@ public class RivalService {
     public RivalSearchResponse searchRivalByEmail(String email) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, email));
 
         return RivalSearchResponse.from(user.getId(), user.getName(), user.getEmail());
     }

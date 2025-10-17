@@ -31,23 +31,22 @@ public class UserPreferencesService {
     private final UserRepository userRepository;
 
     /**
-     * 기존 사용자(로그인 시 UserPreferences가 생성되지 않은 사용자)를 위한 기본 preferences 생성
-     * 이 메서드는 PUT /api/user/preferences에서 preferences가 없을 때 호출됩니다.
+     * 기존 사용자(로그인 시 UserPreferences가 생성되지 않은 사용자)를 위한 기본 preferences 생성 이 메서드는 PUT /api/user/preferences에서 preferences가 없을 때 호출됩니다.
      */
     public UserPreferencesResponse createDefaultUserPreferences(Long userId) {
         // 사용자 존재 확인
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
+
         // 이미 preferences가 존재하는지 확인
         if (userPreferencesRepository.existsById(userId)) {
             throw new BusinessException(ErrorCode.USER_PREFERENCES_ALREADY_EXISTS);
         }
-        
+
         // 기본 직업을 "백엔드 개발자" (jobId=1)로 설정
         Job defaultJob = jobRepository.findById(1L)
                 .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND, "기본 직업 정보를 찾을 수 없습니다."));
-        
+
         UserPreferences defaultPreferences = UserPreferences.builder()
                 .user(user)
                 .dailyQuestionLimit(1)
@@ -57,14 +56,14 @@ public class UserPreferencesService {
                 .allowPush(false)
                 .userJob(defaultJob)
                 .build();
-        
+
         UserPreferences savedPreferences = userPreferencesRepository.save(defaultPreferences);
         return UserPreferencesResponse.from(savedPreferences);
     }
 
     public UserPreferencesResponse updateUserPreferences(Long userId, UserPreferencesUpdateRequest request) {
         UserPreferences preferences;
-        
+
         try {
             preferences = findUserPreferencesByUserId(userId);
         } catch (BusinessException e) {
@@ -72,7 +71,7 @@ public class UserPreferencesService {
             createDefaultUserPreferences(userId);
             preferences = findUserPreferencesByUserId(userId);
         }
-        
+
         preferences.updatePreferences(
                 request.dailyQuestionLimit(),
                 request.questionMode(),
@@ -87,14 +86,14 @@ public class UserPreferencesService {
     public void updateUserJob(Long userId, UserJobsUpdateRequest request) {
         UserPreferences preferences = findUserPreferencesByUserId(userId);
         Job job = jobRepository.findById(request.jobId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND, request.jobId()));
         preferences.changeJob(job);
     }
 
     @Transactional(readOnly = true)
     public UserPreferences findUserPreferencesByUserId(Long userId) {
         return userPreferencesRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PREFERENCES_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PREFERENCES_NOT_FOUND, userId));
     }
 
     @Transactional(readOnly = true)

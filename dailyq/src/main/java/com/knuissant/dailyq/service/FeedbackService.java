@@ -40,7 +40,7 @@ public class FeedbackService {
     public FeedbackResponse generateFeedback(Long feedbackId) {
 
         Feedback feedback = feedbackRepository.findWithDetailsById(feedbackId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
 
         if (feedback.getStatus() == FeedbackStatus.DONE) {
             return FeedbackResponse.from(feedback.getContent(), objectMapper);
@@ -60,7 +60,7 @@ public class FeedbackService {
             long latencyMs = System.currentTimeMillis() - startTime;
 
             feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackResponse, latencyMs);
-            
+
             return feedbackResponse;
 
         } catch (Exception e) {
