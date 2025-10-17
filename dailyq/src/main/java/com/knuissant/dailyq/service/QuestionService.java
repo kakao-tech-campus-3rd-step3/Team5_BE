@@ -57,7 +57,8 @@ public class QuestionService {
         final FlowPhase phase = resolvePhase(userId, mode);
 
         return selectRandomQuestion(mode, phase, jobId, userId, prefs.getTimeLimitSeconds())
-                .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE, mode.name(), phase.name(), jobId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE,
+                        "mode:", mode.name(), "phase:", phase.name(), "jobId:", jobId));
     }
 
     private FlowPhase resolvePhase(Long userId, QuestionMode mode) {

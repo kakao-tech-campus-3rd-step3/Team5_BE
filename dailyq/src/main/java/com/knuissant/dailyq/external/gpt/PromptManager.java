@@ -26,7 +26,7 @@ public class PromptManager {
                 String content = new ClassPathResource(path).getContentAsString(StandardCharsets.UTF_8);
                 promptMap.put(promptType, content);
             } catch (IOException e) {
-                throw new InfraException(ErrorCode.FILE_IO_ERROR, promptType.getFileName());
+                throw new InfraException(ErrorCode.FILE_IO_ERROR, e, promptType.getFileName());
             }
         }
     }

@@ -40,7 +40,7 @@ public class UserPreferencesService {
 
         // 이미 preferences가 존재하는지 확인
         if (userPreferencesRepository.existsById(userId)) {
-            throw new BusinessException(ErrorCode.USER_PREFERENCES_ALREADY_EXISTS);
+            throw new BusinessException(ErrorCode.USER_PREFERENCES_ALREADY_EXISTS, userId);
         }
 
         // 기본 직업을 "백엔드 개발자" (jobId=1)로 설정
