@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>DailyQ 관리자 페이지</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0 auto; max-width: 1200px; padding: 20px; background-color: #f4f7f9; }
+        h1, h2, h3 { color: #333; }
+        h2 { border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        button { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; background-color: #007bff; color: white; margin-right: 5px; }
+        button.delete { background-color: #dc3545; }
+        button:hover { opacity: 0.8; }
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+        form { margin-top: 15px; padding: 15px; border: 1px solid #eee; border-radius: 4px; background-color: #fdfdfd;}
+        input, select, textarea { width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        #job-checkboxes { max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+        .auth-container { border: 2px solid #dc3545; }
+    </style>
+</head>
+<body>
+
+<h1>DailyQ 관리자 페이지</h1>
+
+<div class="container auth-container">
+    <h2>인증 설정</h2>
+    <label for="jwt-token">JWT Access Token</label>
+    <input type="text" id="jwt-token" placeholder="관리자 계정의 Access Token을 여기에 붙여넣으세요.">
+    <p>⚠️ 관리자 API를 호출하기 전에 반드시 토큰을 입력해야 합니다.</p>
+</div>
+
+<!-- 회원 관리 -->
+<div class="container">
+    <h2>회원 관리</h2>
+    <button onclick="fetchUsers()">회원 목록 조회</button>
+    <table id="users-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>이메일</th>
+            <th>이름</th>
+            <th>역할</th>
+            <th>작업</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- 직군/직업 관리 -->
+<div class="container">
+    <h2>직군 및 직업 관리</h2>
+    <button onclick="fetchOccupationsAndJobs()">직군/직업 목록 조회</button>
+    <h3>직군(Occupation)</h3>
+    <form onsubmit="createOccupation(event)">
+        <input type="text" id="new-occupation-name" placeholder="새 직군 이름" required>
+        <button type="submit">직군 추가</button>
+    </form>
+    <table id="occupations-table">
+        <thead><tr><th>ID</th><th>직군명</th><th>작업</th></tr></thead>
+        <tbody></tbody>
+    </table>
+
+    <h3 style="margin-top: 30px;">직업(Job)</h3>
+    <form onsubmit="createJob(event)">
+        <input type="text" id="new-job-name" placeholder="새 직업 이름" required>
+        <select id="new-job-occupation" required></select>
+        <button type="submit">직업 추가</button>
+    </form>
+    <table id="jobs-table">
+        <thead><tr><th>ID</th><th>직업명</th><th>상위 직군</th><th>작업</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- 질문 관리 -->
+<div class="container">
+    <h2>질문 관리</h2>
+    <button onclick="showQuestionModal()">새 질문 작성</button>
+    <button onclick="fetchQuestions()">질문 목록 조회</button>
+    <table id="questions-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>질문 내용</th>
+            <th>타입</th>
+            <th>활성화</th>
+            <th>작업</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- 수정/생성 모달 -->
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = '/api/admin';
+
+    // 모든 fetch 요청에 JWT 헤더를 추가하는 래퍼 함수
+    async function apiFetch(url, options = {}) {
+        const token = document.getElementById('jwt-token').value;
+        if (!token) {
+            alert('JWT 토큰을 입력해주세요.');
+            throw new Error('JWT Token is missing');
+        }
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            ...options.headers
+        };
+
+        try {
+            const response = await fetch(url, { ...options, headers });
+            if (!response.ok) {
+                let errorData;
+                try {
+                    errorData = await response.json();
+                } catch (e) {
+                    errorData = { detail: await response.text() };
+                }
+                throw new Error(`API Error (${response.status}): ${errorData.detail || 'Unknown error'}`);
+            }
+            if (response.status === 204 || response.headers.get("content-length") === "0") {
+                return;
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Fetch Error:', error);
+            alert(error.message);
+            throw error;
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('edit-modal').style.display = 'none';
+    }
+
+    /* =========================
+       User Management
+       ========================= */
+    async function fetchUsers() {
+        try {
+            const users = await apiFetch(`${API_BASE_URL}/users`);
+            // ID 순으로 정렬
+            users.sort((a, b) => a.userId - b.userId);
+            const tableBody = document.querySelector('#users-table tbody');
+            tableBody.innerHTML = '';
+            users.forEach(user => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${user.userId}</td>
+                        <td>${user.email}</td>
+                        <td>${user.name}</td>
+                        <td>${user.role}</td>
+                        <td>
+                            <button onclick="showEditUserModal(${user.userId}, '${user.name}', '${user.role}')">수정</button>
+                            <button class="delete" onclick="deleteUser(${user.userId})">삭제</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (error) {}
+    }
+
+    function showEditUserModal(id, name, role) {
+        const modalBody = document.getElementById('modal-body');
+        modalBody.innerHTML = `
+            <h3>회원 정보 수정 (ID: ${id})</h3>
+            <form onsubmit="updateUser(event, ${id})">
+                <label for="edit-user-name">이름:</label>
+                <input type="text" id="edit-user-name" value="${name}" required>
+                <label for="edit-user-role">역할:</label>
+                <select id="edit-user-role">
+                    <option value="FREE" ${role === 'FREE' ? 'selected' : ''}>FREE</option>
+                    <option value="PAID" ${role === 'PAID' ? 'selected' : ''}>PAID</option>
+                    <option value="ADMIN" ${role === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+                </select>
+                <button type="submit">수정 완료</button>
+            </form>
+        `;
+        document.getElementById('edit-modal').style.display = 'block';
+    }
+
+    async function updateUser(event, id) {
+        event.preventDefault();
+        const name = document.getElementById('edit-user-name').value;
+        const role = document.getElementById('edit-user-role').value;
+        try {
+            await apiFetch(`${API_BASE_URL}/users/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ name, role })
+            });
+            alert('회원 정보가 수정되었습니다.');
+            closeModal();
+            fetchUsers();
+        } catch (error) {}
+    }
+
+    async function deleteUser(id) {
+        if (!confirm(`정말로 ID ${id} 회원을 삭제하시겠습니까?`)) return;
+        try {
+            await apiFetch(`${API_BASE_URL}/users/${id}`, { method: 'DELETE' });
+            alert('회원이 삭제되었습니다.');
+            fetchUsers();
+        } catch (error) {}
+    }
+
+    /* =========================
+       Occupation & Job Management
+       ========================= */
+    let allOccupations = [];
+    let allJobs = [];
+
+    async function fetchOccupationsAndJobs() {
+        try {
+            const occupations = await apiFetch('/api/occupations');
+            // ID 순으로 정렬
+            occupations.sort((a, b) => a.occupationId - b.occupationId);
+            allOccupations = occupations;
+            const occupationsTable = document.querySelector('#occupations-table tbody');
+            occupationsTable.innerHTML = '';
+            occupations.forEach(occ => {
+                occupationsTable.innerHTML += `<tr><td>${occ.occupationId}</td><td>${occ.occupationName}</td><td><button class="delete" onclick="deleteOccupation(${occ.occupationId})">삭제</button></td></tr>`;
+            });
+
+            const jobsTable = document.querySelector('#jobs-table tbody');
+            jobsTable.innerHTML = '';
+            allJobs = [];
+            for(const occ of occupations) {
+                const jobs = await apiFetch(`/api/occupations/${occ.occupationId}/jobs`);
+                // ID 순으로 정렬
+                jobs.sort((a, b) => a.jobId - b.jobId);
+                jobs.forEach(job => {
+                    allJobs.push(job);
+                    jobsTable.innerHTML += `<tr><td>${job.jobId}</td><td>${job.jobName}</td><td>${occ.occupationName}</td><td><button class="delete" onclick="deleteJob(${job.jobId})">삭제</button></td></tr>`;
+                });
+            }
+
+            const occSelect = document.getElementById('new-job-occupation');
+            occSelect.innerHTML = occupations.map(o => `<option value="${o.occupationId}">${o.occupationName}</option>`).join('');
+        } catch (e) {}
+    }
+
+    async function createOccupation(event) {
+        event.preventDefault();
+        const nameInput = document.getElementById('new-occupation-name');
+        try {
+            await apiFetch(`${API_BASE_URL}/occupations`, { method: 'POST', body: JSON.stringify({ occupationName: nameInput.value }) });
+            alert('직군이 추가되었습니다.');
+            nameInput.value = '';
+            fetchOccupationsAndJobs();
+        } catch (e) {}
+    }
+
+    async function deleteOccupation(id) {
+        if (!confirm(`ID ${id} 직군을 삭제하시겠습니까?`)) return;
+        try {
+            await apiFetch(`${API_BASE_URL}/occupations/${id}`, { method: 'DELETE' });
+            alert('직군이 삭제되었습니다.');
+            fetchOccupationsAndJobs();
+        } catch (e) {}
+    }
+
+    async function createJob(event) {
+        event.preventDefault();
+        const nameInput = document.getElementById('new-job-name');
+        const occSelect = document.getElementById('new-job-occupation');
+        try {
+            await apiFetch(`${API_BASE_URL}/jobs`, { method: 'POST', body: JSON.stringify({ jobName: nameInput.value, occupationId: occSelect.value }) });
+            alert('직업이 추가되었습니다.');
+            nameInput.value = '';
+            fetchOccupationsAndJobs();
+        } catch (e) {}
+    }
+
+    async function deleteJob(id) {
+        if (!confirm(`ID ${id} 직업을 삭제하시겠습니까?`)) return;
+        try {
+            await apiFetch(`${API_BASE_URL}/jobs/${id}`, { method: 'DELETE' });
+            alert('직업이 삭제되었습니다.');
+            fetchOccupationsAndJobs();
+        } catch (e) {}
+    }
+
+    /* =========================
+       Question Management
+       ========================= */
+    const questionTypes = ['TECH', 'INTRO', 'MOTIVATION', 'PERSONALITY'];
+
+    async function showQuestionModal(id) {
+        let question = { questionText: '', questionType: 'TECH', enabled: true, jobIds: [] };
+        if (id) {
+            try {
+                question = await apiFetch(`/api/admin/questions/${id}`);
+            } catch(e) {
+                alert("질문 상세 정보를 불러오는데 실패했습니다.");
+                return;
+            }
+        }
+
+        const modalBody = document.getElementById('modal-body');
+        modalBody.innerHTML = `
+            <h3>${id ? '질문 수정 (ID: ' + id + ')' : '새 질문 작성'}</h3>
+            <form onsubmit="handleQuestionSubmit(event, ${id || null})">
+                <label for="question-text">질문 내용:</label>
+                <textarea id="question-text" rows="3" required>${question.questionText}</textarea>
+                <label for="question-type">질문 타입:</label>
+                <select id="question-type">
+                    ${questionTypes.map(type => `<option value="${type}" ${type === question.questionType ? 'selected' : ''}>${type}</option>`).join('')}
+                </select>
+                <label>연결된 직업:</label>
+                <div id="job-checkboxes">
+                    ${allJobs.map(job => `
+                        <label>
+                            <input type="checkbox" name="jobIds" value="${job.jobId}" ${question.jobIds && question.jobIds.includes(job.jobId) ? 'checked' : ''}>
+                            ${job.jobName}
+                        </label>
+                    `).join('<br>')}
+                </div>
+                <label for="question-enabled">활성화 여부:</label>
+                <select id="question-enabled">
+                    <option value="true" ${question.enabled ? 'selected' : ''}>활성</option>
+                    <option value="false" ${!question.enabled ? 'selected' : ''}>비활성</option>
+                </select>
+                <button type="submit">${id ? '수정 완료' : '생성'}</button>
+            </form>
+        `;
+        document.getElementById('edit-modal').style.display = 'block';
+    }
+
+    async function fetchQuestions() {
+        try {
+            const questions = await apiFetch(`${API_BASE_URL}/questions`);
+            // ID 순으로 정렬
+            questions.sort((a, b) => a.questionId - b.questionId);
+            const tableBody = document.querySelector('#questions-table tbody');
+            tableBody.innerHTML = '';
+            questions.forEach(q => {
+                tableBody.innerHTML += `<tr><td>${q.questionId}</td><td>${q.questionText}</td><td>${q.questionType}</td><td>${q.enabled ? '✔️' : '❌'}</td><td><button onclick="showQuestionModal(${q.questionId})">수정</button><button class="delete" onclick="deleteQuestion(${q.questionId})">삭제</button></td></tr>`;
+            });
+        } catch (e) {}
+    }
+
+    async function handleQuestionSubmit(event, id) {
+        event.preventDefault();
+        const isUpdate = id != null;
+
+        const text = document.getElementById('question-text').value;
+        const type = document.getElementById('question-type').value;
+        const enabled = document.getElementById('question-enabled').value === 'true';
+        const jobIds = Array.from(document.querySelectorAll('#job-checkboxes input:checked')).map(cb => Number(cb.value));
+
+        if (jobIds.length === 0) {
+            alert('하나 이상의 직업을 선택해야 합니다.');
+            return;
+        }
+
+        const url = isUpdate ? `${API_BASE_URL}/questions/${id}` : `${API_BASE_URL}/questions`;
+        const method = isUpdate ? 'PUT' : 'POST';
+        const body = isUpdate
+            ? { questionText: text, questionType: type, enabled, jobIds }
+            : { questionText: text, questionType: type, jobIds };
+
+        try {
+            await apiFetch(url, { method, body: JSON.stringify(body) });
+            alert(`질문이 성공적으로 ${isUpdate ? '수정' : '생성'}되었습니다.`);
+            closeModal();
+            fetchQuestions();
+        } catch (e) {}
+    }
+
+    async function deleteQuestion(id) {
+        if (!confirm(`정말로 ID ${id} 질문을 삭제하시겠습니까?`)) return;
+        try {
+            await apiFetch(`${API_BASE_URL}/questions/${id}`, { method: 'DELETE' });
+            alert('질문이 삭제되었습니다.');
+            fetchQuestions();
+        } catch (e) {}
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('edit-modal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    // 페이지 로드 시 직업 목록을 미리 불러옵니다.
+    document.addEventListener('DOMContentLoaded', () => {
+        // 초기에는 토큰이 없을 수 있으므로 에러를 무시합니다.
+        fetchOccupationsAndJobs().catch(() => {});
+    });
+</script>
+
+</body>
+</html>
+

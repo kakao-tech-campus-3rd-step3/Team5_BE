@@ -7,4 +7,5 @@ import com.knuissant.dailyq.domain.jobs.Occupation;
 
 @Repository
 public interface OccupationRepository extends JpaRepository<Occupation, Long> {
+    boolean existsByName(String name);
 }

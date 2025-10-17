@@ -62,6 +62,22 @@ public class Question {
     )
     @Builder.Default
     private Set<Job> jobs = new LinkedHashSet<>();
+
+    public static Question create(String text, QuestionType type, Set<Job> jobs) {
+        Question question = new Question();
+        question.questionText = text;
+        question.questionType = type;
+        question.jobs = jobs;
+        question.enabled = true; // 생성 시 기본값
+        return question;
+    }
+
+    public void update(String text, QuestionType type, boolean enabled, Set<Job> jobs) {
+        this.questionText = text;
+        this.questionType = type;
+        this.enabled = enabled;
+        this.jobs = jobs;
+    }
 }
 
 
