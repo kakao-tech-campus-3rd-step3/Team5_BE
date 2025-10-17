@@ -43,7 +43,8 @@ public enum ErrorCode {
     FILE_IO_ERROR("FILE_IO_ERROR", "파일 처리 중 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_JOB_NOT_SET("USER_JOB_NOT_SET", "사용자 직무 정보가 설정되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_PREFERENCES_NOT_FOUND("USER_PREFERENCES_NOT_FOUND", "사용자 설정 정보를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    USER_FLOW_PROGRESS_NOT_FOUND("USER_FLOW_PROGRESS_NOT_FOUND", "사용자 플로우 진행 상태를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    USER_FLOW_PROGRESS_NOT_FOUND("USER_FLOW_PROGRESS_NOT_FOUND", "사용자 플로우 진행 상태를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    PROMPT_NOT_FOUND_IN_CACHE("PROMPT_NOT_FOUND_IN_CACHE", "캐시된 프롬프트를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;
