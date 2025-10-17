@@ -60,8 +60,8 @@ public class RivalService {
     public void unfollowRival(Long senderId, Long receiverId) {
         Rival rivalShip = rivalRepository.findBySenderIdAndReceiverId(senderId, receiverId)
                 .orElseThrow(
-                        () -> new BusinessException(ErrorCode.RIVAL_RELATION_NOT_FOUND, senderId,
-                                receiverId));
+                        () -> new BusinessException(ErrorCode.RIVAL_RELATION_NOT_FOUND,
+                                "senderId:", senderId, "receiverId:", receiverId));
         rivalRepository.delete(rivalShip);
     }
 
@@ -97,7 +97,7 @@ public class RivalService {
     public RivalSearchResponse searchRivalByEmail(String email) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, email));
 
         return RivalSearchResponse.from(user.getId(), user.getName(), user.getEmail());
     }
