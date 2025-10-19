@@ -133,6 +133,22 @@ CREATE TABLE answers (
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
+   STT TASKS (STT 변환 작업용)
+   ========================= */
+CREATE TABLE stt_tasks (
+                           stt_task_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                           answer_id BIGINT NOT NULL UNIQUE,
+                           status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+                           audio_url VARCHAR(2048) NOT NULL,  -- NCP Storage URL
+                           error_message VARCHAR(512) NULL,
+                           created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                           updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+                           CONSTRAINT fk_stt_task_to_answer
+                               FOREIGN KEY (answer_id) REFERENCES answers(answer_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/* =========================
    ANSWER FEEDBACKS (LLM/STT 비동기)
    ========================= */
 CREATE TABLE feedbacks (
