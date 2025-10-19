@@ -120,6 +120,7 @@ CREATE TABLE answers (
                          level TINYINT NULL,
                          starred TINYINT NOT NULL DEFAULT 0,
                          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                          memo MEDIUMTEXT NULL, -- 메모 필드 추가
                          follow_up_question_id BIGINT NULL,
                          CONSTRAINT ck_answers_level CHECK (level IS NULL OR (level BETWEEN 1 AND 5)),
@@ -191,7 +192,7 @@ CREATE TABLE follow_up_questions (
     user_id BIGINT NOT NULL,
     answer_id BIGINT NOT NULL,
     question_text MEDIUMTEXT NOT NULL,
-    is_answered TINYINT(1) NOT NULL DEFAULT 0,
+    is_answered TINYINT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
     CONSTRAINT fk_followup_user 

@@ -72,6 +72,9 @@ public class Answer {
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false, insertable = false)
+    private LocalDateTime updatedAt;
+
     @Column(name = "memo", columnDefinition = "MEDIUMTEXT")
     private String memo;
 
