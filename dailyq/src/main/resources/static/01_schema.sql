@@ -2,6 +2,7 @@ use dailyq;
 
 /* ----- 안전한 재생성을 위해 FK 검사 비활성화 후 드롭 ----- */
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS stt_tasks;
 DROP TABLE IF EXISTS follow_up_questions;
 DROP TABLE IF EXISTS feedbacks;
 DROP TABLE IF EXISTS answers;
