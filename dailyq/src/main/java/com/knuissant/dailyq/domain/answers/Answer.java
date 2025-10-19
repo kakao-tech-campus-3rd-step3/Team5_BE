@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -50,8 +52,16 @@ public class Answer {
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
 
-    @Column(name = "answer_text", columnDefinition = "MEDIUMTEXT", nullable = false)
+    @Column(name = "answer_text", columnDefinition = "MEDIUMTEXT")
     private String answerText;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "answer_type", nullable = false, columnDefinition = "VARCHAR(20)")
+    private AnswerType answerType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
+    private AnswerStatus status;
 
     @Column
     private Integer level;
@@ -69,11 +79,13 @@ public class Answer {
     @JoinColumn(name = "follow_up_question_id")
     private FollowUpQuestion followUpQuestion;
 
-    public static Answer create(User user, Question question, String answerText) {
+    public static Answer createTextAnswer(User user, Question question, String answerText) {
         return Answer.builder()
                 .user(user)
                 .question(question)
                 .answerText(answerText)
+                .answerType(AnswerType.TEXT)
+                .status(AnswerStatus.COMPLETED)
                 .build();
     }
 

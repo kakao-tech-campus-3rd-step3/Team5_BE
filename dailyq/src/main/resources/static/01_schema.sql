@@ -114,9 +114,11 @@ CREATE TABLE answers (
                          answer_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                          user_id BIGINT NOT NULL,
                          question_id BIGINT NOT NULL,
-                         answer_text MEDIUMTEXT NOT NULL, -- 오디오 변환 후 answer 생성
+                         answer_text MEDIUMTEXT NULL, -- null 허용: stt 대기 상태일 때
+                         answer_type VARCHAR(20) NOT NULL,
+                         status VARCHAR(20) NOT NULL,
                          level TINYINT NULL,
-                         starred TINYINT NOT NULL DEFAULT 0, -- default 0
+                         starred TINYINT NOT NULL DEFAULT 0,
                          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                          memo MEDIUMTEXT NULL, -- 메모 필드 추가
                          follow_up_question_id BIGINT NULL,

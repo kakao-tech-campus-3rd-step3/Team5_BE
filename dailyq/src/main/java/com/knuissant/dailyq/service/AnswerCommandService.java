@@ -97,7 +97,7 @@ public class AnswerCommandService {
         Question question = followUpQuestion.getAnswer().getQuestion();
 
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, request.answerText());
+        Answer answer = Answer.createTextAnswer(user, question, request.answerText());
         answer.setFollowUpQuestion(followUpQuestion);
 
         Answer savedAnswer = answerRepository.save(answer);
@@ -111,7 +111,7 @@ public class AnswerCommandService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND, request.questionId()));
 
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, request.answerText());
+        Answer answer = Answer.createTextAnswer(user, question, request.answerText());
         return answerRepository.save(answer);
     }
 }
