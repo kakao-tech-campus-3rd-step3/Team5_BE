@@ -5,7 +5,8 @@ import com.knuissant.dailyq.domain.feedbacks.Feedback;
 
 public record AnswerCreateResponse(
         Long answerId,
-        String answerText,
+        String answerText,  // status == PENDING_STT일 경우, null
+        String status,
         Long feedbackId
 ) {
 
@@ -13,6 +14,7 @@ public record AnswerCreateResponse(
         return new AnswerCreateResponse(
                 answer.getId(),
                 answer.getAnswerText(),
+                answer.getStatus().name(),
                 feedback.getId()
         );
     }
