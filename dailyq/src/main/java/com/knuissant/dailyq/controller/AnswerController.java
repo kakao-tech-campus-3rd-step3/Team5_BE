@@ -35,8 +35,10 @@ import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerListResponse;
 import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
+import com.knuissant.dailyq.dto.answers.UploadUrlResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.external.ncp.storage.ObjectStorageService;
 import com.knuissant.dailyq.service.AnswerCommandService;
 import com.knuissant.dailyq.service.AnswerQueryService;
 
@@ -48,6 +50,7 @@ public class AnswerController {
 
     private final AnswerCommandService answerCommandService;
     private final AnswerQueryService answerQueryService;
+    private final ObjectStorageService objectStorageService;
 
     @GetMapping
     public ResponseEntity<AnswerListResponse.CursorResult<AnswerListResponse.Summary>> getAnswers(
@@ -106,6 +109,11 @@ public class AnswerController {
                 request);
 
         return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/upload-url")
+    public ResponseEntity<UploadUrlResponse> getUploadUrl(@RequestParam String fileName) {
+        return ResponseEntity.ok(objectStorageService.generateUploadUrl(fileName));
     }
 
     @PostMapping
