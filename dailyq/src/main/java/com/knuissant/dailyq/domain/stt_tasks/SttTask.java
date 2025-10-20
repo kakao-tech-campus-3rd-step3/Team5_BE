@@ -63,4 +63,12 @@ public class SttTask {
                 .build();
     }
 
+    public void complete() {
+        this.status = SttTaskStatus.COMPLETED;
+    }
+
+    public void fail(String errorMessage) {
+        this.status = SttTaskStatus.FAILED;
+        this.errorMessage = errorMessage;
+    }
 }

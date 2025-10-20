@@ -123,6 +123,14 @@ public class Answer {
             throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS, "userId:", userId, "answerId:", this.id);
         }
     }
+
+    public void completeStt(String transcribedText) {
+        this.answerText = transcribedText;
+        this.status = AnswerStatus.COMPLETED;
+    }
+
+    public void failStt() {
+        this.status = AnswerStatus.FAILED_STT;
+    }
+
 }
-
-
