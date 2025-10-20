@@ -2,6 +2,7 @@ package com.knuissant.dailyq.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +32,7 @@ public class AnswerCommandService {
     private final FeedbackService feedbackService;
     private final FollowUpQuestionService followUpQuestionService;
     private final QuestionRepository questionRepository;
+    private final SttTaskService sttTaskService;
 
 
     @Transactional
@@ -96,11 +98,18 @@ public class AnswerCommandService {
         }
         Question question = followUpQuestion.getAnswer().getQuestion();
 
-        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.createTextAnswer(user, question, request.answerText());
-        answer.setFollowUpQuestion(followUpQuestion);
+        Answer savedAnswer;
+        if (StringUtils.hasText(request.answerText())) {
+            Answer answer = Answer.createTextAnswer(user, question, request.answerText());
+            answer.setFollowUpQuestion(followUpQuestion);
+            savedAnswer = answerRepository.save(answer);
+        } else if (StringUtils.hasText(request.audioUrl())) {
+            savedAnswer = createSttPendingAnswer(user, question, request.audioUrl());
+            savedAnswer.setFollowUpQuestion(followUpQuestion);
+        } else {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "answerText 또는 audioUrl이 필요합니다.");
+        }
 
-        Answer savedAnswer = answerRepository.save(answer);
         followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestionId);
 
         return savedAnswer;
@@ -110,8 +119,24 @@ public class AnswerCommandService {
         Question question = questionRepository.findById(request.questionId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND, request.questionId()));
 
-        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.createTextAnswer(user, question, request.answerText());
-        return answerRepository.save(answer);
+        if (StringUtils.hasText(request.answerText())) {
+            Answer answer = Answer.createTextAnswer(user, question, request.answerText());
+            return answerRepository.save(answer);
+        } else if (StringUtils.hasText(request.audioUrl())) {
+            return createSttPendingAnswer(user, question, request.audioUrl());
+        } else {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "answerText 또는 audioUrl이 필요합니다.");
+        }
     }
+
+    private Answer createSttPendingAnswer(User user, Question question, String finalAudioUrl) {
+
+        Answer answer = Answer.createVoiceAnswer(user, question);
+        Answer savedAnswer = answerRepository.save(answer);
+
+        sttTaskService.createAndRequestSttTask(savedAnswer, finalAudioUrl);
+
+        return savedAnswer;
+    }
+
 }

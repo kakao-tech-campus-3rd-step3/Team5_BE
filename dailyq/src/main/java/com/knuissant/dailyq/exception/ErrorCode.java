@@ -17,6 +17,7 @@ public enum ErrorCode {
     CANNOT_DELETE_JOB_IN_USE("CANNOT_DELETE_JOB_IN_USE", "해당 직업을 사용하는 사용자가 있어 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST),
     CANNOT_DELETE_QUESTION_WITH_ANSWERS("CANNOT_DELETE_QUESTION_WITH_ANSWERS", "해당 질문에 달린 답변이 있어 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST),
     INVALID_CURSOR_PARAMETERS("INVALID_CURSOR_PARAMETERS", "유효하지 않은 커서 파라미터입니다.", HttpStatus.BAD_REQUEST),
+    INVALID_INPUT_VALUE("INVALID_INPUT_VALUE", "올바르지 않은 입력값입니다.", HttpStatus.BAD_REQUEST),
 
     // Not Found(404)
     USER_NOT_FOUND("USER_NOT_FOUND", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -53,7 +54,8 @@ public enum ErrorCode {
     USER_JOB_NOT_SET("USER_JOB_NOT_SET", "사용자 직무 정보가 설정되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_PREFERENCES_NOT_FOUND("USER_PREFERENCES_NOT_FOUND", "사용자 설정 정보를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_FLOW_PROGRESS_NOT_FOUND("USER_FLOW_PROGRESS_NOT_FOUND", "사용자 플로우 진행 상태를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    PROMPT_NOT_FOUND_IN_CACHE("PROMPT_NOT_FOUND_IN_CACHE", "캐시된 프롬프트를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    PROMPT_NOT_FOUND_IN_CACHE("PROMPT_NOT_FOUND_IN_CACHE", "캐시된 프롬프트를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    NCP_API_COMMUNICATION_ERROR("NCP_API_COMMUNICATION_ERROR", "NCP API 통신 중 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;

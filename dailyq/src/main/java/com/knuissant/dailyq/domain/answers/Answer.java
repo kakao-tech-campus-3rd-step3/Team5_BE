@@ -92,6 +92,16 @@ public class Answer {
                 .build();
     }
 
+    public static Answer createVoiceAnswer(User user, Question question) {
+        return Answer.builder()
+                .user(user)
+                .question(question)
+                .answerText(null)
+                .answerType(AnswerType.VOICE)
+                .status(AnswerStatus.PENDING_STT) // 상태: STT 대기
+                .build();
+    }
+
     public void updateMemo(String memo) {
         this.memo = memo;
     }

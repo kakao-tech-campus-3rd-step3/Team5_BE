@@ -55,4 +55,12 @@ public class SttTask {
     @Column(name = "updated_at", nullable = false, insertable = false)
     private LocalDateTime updatedAt;
 
+    public static SttTask create(Answer answer, String audioUrl) {
+        return SttTask.builder()
+                .answer(answer)
+                .status(SttTaskStatus.PENDING)
+                .audioUrl(audioUrl)
+                .build();
+    }
+
 }
