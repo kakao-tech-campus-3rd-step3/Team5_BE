@@ -49,7 +49,7 @@ public class ClovaSpeechClient {
         diarization.put("enable", false);
 
         Map<String, Object> body = new HashMap<>();
-        body.put("dataKey", "/" + dataKey);
+        body.put("dataKey", dataKey);
         body.put("language", "ko-KR");
         body.put("completion", "async");
         body.put("callback", callbackUrl);

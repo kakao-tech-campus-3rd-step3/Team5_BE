@@ -10,7 +10,7 @@ public record ClovaCallbackPayload(
 ) {
 
     public boolean isComplete() {
-        return "COMPLETED".equalsIgnoreCase(result);
+        return "SUCCEEDED".equalsIgnoreCase(result);
     }
 
 }
