@@ -32,11 +32,10 @@ public class ObjectStorageService {
      * @return UploadUrlResponse (preSignedUrl, finalAudioUrl)
      */
     public UploadUrlResponse generateUploadUrl(String fileName) {
+        String bucketName = ncpConfig.getBucketName();
         String objectKey = createObjectKey(fileName);
-
         Date expiration = new Date(Instant.now().toEpochMilli() + PRE_SIGNED_URL_EXPIRATION_MS);
 
-        String bucketName = ncpConfig.getBucketName();
         GeneratePresignedUrlRequest request =
                 new GeneratePresignedUrlRequest(bucketName, objectKey)
                         .withMethod(HttpMethod.PUT)

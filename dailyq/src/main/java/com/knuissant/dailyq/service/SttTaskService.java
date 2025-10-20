@@ -1,20 +1,20 @@
 package com.knuissant.dailyq.service;
 
+import java.net.URL;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.config.NcpConfig;
 import com.knuissant.dailyq.domain.answers.Answer;
-import com.knuissant.dailyq.domain.stt_tasks.SttTask;
+import com.knuissant.dailyq.domain.stt.SttTask;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.external.ncp.clova.ClovaSpeechClient;
 import com.knuissant.dailyq.repository.SttTaskRepository;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SttTaskService {
@@ -31,7 +31,6 @@ public class SttTaskService {
      */
     @Transactional
     public void createAndRequestSttTask(Answer savedAnswer, String finalAudioUrl) {
-
         SttTask sttTask = SttTask.create(savedAnswer, finalAudioUrl);
         SttTask savedSttTask = sttTaskRepository.save(sttTask);
 
@@ -41,7 +40,7 @@ public class SttTaskService {
 
     private String parseDataKeyFromUrl(String url) {
         try {
-            java.net.URL parsedUrl = new java.net.URL(url);
+            URL parsedUrl = new URL(url);
             String path = parsedUrl.getPath();
             String bucketName = ncpConfig.getBucketName();
             String prefix = "/" + bucketName + "/";

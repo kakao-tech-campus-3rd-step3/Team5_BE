@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.answers.Answer;
-import com.knuissant.dailyq.domain.stt_tasks.SttTask;
-import com.knuissant.dailyq.domain.stt_tasks.SttTaskStatus;
+import com.knuissant.dailyq.domain.stt.SttTask;
+import com.knuissant.dailyq.domain.stt.SttTaskStatus;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.external.ncp.clova.ClovaCallbackPayload;

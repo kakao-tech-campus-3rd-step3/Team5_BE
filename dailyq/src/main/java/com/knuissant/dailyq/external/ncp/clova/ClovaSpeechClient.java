@@ -27,6 +27,22 @@ public class ClovaSpeechClient {
      * @param sttTaskId (콜백 URL에 포함시킬 sttTask ID, 예: 101)
      */
     public void requestTranscription(String dataKey, Long sttTaskId) {
+        Map<String, Object> body = getBody(dataKey, sttTaskId);
+
+        try {
+            ncpClovaRestClient.post()
+                    .uri("/recognizer/object-storage")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .toBodilessEntity();
+
+        } catch (Exception e) {
+            throw new InfraException(ErrorCode.NCP_API_COMMUNICATION_ERROR, e);
+        }
+    }
+
+    private Map<String, Object> getBody(String dataKey, Long sttTaskId) {
         String callbackUrl = ncpConfig.getClovaCallbackServer() + "/api/stt/callback/" + sttTaskId;
 
         Map<String, Object> diarization = new HashMap<>();
@@ -40,17 +56,6 @@ public class ClovaSpeechClient {
         body.put("wordAlignment", true);
         body.put("fullText", true);
         body.put("diarization", diarization);
-
-        try {
-            ncpClovaRestClient.post()
-                    .uri("/recognizer/object-storage")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(body)
-                    .retrieve()
-                    .toBodilessEntity();
-
-        } catch (Exception e) {
-            throw new InfraException(ErrorCode.NCP_API_COMMUNICATION_ERROR, e);
-        }
+        return body;
     }
 }

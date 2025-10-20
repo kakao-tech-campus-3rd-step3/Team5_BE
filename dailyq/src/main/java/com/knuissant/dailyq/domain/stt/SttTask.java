@@ -1,4 +1,4 @@
-package com.knuissant.dailyq.domain.stt_tasks;
+package com.knuissant.dailyq.domain.stt;
 
 import java.time.LocalDateTime;
 
