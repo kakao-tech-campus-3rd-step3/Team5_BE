@@ -69,6 +69,12 @@ ncp:
     access-key: ${NCP_ACCESS_KEY}  # (NCP 콘솔 > 인증키 관리)
     secret-key: ${NCP_SECRET_KEY} # (NCP 콘솔 > 인증키 관리)
     bucket-name: ${NCP_BUCKET_NAME}
+  # CLOVA Speech
+  clova:
+    stt:
+      invoke-url: ${NCP_CLOVA_DOMAIN_INVOKE_URL}
+      secret-key: ${NCP_CLOVA_DOMAIN_SECRET_KEY}
+      callback-server: ${NCP_CLOVA_CALLBACK_SERVER:https://be.dailyq.my}
 
 springdoc:
   api-docs:
