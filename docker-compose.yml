@@ -70,6 +70,7 @@ services:
       - NCP_BUCKET_NAME=${NCP_BUCKET_NAME}
       - NCP_CLOVA_DOMAIN_INVOKE_URL=${NCP_CLOVA_DOMAIN_INVOKE_URL}
       - NCP_CLOVA_DOMAIN_SECRET_KEY=${NCP_CLOVA_DOMAIN_SECRET_KEY}
+      - AWS_EC2_METADATA_DISABLED=true
     depends_on:
       mysql:
         condition: service_healthy
