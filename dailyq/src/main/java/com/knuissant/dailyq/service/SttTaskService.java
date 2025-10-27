@@ -1,5 +1,6 @@
 package com.knuissant.dailyq.service;
 
+import java.net.URI;
 import java.net.URL;
 
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class SttTaskService {
 
     private String parseDataKeyFromUrl(String url) {
         try {
-            URL parsedUrl = new URL(url);
+            URL parsedUrl = new URI(url).toURL();
             String path = parsedUrl.getPath();
             String bucketName = ncpConfig.getBucketName();
             String prefix = "/" + bucketName + "/";
