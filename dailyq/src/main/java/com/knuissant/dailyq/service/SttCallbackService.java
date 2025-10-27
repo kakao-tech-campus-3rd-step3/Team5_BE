@@ -1,5 +1,6 @@
 package com.knuissant.dailyq.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.stt.SttTask;
 import com.knuissant.dailyq.domain.stt.SttTaskStatus;
+import com.knuissant.dailyq.event.payload.SttCompletedEvent;
+import com.knuissant.dailyq.event.payload.SttFailedEvent;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.external.ncp.clova.ClovaCallbackPayload;
@@ -18,6 +21,7 @@ import com.knuissant.dailyq.repository.SttTaskRepository;
 public class SttCallbackService {
 
     private final SttTaskRepository sttTaskRepository;
+    private final ApplicationEventPublisher publisher;
 
     @Transactional
     public void processCallback(Long sttTaskId, ClovaCallbackPayload payload) {
@@ -40,12 +44,18 @@ public class SttCallbackService {
             sttTask.complete();
             answer.completeStt(transcribedText);
 
+            // stt 변환 성공 이벤트 발행
+            publisher.publishEvent(new SttCompletedEvent(answer.getId(), transcribedText));
+
             // 피드백 생성 이벤트 발행 예정
 
         } else {
             String errorMessage = (payload.message() != null) ? payload.message() : "Unknown CLOVA error";
             sttTask.fail(errorMessage);
             answer.failStt();
+
+            // stt 변환 실패 이벤트 발행
+            publisher.publishEvent(new SttFailedEvent(answer.getId(), errorMessage));
         }
     }
 
