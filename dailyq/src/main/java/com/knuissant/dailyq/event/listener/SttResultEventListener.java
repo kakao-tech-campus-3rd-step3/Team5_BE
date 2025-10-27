@@ -8,18 +8,21 @@ import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.event.payload.SttCompletedEvent;
 import com.knuissant.dailyq.event.payload.SttFailedEvent;
+import com.knuissant.dailyq.service.SseService;
 
 @Component
 @RequiredArgsConstructor
 public class SttResultEventListener {
 
+    private final SseService sseService;
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSttCompleted(SttCompletedEvent event) {
-        // 클라이언트에 성공 결과 푸시
+        sseService.sendEvent(event.userId(), "sttCompleted", event);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSttFailed(SttFailedEvent event) {
-        // 클라이언트에 실패 결과 푸시
+        sseService.sendEvent(event.userId(), "sttFailed", event);
     }
 }

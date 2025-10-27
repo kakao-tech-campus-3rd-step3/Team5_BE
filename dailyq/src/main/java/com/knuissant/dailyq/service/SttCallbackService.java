@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.stt.SttTask;
 import com.knuissant.dailyq.domain.stt.SttTaskStatus;
+import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.event.payload.SttCompletedEvent;
 import com.knuissant.dailyq.event.payload.SttFailedEvent;
 import com.knuissant.dailyq.exception.BusinessException;
@@ -39,13 +40,19 @@ public class SttCallbackService {
             throw new BusinessException(ErrorCode.ANSWER_NOT_FOUND, "sttTaskId:", sttTaskId);
         }
 
+        User user = answer.getUser();
+        if (user == null) {
+            sttTask.fail("연결된 User 없음");
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "answerId:", answer.getId());
+        }
+
         if (payload.isComplete()) {
             String transcribedText = payload.text();
             sttTask.complete();
             answer.completeStt(transcribedText);
 
             // stt 변환 성공 이벤트 발행
-            publisher.publishEvent(new SttCompletedEvent(answer.getId(), transcribedText));
+            publisher.publishEvent(new SttCompletedEvent(user.getId(), answer.getId(), transcribedText));
 
             // 피드백 생성 이벤트 발행 예정
 
@@ -55,7 +62,7 @@ public class SttCallbackService {
             answer.failStt();
 
             // stt 변환 실패 이벤트 발행
-            publisher.publishEvent(new SttFailedEvent(answer.getId(), errorMessage));
+            publisher.publishEvent(new SttFailedEvent(user.getId(), answer.getId(), errorMessage));
         }
     }
 

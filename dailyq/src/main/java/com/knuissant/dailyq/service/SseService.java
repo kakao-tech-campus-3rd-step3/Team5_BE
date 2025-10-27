@@ -36,4 +36,26 @@ public class SseService {
         return emitter;
     }
 
+    public void sendEvent(Long userId, String eventName, Object data) {
+        SseEmitter emitter = emitters.get(userId);
+        if (emitter == null) {
+            log.warn("No active SSE emitter found for user: {}", userId);
+
+            return;
+        }
+
+        try {
+            String eventId = userId + "_" + System.currentTimeMillis();
+            emitter.send(SseEmitter.event()
+                    .id(eventId)
+                    .name(eventName)
+                    .data(data));
+
+        } catch (Exception e) {
+            log.error("Failed to send SSE event to user: {}", userId, e);
+            emitters.remove(userId);
+            emitter.completeWithError(e);
+        }
+    }
+
 }
