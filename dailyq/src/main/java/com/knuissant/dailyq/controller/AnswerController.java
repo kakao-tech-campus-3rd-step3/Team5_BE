@@ -129,6 +129,16 @@ public class AnswerController {
                 .body(answerCommandService.submitAnswer(userId, request));
     }
 
+    @GetMapping("/{answerId}/status")
+    public ResponseEntity<AnswerCreateResponse> getAnswerStatus(
+            @AuthenticationPrincipal User principal,
+            @PathVariable Long answerId) {
+
+        Long userId = getUserId(principal);
+
+        return ResponseEntity.ok(answerQueryService.getAnswerStatus(userId, answerId));
+    }
+
     @PostMapping("/{answerId}/retry-stt")
     public ResponseEntity<Void> retrySttForAnswer(
             @AuthenticationPrincipal User principal,
