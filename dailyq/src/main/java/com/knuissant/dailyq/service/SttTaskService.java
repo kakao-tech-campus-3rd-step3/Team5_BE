@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import com.knuissant.dailyq.config.NcpConfig;
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.stt.SttTask;
+import com.knuissant.dailyq.domain.stt.SttTaskStatus;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.external.ncp.clova.ClovaSpeechClient;
@@ -35,8 +36,34 @@ public class SttTaskService {
         SttTask sttTask = SttTask.create(savedAnswer, finalAudioUrl);
         SttTask savedSttTask = sttTaskRepository.save(sttTask);
 
-        String dataKey = parseDataKeyFromUrl(finalAudioUrl);
-        clovaSpeechClient.requestTranscription(dataKey, savedSttTask.getId());
+        requestStt(savedSttTask);
+    }
+
+    @Transactional
+    public void retrySttForAnswer(Long userId, Long answerId) {
+
+        SttTask sttTask = sttTaskRepository.findByAnswerId(answerId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.STT_TASK_NOT_FOUND, "answerId:", answerId));
+
+        if (sttTask.getStatus() == SttTaskStatus.COMPLETED) {
+            throw new BusinessException(ErrorCode.STT_TASK_ALREADY_COMPLETED, sttTask.getId());
+        }
+
+        Answer answer = sttTask.getAnswer();
+        if (answer == null) {
+            throw new BusinessException(ErrorCode.ANSWER_NOT_FOUND, "sttTaskId:", sttTask.getId());
+        }
+        answer.checkOwnership(userId);
+
+        sttTask.retry();
+        answer.retryStt();
+
+        requestStt(sttTask);
+    }
+
+    private void requestStt(SttTask sttTask) {
+        String dataKey = parseDataKeyFromUrl(sttTask.getAudioUrl());
+        clovaSpeechClient.requestTranscription(dataKey, sttTask.getId());
     }
 
     private String parseDataKeyFromUrl(String url) {

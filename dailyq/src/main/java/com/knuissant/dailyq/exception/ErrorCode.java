@@ -46,6 +46,7 @@ public enum ErrorCode {
     OCCUPATION_ALREADY_EXISTS("OCCUPATION_ALREADY_EXISTS", "이미 존재하는 직군 이름입니다.", HttpStatus.CONFLICT),
     JOB_ALREADY_EXISTS("JOB_ALREADY_EXISTS", "이미 존재하는 직업 이름입니다.", HttpStatus.CONFLICT),
     QUESTION_ALREADY_EXISTS("QUESTION_ALREADY_EXISTS", "이미 존재하는 질문 내용입니다.", HttpStatus.CONFLICT),
+    STT_TASK_ALREADY_COMPLETED("STT_TASK_ALREADY_COMPLETED", "이미 완료된 STT 작업입니다.", HttpStatus.CONFLICT),
 
     //5xx System Errors
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부에 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

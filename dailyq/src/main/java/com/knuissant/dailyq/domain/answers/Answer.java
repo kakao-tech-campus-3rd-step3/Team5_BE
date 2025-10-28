@@ -133,4 +133,11 @@ public class Answer {
         this.status = AnswerStatus.FAILED_STT;
     }
 
+    public void retryStt() {
+        if (this.answerType == AnswerType.VOICE) {
+            this.status = AnswerStatus.PENDING_STT;
+            this.answerText = null;
+        }
+    }
+
 }

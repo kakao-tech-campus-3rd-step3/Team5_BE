@@ -41,6 +41,7 @@ import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.external.ncp.storage.ObjectStorageService;
 import com.knuissant.dailyq.service.AnswerCommandService;
 import com.knuissant.dailyq.service.AnswerQueryService;
+import com.knuissant.dailyq.service.SttTaskService;
 
 @Validated
 @RestController
@@ -51,6 +52,7 @@ public class AnswerController {
     private final AnswerCommandService answerCommandService;
     private final AnswerQueryService answerQueryService;
     private final ObjectStorageService objectStorageService;
+    private final SttTaskService sttTaskService;
 
     @GetMapping
     public ResponseEntity<AnswerListResponse.CursorResult<AnswerListResponse.Summary>> getAnswers(
@@ -125,6 +127,18 @@ public class AnswerController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(answerCommandService.submitAnswer(userId, request));
+    }
+
+    @PostMapping("/{answerId}/retry-stt")
+    public ResponseEntity<Void> retrySttForAnswer(
+            @AuthenticationPrincipal User principal,
+            @PathVariable Long answerId) {
+
+        Long userId = getUserId(principal);
+
+        sttTaskService.retrySttForAnswer(userId, answerId);
+
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{answerId}/level")

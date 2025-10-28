@@ -71,4 +71,9 @@ public class SttTask {
         this.status = SttTaskStatus.FAILED;
         this.errorMessage = errorMessage;
     }
+
+    public void retry() {
+        this.status = SttTaskStatus.PENDING;
+        this.errorMessage = null;
+    }
 }
