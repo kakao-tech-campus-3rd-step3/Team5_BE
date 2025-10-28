@@ -1,9 +1,13 @@
 package com.knuissant.dailyq.config;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
 import lombok.Getter;
@@ -42,13 +46,22 @@ public class NcpConfig {
         return AmazonS3ClientBuilder.standard()
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(storageEndpoint, storageRegion))
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(storageAccessKey, storageSecretKey)))
+                .withPathStyleAccessEnabled(true)
                 .build();
     }
 
     // CLOVA speech
     @Bean
     public RestClient ncpClovaRestClient() {
+        HttpClient httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(3))
+                .build();
+
+        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(httpClient);
+        factory.setReadTimeout(Duration.ofSeconds(5));
+
         return RestClient.builder()
+                .requestFactory(factory)
                 .baseUrl(clovaInvokeUrl)
                 .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader("X-CLOVASPEECH-API-KEY", clovaSecretKey)
