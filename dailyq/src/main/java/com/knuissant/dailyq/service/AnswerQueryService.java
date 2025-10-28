@@ -25,8 +25,8 @@ import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.Question;
-import com.knuissant.dailyq.dto.answers.AnswerCreateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerDetailResponse;
+import com.knuissant.dailyq.dto.answers.AnswerInfoResponse;
 import com.knuissant.dailyq.dto.answers.AnswerListResponse.CursorResult;
 import com.knuissant.dailyq.dto.answers.AnswerListResponse.Summary;
 import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
@@ -86,7 +86,7 @@ public class AnswerQueryService {
     }
 
     @Transactional(readOnly = true)
-    public AnswerCreateResponse getAnswerStatus(Long userId, Long answerId) {
+    public AnswerInfoResponse getAnswerStatus(Long userId, Long answerId) {
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
         answer.checkOwnership(userId);
@@ -94,7 +94,7 @@ public class AnswerQueryService {
         Feedback feedback = feedbackRepository.findByAnswerId(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, "answerId:", answerId));
 
-        return AnswerCreateResponse.from(answer, feedback);
+        return AnswerInfoResponse.from(answer, feedback);
     }
 
     private Specification<Answer> createSpecification(Long userId,

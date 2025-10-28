@@ -29,8 +29,8 @@ import lombok.RequiredArgsConstructor;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
-import com.knuissant.dailyq.dto.answers.AnswerCreateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerDetailResponse;
+import com.knuissant.dailyq.dto.answers.AnswerInfoResponse;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerListResponse;
@@ -119,7 +119,7 @@ public class AnswerController {
     }
 
     @PostMapping
-    public ResponseEntity<AnswerCreateResponse> submitAnswer(
+    public ResponseEntity<AnswerInfoResponse> submitAnswer(
             @AuthenticationPrincipal User principal,
             @Valid @RequestBody AnswerCreateRequest request) {
 
@@ -130,7 +130,7 @@ public class AnswerController {
     }
 
     @GetMapping("/{answerId}/status")
-    public ResponseEntity<AnswerCreateResponse> getAnswerStatus(
+    public ResponseEntity<AnswerInfoResponse> getAnswerStatus(
             @AuthenticationPrincipal User principal,
             @PathVariable Long answerId) {
 

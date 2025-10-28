@@ -14,7 +14,7 @@ import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
-import com.knuissant.dailyq.dto.answers.AnswerCreateResponse;
+import com.knuissant.dailyq.dto.answers.AnswerInfoResponse;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
 import com.knuissant.dailyq.exception.BusinessException;
@@ -36,7 +36,7 @@ public class AnswerCommandService {
 
 
     @Transactional
-    public AnswerCreateResponse submitAnswer(Long userId, AnswerCreateRequest request) {
+    public AnswerInfoResponse submitAnswer(Long userId, AnswerCreateRequest request) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
@@ -47,7 +47,7 @@ public class AnswerCommandService {
 
         Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
 
-        return AnswerCreateResponse.from(savedAnswer, savedFeedback);
+        return AnswerInfoResponse.from(savedAnswer, savedFeedback);
     }
 
     @Transactional
