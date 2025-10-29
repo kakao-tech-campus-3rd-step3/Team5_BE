@@ -65,7 +65,7 @@ public class SttCallbackService {
             answer.failStt();
 
             // stt 변환 실패 이벤트 발행
-            publisher.publishEvent(new SttFailedEvent(user.getId(), answer.getId(), errorMessage));
+            publisher.publishEvent(new SttFailedEvent(user.getId(), answer.getId()));
         }
     }
 
