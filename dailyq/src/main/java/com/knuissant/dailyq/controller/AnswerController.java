@@ -114,8 +114,13 @@ public class AnswerController {
     }
 
     @GetMapping("/upload-url")
-    public ResponseEntity<UploadUrlResponse> getUploadUrl(@RequestParam String fileName) {
-        return ResponseEntity.ok(objectStorageService.generateUploadUrl(fileName));
+    public ResponseEntity<UploadUrlResponse> getUploadUrl(
+            @AuthenticationPrincipal User principal,
+            @RequestParam String fileName) {
+
+        Long userId = getUserId(principal);
+
+        return ResponseEntity.ok(objectStorageService.generateUploadUrl(userId, fileName));
     }
 
     @PostMapping
