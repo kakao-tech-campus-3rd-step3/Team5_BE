@@ -1,5 +1,7 @@
 package com.knuissant.dailyq.controller;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +24,7 @@ public class SttCallbackController {
     @PostMapping("/{sttTaskId}")
     public ResponseEntity<Void> handleClovaCallback(
             @PathVariable Long sttTaskId,
-            @RequestBody ClovaCallbackPayload payload) {
+            @Valid @RequestBody ClovaCallbackPayload payload) {
 
         sttCallbackService.processCallback(sttTaskId, payload);
 
