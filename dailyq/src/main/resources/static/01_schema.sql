@@ -143,6 +143,7 @@ CREATE TABLE stt_tasks (
                            status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
                            audio_url VARCHAR(2048) NOT NULL,  -- NCP Storage URL
                            error_message VARCHAR(512) NULL,
+                           token VARCHAR(36) NULL UNIQUE,
                            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 

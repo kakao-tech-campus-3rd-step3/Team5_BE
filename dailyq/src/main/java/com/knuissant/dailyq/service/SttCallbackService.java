@@ -29,7 +29,10 @@ public class SttCallbackService {
         SttTask sttTask = sttTaskRepository.findById(sttTaskId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STT_TASK_NOT_FOUND, sttTaskId));
 
-        // 중복 처리 방지
+        if (!payload.token().equals(sttTask.getToken())) {
+            throw new BusinessException(ErrorCode.INVALID_TOKEN, "sttTaskId:", sttTaskId);
+        }
+
         if (sttTask.getStatus() != SttTaskStatus.PENDING) {
             return;
         }

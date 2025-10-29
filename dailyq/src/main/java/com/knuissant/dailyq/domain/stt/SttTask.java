@@ -49,6 +49,9 @@ public class SttTask {
     @Column(name = "error_message", length = 512)
     private String errorMessage;
 
+    @Column(unique = true, length = 36)
+    private String token;
+
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -63,6 +66,10 @@ public class SttTask {
                 .build();
     }
 
+    public void setToken(String token) {
+        this.token = token;
+    }
+
     public void complete() {
         this.status = SttTaskStatus.COMPLETED;
     }
@@ -75,5 +82,6 @@ public class SttTask {
     public void retry() {
         this.status = SttTaskStatus.PENDING;
         this.errorMessage = null;
+        this.token = null;
     }
 }

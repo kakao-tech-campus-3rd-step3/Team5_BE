@@ -26,16 +26,22 @@ public class ClovaSpeechClient {
      * @param dataKey   (스토리지의 '파일 키(key)', 예: "UUID.mp3")
      * @param sttTaskId (콜백 URL에 포함시킬 sttTask ID, 예: 101)
      */
-    public void requestTranscription(String dataKey, Long sttTaskId) {
+    public String requestTranscription(String dataKey, Long sttTaskId) {
         Map<String, Object> body = getBody(dataKey, sttTaskId);
 
         try {
-            ncpClovaRestClient.post()
+            ClovaSttTaskResponse response = ncpClovaRestClient.post()
                     .uri("/recognizer/object-storage")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(body)
                     .retrieve()
-                    .toBodilessEntity();
+                    .body(ClovaSttTaskResponse.class);
+
+            if (response == null || response.token() == null) {
+                throw new InfraException(ErrorCode.NCP_API_COMMUNICATION_ERROR, "Clova API가 토큰을 반환하지 않았습니다.");
+            }
+
+            return response.token();
 
         } catch (Exception e) {
             throw new InfraException(ErrorCode.NCP_API_COMMUNICATION_ERROR, e);
