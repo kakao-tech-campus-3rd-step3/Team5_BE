@@ -8,11 +8,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.config.NcpConfig;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.exception.InfraException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ClovaSpeechClient {
@@ -30,6 +32,7 @@ public class ClovaSpeechClient {
         Map<String, Object> body = getBody(dataKey, sttTaskId);
 
         try {
+            log.debug("Requesting CLOVA STT. sttTaskId={}, dataKey={}", sttTaskId, dataKey);
             ClovaSttTaskResponse response = ncpClovaRestClient.post()
                     .uri("/recognizer/object-storage")
                     .contentType(MediaType.APPLICATION_JSON)
