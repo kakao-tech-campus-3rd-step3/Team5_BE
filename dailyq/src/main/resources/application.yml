@@ -61,6 +61,21 @@ spring:
         multiplier: 2
       on-http-codes: [ 429, 500, 503 ]
 
+ncp:
+  # Object Storage
+  storage:
+    endpoint: https://kr.object.ncloudstorage.com
+    region: kr-standard
+    access-key: ${NCP_ACCESS_KEY}  # (NCP 콘솔 > 인증키 관리)
+    secret-key: ${NCP_SECRET_KEY} # (NCP 콘솔 > 인증키 관리)
+    bucket-name: ${NCP_BUCKET_NAME}
+  # CLOVA Speech
+  clova:
+    stt:
+      invoke-url: ${NCP_CLOVA_DOMAIN_INVOKE_URL}
+      secret-key: ${NCP_CLOVA_DOMAIN_SECRET_KEY}
+      callback-server: ${NCP_CLOVA_CALLBACK_SERVER:https://be.dailyq.my}
+
 springdoc:
   api-docs:
     path: /api-docs
@@ -118,9 +133,9 @@ management:
     env:
       enabled: true
   prometheus:
-      metrics:
-        export:
-          enabled: true
+    metrics:
+      export:
+        enabled: true
 ---
 # 프로덕션 환경 설정
 spring:

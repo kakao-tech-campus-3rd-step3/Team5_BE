@@ -17,6 +17,7 @@ public enum ErrorCode {
     CANNOT_DELETE_JOB_IN_USE("CANNOT_DELETE_JOB_IN_USE", "해당 직업을 사용하는 사용자가 있어 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST),
     CANNOT_DELETE_QUESTION_WITH_ANSWERS("CANNOT_DELETE_QUESTION_WITH_ANSWERS", "해당 질문에 달린 답변이 있어 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST),
     INVALID_CURSOR_PARAMETERS("INVALID_CURSOR_PARAMETERS", "유효하지 않은 커서 파라미터입니다.", HttpStatus.BAD_REQUEST),
+    INVALID_INPUT_VALUE("INVALID_INPUT_VALUE", "올바르지 않은 입력값입니다.", HttpStatus.BAD_REQUEST),
 
     // Not Found(404)
     USER_NOT_FOUND("USER_NOT_FOUND", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -28,6 +29,7 @@ public enum ErrorCode {
     OCCUPATION_NOT_FOUND("OCCUPATION_NOT_FOUND", "직군을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     JOB_NOT_FOUND("JOB_NOT_FOUND", "직업을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     RIVAL_RELATION_NOT_FOUND("RIVAL_RELATION_NOT_FOUND", "라이벌 관계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    STT_TASK_NOT_FOUND("STT_TASK_NOT_FOUND", "해당 STT 작업을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // etc 4xx
     FORBIDDEN_ACCESS("FORBIDDEN_ACCESS", "리소스에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
@@ -44,6 +46,7 @@ public enum ErrorCode {
     OCCUPATION_ALREADY_EXISTS("OCCUPATION_ALREADY_EXISTS", "이미 존재하는 직군 이름입니다.", HttpStatus.CONFLICT),
     JOB_ALREADY_EXISTS("JOB_ALREADY_EXISTS", "이미 존재하는 직업 이름입니다.", HttpStatus.CONFLICT),
     QUESTION_ALREADY_EXISTS("QUESTION_ALREADY_EXISTS", "이미 존재하는 질문 내용입니다.", HttpStatus.CONFLICT),
+    STT_TASK_ALREADY_COMPLETED("STT_TASK_ALREADY_COMPLETED", "이미 완료된 STT 작업입니다.", HttpStatus.CONFLICT),
 
     //5xx System Errors
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부에 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -53,7 +56,9 @@ public enum ErrorCode {
     USER_JOB_NOT_SET("USER_JOB_NOT_SET", "사용자 직무 정보가 설정되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_PREFERENCES_NOT_FOUND("USER_PREFERENCES_NOT_FOUND", "사용자 설정 정보를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_FLOW_PROGRESS_NOT_FOUND("USER_FLOW_PROGRESS_NOT_FOUND", "사용자 플로우 진행 상태를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    PROMPT_NOT_FOUND_IN_CACHE("PROMPT_NOT_FOUND_IN_CACHE", "캐시된 프롬프트를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    PROMPT_NOT_FOUND_IN_CACHE("PROMPT_NOT_FOUND_IN_CACHE", "캐시된 프롬프트를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    NCP_API_COMMUNICATION_ERROR("NCP_API_COMMUNICATION_ERROR", "NCP API 통신 중 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    PRESIGNED_URL_GENERATION_FAILED("PRESIGNED_URL_GENERATION_FAILED", "Pre-signed URL 생성 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;
