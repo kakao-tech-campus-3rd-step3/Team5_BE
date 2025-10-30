@@ -10,28 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Deploy to server
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.PRIVATE_KEY }}
-        port: ${{ secrets.PORT || '22' }}
-        timeout: 30s
-        command_timeout: 10m
-        script: |
-          set -euo pipefail
-          echo "=== 배포 시작 ==="
-          cd ${{ secrets.PROJECT_PATH }}
-          echo "=== 현재 브랜치: $(git branch --show-current) ==="
-          echo "=== 배포 브랜치: ${{ github.ref_name }} ==="
-          echo "=== 브랜치 변경 및 Git pull 실행 ==="
-          git stash || true
-          git fetch origin
-          git checkout ${{ github.ref_name }} || git checkout -b ${{ github.ref_name }} origin/${{ github.ref_name }}
-          echo "=== 원격 브랜치와 강제 동기화 ==="
-          git reset --hard origin/${{ github.ref_name }}
-          echo "=== deploy.sh 실행 ==="
-          chmod +x ./deploy.sh
-          ./deploy.sh
-          echo "=== 배포 완료 ==="
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: ${{ secrets.PORT || '22' }}
+          timeout: 30s
+          command_timeout: 20m
+          script: |
+            set -euo pipefail
+            echo "=== 배포 시작 ==="
+            cd ${{ secrets.PROJECT_PATH }}
+            echo "=== 현재 브랜치: $(git branch --show-current) ==="
+            echo "=== 배포 브랜치: ${{ github.ref_name }} ==="
+            echo "=== 브랜치 변경 및 Git pull 실행 ==="
+            git stash || true
+            git fetch origin
+            git checkout ${{ github.ref_name }} || git checkout -b ${{ github.ref_name }} origin/${{ github.ref_name }}
+            echo "=== 원격 브랜치와 강제 동기화 ==="
+            git reset --hard origin/${{ github.ref_name }}
+            echo "=== deploy.sh 실행 ==="
+            chmod +x ./deploy.sh
+            ./deploy.sh
+            echo "=== 배포 완료 ==="

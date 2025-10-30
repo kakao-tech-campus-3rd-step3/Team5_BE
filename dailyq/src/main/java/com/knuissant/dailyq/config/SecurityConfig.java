@@ -34,7 +34,7 @@ public class SecurityConfig {
 
     @Value("${cors.allowed-origins}")
     private List<String> allowedOrigins;
-    
+
     @Value("${security.hsts.enabled:false}")
     private boolean hstsEnabled;
 
@@ -57,7 +57,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/login/oauth2/**",
-                                "/api/dev/**").permitAll()
+                                "/api/dev/**",
+                                "/api/stt/callback/**").permitAll()
                         // ADMIN 권한을 가진 사람만 관리자 API 접근 권한 허용
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // 임시로 admin.html에 접속 허용 추후 바꿀 예정
@@ -75,7 +76,7 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService)
                         )
                 );
-        
+
         // HSTS 설정 (Production 환경에서만 활성화)
         // 모든 서브도메인이 HTTPS를 지원하는 경우에만 includeSubDomains(true) 사용
         if (hstsEnabled) {
