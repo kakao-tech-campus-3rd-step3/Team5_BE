@@ -2,14 +2,11 @@ package com.knuissant.dailyq.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
-import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
-import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
@@ -41,9 +38,14 @@ public class AnswerCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
-        Answer savedAnswer = isFollowUpQuestion(request.questionId())
-                ? handleFollowUpQuestionAnswer(request, user)
-                : handleRegularQuestionAnswer(request, user);
+        // 템플릿 메서드 패턴 도입
+        AbstractAnswerHandler handler = isFollowUpQuestion(request.questionId())
+                ? new FollowUpAnswerHandler(answerRepository, sttTaskService,
+                followUpQuestionService, user, request)
+                : new RegularAnswerHandler(answerRepository, sttTaskService, questionRepository,
+                        user, request);
+
+        Answer savedAnswer = handler.handle();
 
         Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
 
@@ -87,56 +89,6 @@ public class AnswerCommandService {
 
     private boolean isFollowUpQuestion(Long questionId) {
         return questionId < 0;
-    }
-
-    private Answer handleFollowUpQuestionAnswer(AnswerCreateRequest request, User user) {
-        Long followUpQuestionId = Math.abs(request.questionId());
-        FollowUpQuestion followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
-
-        if (!followUpQuestion.getAnswer().getUser().getId().equals(user.getId())) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS, "userId:", user.getId(), "followUpQuestionId:", followUpQuestionId);
-        }
-        Question question = followUpQuestion.getAnswer().getQuestion();
-
-        Answer savedAnswer;
-        if (StringUtils.hasText(request.answerText())) {
-            Answer answer = Answer.createTextAnswer(user, question, request.answerText());
-            answer.setFollowUpQuestion(followUpQuestion);
-            savedAnswer = answerRepository.save(answer);
-        } else if (StringUtils.hasText(request.audioUrl())) {
-            savedAnswer = createSttPendingAnswer(user, question, request.audioUrl());
-            savedAnswer.setFollowUpQuestion(followUpQuestion);
-        } else {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "answerText 또는 audioUrl이 필요합니다.");
-        }
-
-        followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestionId);
-
-        return savedAnswer;
-    }
-
-    private Answer handleRegularQuestionAnswer(AnswerCreateRequest request, User user) {
-        Question question = questionRepository.findById(request.questionId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND, request.questionId()));
-
-        if (StringUtils.hasText(request.answerText())) {
-            Answer answer = Answer.createTextAnswer(user, question, request.answerText());
-            return answerRepository.save(answer);
-        } else if (StringUtils.hasText(request.audioUrl())) {
-            return createSttPendingAnswer(user, question, request.audioUrl());
-        } else {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "answerText 또는 audioUrl이 필요합니다.");
-        }
-    }
-
-    private Answer createSttPendingAnswer(User user, Question question, String finalAudioUrl) {
-
-        Answer answer = Answer.createVoiceAnswer(user, question);
-        Answer savedAnswer = answerRepository.save(answer);
-
-        sttTaskService.createAndRequestSttTask(savedAnswer, finalAudioUrl);
-
-        return savedAnswer;
     }
 
 }
