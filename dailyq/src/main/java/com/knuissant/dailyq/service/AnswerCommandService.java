@@ -39,7 +39,7 @@ public class AnswerCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
-        Answer savedAnswer = isFollowUpQuestion(request.questionId())
+        Answer savedAnswer = isFollowUpQuestion(request)
                 ? handleFollowUpQuestionAnswer(request, user)
                 : handleRegularQuestionAnswer(request, user);
 
@@ -83,12 +83,12 @@ public class AnswerCommandService {
         return AnswerArchiveUpdateResponse.from(answer);
     }
 
-    private boolean isFollowUpQuestion(Long questionId) {
-        return questionId < 0;
+    private boolean isFollowUpQuestion(AnswerCreateRequest request) {
+        return request.followUp();
     }
 
     private Answer handleFollowUpQuestionAnswer(AnswerCreateRequest request, User user) {
-        Long followUpQuestionId = Math.abs(request.questionId());
+        Long followUpQuestionId = request.questionId();
         FollowUpQuestion followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
 
         if (!followUpQuestion.getAnswer().getUser().getId().equals(user.getId())) {
