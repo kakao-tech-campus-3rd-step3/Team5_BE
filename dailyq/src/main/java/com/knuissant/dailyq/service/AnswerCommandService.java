@@ -39,7 +39,7 @@ public class AnswerCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
-        Answer savedAnswer = isFollowUpQuestion(request)
+        Answer savedAnswer = request.followUp()
                 ? handleFollowUpQuestionAnswer(request, user)
                 : handleRegularQuestionAnswer(request, user);
 
@@ -81,10 +81,6 @@ public class AnswerCommandService {
         }
 
         return AnswerArchiveUpdateResponse.from(answer);
-    }
-
-    private boolean isFollowUpQuestion(AnswerCreateRequest request) {
-        return request.followUp();
     }
 
     private Answer handleFollowUpQuestionAnswer(AnswerCreateRequest request, User user) {
