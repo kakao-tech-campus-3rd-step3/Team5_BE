@@ -12,20 +12,13 @@ import org.springframework.data.repository.query.Param;
 import com.knuissant.dailyq.domain.rivals.Rival;
 
 public interface RivalRepository extends JpaRepository<Rival, Long> {
-
-    boolean existsBySenderIdAndReceiverId(Long senderId, Long receiverId);
-
     Optional<Rival> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
 
     @EntityGraph(attributePaths = {"sender","receiver"})
-    @Query("SELECT r FROM Rival r WHERE r.sender.id = :senderId AND r.id > :lastId ORDER BY r.id ASC")
-    Slice<Rival> findBySenderIdAndIdGreaterThan(@Param("senderId") Long senderId,
-            @Param("lastId") Long lastId, Pageable pageable);
+    Slice<Rival> findBySenderIdAndIdGreaterThanOrderByIdAsc(Long senderId, Long lastId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"sender","receiver"})
-    @Query("SELECT r FROM Rival r WHERE r.receiver.id = :receiverId AND r.id > :lastId ORDER BY r.id ASC")
-    Slice<Rival> findByReceiverIdAndIdGreaterThan(@Param("receiverId") Long receiverId,
-            @Param("lastId") Long lastId, Pageable pageable);
+    Slice<Rival> findByReceiverIdAndIdGreaterThanOrderByIdAsc(Long receiverId, Long lastId, Pageable pageable);
 
     // 첫 페이지 조회
     Slice<Rival> findAllBySenderId(Long senderId, Pageable pageable);
