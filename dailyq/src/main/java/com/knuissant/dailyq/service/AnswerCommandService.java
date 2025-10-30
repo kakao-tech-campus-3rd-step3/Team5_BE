@@ -92,22 +92,26 @@ public class AnswerCommandService {
         }
         Question question = followUpQuestion.getAnswer().getQuestion();
 
-        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, request.answerText());
-        answer.setFollowUpQuestion(followUpQuestion);
-
-        Answer savedAnswer = answerRepository.save(answer);
-        followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestionId);
-
-        return savedAnswer;
+        return createAndSaveAnswer(user, question, request.answerText(), followUpQuestion);
     }
 
     private Answer handleRegularQuestionAnswer(AnswerCreateRequest request, User user) {
         Question question = questionRepository.findById(request.questionId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND, request.questionId()));
 
+        return createAndSaveAnswer(user, question, request.answerText(), null);
+    }
+
+    private Answer createAndSaveAnswer(User user, Question question, String answerText, FollowUpQuestion followUpQuestion) {
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, request.answerText());
-        return answerRepository.save(answer);
+        Answer answer = Answer.create(user, question, answerText);
+        if (followUpQuestion != null) {
+            answer.setFollowUpQuestion(followUpQuestion);
+        }
+        Answer savedAnswer = answerRepository.save(answer);
+        if (followUpQuestion != null) {
+            followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestion.getId());
+        }
+        return savedAnswer;
     }
 }
