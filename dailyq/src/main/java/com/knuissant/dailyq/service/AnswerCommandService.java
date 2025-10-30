@@ -104,7 +104,11 @@ public class AnswerCommandService {
 
     private Answer createAndSaveAnswer(User user, Question question, String answerText, FollowUpQuestion followUpQuestion) {
         // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, answerText);
+        Answer answer = Answer.builder()
+                .user(user)
+                .question(question)
+                .answerText(answerText)
+                .build();
         if (followUpQuestion != null) {
             answer.setFollowUpQuestion(followUpQuestion);
         }
