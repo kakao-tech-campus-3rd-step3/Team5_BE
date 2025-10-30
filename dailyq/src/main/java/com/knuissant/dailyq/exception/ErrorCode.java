@@ -57,7 +57,8 @@ public enum ErrorCode {
     USER_PREFERENCES_NOT_FOUND("USER_PREFERENCES_NOT_FOUND", "사용자 설정 정보를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_FLOW_PROGRESS_NOT_FOUND("USER_FLOW_PROGRESS_NOT_FOUND", "사용자 플로우 진행 상태를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     PROMPT_NOT_FOUND_IN_CACHE("PROMPT_NOT_FOUND_IN_CACHE", "캐시된 프롬프트를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    NCP_API_COMMUNICATION_ERROR("NCP_API_COMMUNICATION_ERROR", "NCP API 통신 중 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    NCP_API_COMMUNICATION_ERROR("NCP_API_COMMUNICATION_ERROR", "NCP API 통신 중 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    PRESIGNED_URL_GENERATION_FAILED("PRESIGNED_URL_GENERATION_FAILED", "Pre-signed URL 생성 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;

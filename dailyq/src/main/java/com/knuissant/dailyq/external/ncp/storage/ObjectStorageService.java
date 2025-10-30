@@ -18,6 +18,7 @@ import com.knuissant.dailyq.config.NcpConfig;
 import com.knuissant.dailyq.dto.answers.UploadUrlResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.exception.InfraException;
 
 @Service
 @RequiredArgsConstructor
@@ -40,17 +41,21 @@ public class ObjectStorageService {
         String objectKey = createObjectKey(userId, fileName);
         Date expiration = new Date(Instant.now().toEpochMilli() + PRE_SIGNED_URL_EXPIRATION_MS);
 
-        GeneratePresignedUrlRequest request =
-                new GeneratePresignedUrlRequest(bucketName, objectKey)
-                        .withMethod(HttpMethod.PUT)
-                        .withExpiration(expiration);
+        try {
+            GeneratePresignedUrlRequest request =
+                    new GeneratePresignedUrlRequest(bucketName, objectKey)
+                            .withMethod(HttpMethod.PUT)
+                            .withExpiration(expiration);
 
-        URL preSignedUrl = ncpObjectStorageClient.generatePresignedUrl(request);
+            URL preSignedUrl = ncpObjectStorageClient.generatePresignedUrl(request);
 
-        String storageEndpoint = ncpConfig.getStorageEndpoint();
-        String finalAudioUrl = storageEndpoint + "/" + bucketName + "/" + objectKey;
+            String storageEndpoint = ncpConfig.getStorageEndpoint();
+            String finalAudioUrl = storageEndpoint + "/" + bucketName + "/" + objectKey;
 
-        return UploadUrlResponse.of(preSignedUrl.toString(), finalAudioUrl);
+            return UploadUrlResponse.of(preSignedUrl.toString(), finalAudioUrl);
+        } catch (Exception e) {
+            throw new InfraException(ErrorCode.PRESIGNED_URL_GENERATION_FAILED, e);
+        }
     }
 
     private String createObjectKey(Long userId, String fileName) {
