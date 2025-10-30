@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.stt.SttTask;
@@ -17,6 +18,7 @@ import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.external.ncp.clova.ClovaCallbackPayload;
 import com.knuissant.dailyq.repository.SttTaskRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SttCallbackService {
@@ -26,7 +28,7 @@ public class SttCallbackService {
 
     @Transactional
     public void processCallback(Long sttTaskId, ClovaCallbackPayload payload) {
-        SttTask sttTask = sttTaskRepository.findById(sttTaskId)
+        SttTask sttTask = sttTaskRepository.findByIdForUpdate(sttTaskId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STT_TASK_NOT_FOUND, sttTaskId));
 
         if (!payload.token().equals(sttTask.getToken())) {
@@ -40,13 +42,16 @@ public class SttCallbackService {
         Answer answer = sttTask.getAnswer();
         if (answer == null) {
             sttTask.fail("연결된 Answer 없음");
-            throw new BusinessException(ErrorCode.ANSWER_NOT_FOUND, "sttTaskId:", sttTaskId);
+            log.error("[NCP] Answer not found for the callback STT. sttTaskId: {}", sttTaskId);
+            return;
         }
 
         User user = answer.getUser();
         if (user == null) {
             sttTask.fail("연결된 User 없음");
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "answerId:", answer.getId());
+            log.error("[NCP] User not found for the Answer linked to STT. sttTaskId: {}, answerId: {}",
+                    sttTaskId, answer.getId());
+            return;
         }
 
         if (payload.isComplete()) {
