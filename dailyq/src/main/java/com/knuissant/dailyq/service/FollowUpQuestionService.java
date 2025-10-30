@@ -68,8 +68,7 @@ public class FollowUpQuestionService {
      */
     @Transactional(readOnly = true)
     public List<FollowUpQuestion> getUnansweredFollowUpQuestions(Long userId) {
-        return followUpQuestionRepository.findByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(userId,
-                org.springframework.data.domain.PageRequest.of(0, 10));
+        return followUpQuestionRepository.findByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(userId);
     }
 
     /**
