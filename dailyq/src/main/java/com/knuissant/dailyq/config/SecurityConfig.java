@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 import com.knuissant.dailyq.jwt.JwtAuthenticationFilter;
 import com.knuissant.dailyq.service.CustomOAuth2UserService;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -34,15 +34,15 @@ public class SecurityConfig {
 
     @Value("${cors.allowed-origins}")
     private List<String> allowedOrigins;
-    
+
     @Value("${security.hsts.enabled:false}")
     private boolean hstsEnabled;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
                 // CORS 설정을 SecurityFilterChain에 적용
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 // CSRF 보호 기능 비활성화 (JWT 사용 시 불필요)
                 .csrf(csrf -> csrf.disable())
                 // 세션을 사용하지 않고, STATELESS 상태로 관리
@@ -57,7 +57,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/login/oauth2/**",
-                                "/api/dev/**").permitAll()
+                                "/api/dev/**",
+                                "/api/stt/callback/**").permitAll()
                         // ADMIN 권한을 가진 사람만 관리자 API 접근 권한 허용
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // 임시로 admin.html에 접속 허용 추후 바꿀 예정
@@ -75,7 +76,7 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService)
                         )
                 );
-        
+
         // HSTS 설정 (Production 환경에서만 활성화)
         // 모든 서브도메인이 HTTPS를 지원하는 경우에만 includeSubDomains(true) 사용
         if (hstsEnabled) {

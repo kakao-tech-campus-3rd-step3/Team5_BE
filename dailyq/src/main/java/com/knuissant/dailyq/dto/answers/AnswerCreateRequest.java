@@ -11,7 +11,8 @@ public record AnswerCreateRequest(
         @NotNull
         Long questionId,
         String answerText,
-        String audioUrl
+        String audioUrl,
+        boolean followUp
 ) {
 
     @AssertTrue(message = "answerText 또는 audioUrl 중 하나는 반드시 존재해야 합니다.")

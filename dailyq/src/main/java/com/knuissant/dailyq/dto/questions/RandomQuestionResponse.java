@@ -16,7 +16,8 @@ public record RandomQuestionResponse(
     FlowPhase flowPhase,
     @NotBlank String questionText,
     Long jobId,
-    Integer timeLimitSeconds
+    Integer timeLimitSeconds,
+    boolean followUp
 ) {
 
     @AssertTrue(message = "flowPhase must be consistent with questionType")
@@ -42,7 +43,8 @@ public record RandomQuestionResponse(
             mode == QuestionMode.FLOW ? phase : null,
             question.getQuestionText(),
             jobId,
-            timeLimitSeconds
+            timeLimitSeconds,
+            false
         );
     }
 
@@ -51,12 +53,13 @@ public record RandomQuestionResponse(
      */
     public static RandomQuestionResponse fromFollowUp(FollowUpQuestion followUpQuestion, Long jobId, int timeLimitSeconds) {
         return new RandomQuestionResponse(
-            -followUpQuestion.getId(),  // 음수 ID로 꼬리질문 구분
+            followUpQuestion.getId(),
             QuestionType.TECH,  // 꼬리질문은 TECH 타입으로 분류
             null,  // 꼬리질문은 phase 없음
             followUpQuestion.getQuestionText(),
             jobId,
-            timeLimitSeconds
+            timeLimitSeconds,
+            true
         );
     }
 }

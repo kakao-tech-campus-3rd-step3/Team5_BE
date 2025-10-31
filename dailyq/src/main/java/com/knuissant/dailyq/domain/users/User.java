@@ -45,6 +45,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(20)")
+    @NotNull(message = "역할은 필수입니다.")
     private UserRole role;
 
     @Column(nullable = false)

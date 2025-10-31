@@ -110,7 +110,7 @@ public class RivalService {
 
         Slice<Rival> rivalsSlice = (lastId == null)
                 ? rivalRepository.findAllBySenderId(userId, pageable)
-                : rivalRepository.findBySenderIdAndIdGreaterThan(userId, lastId, pageable);
+                : rivalRepository.findBySenderIdAndIdGreaterThanOrderByIdAsc(userId, lastId, pageable);
 
         return createCursorResult(rivalsSlice, limit, true);
     }
@@ -123,7 +123,7 @@ public class RivalService {
 
         Slice<Rival> rivalsSlice = (lastId == null)
                 ? rivalRepository.findAllByReceiverId(userId, pageable)
-                : rivalRepository.findByReceiverIdAndIdGreaterThan(userId, lastId, pageable);
+                : rivalRepository.findByReceiverIdAndIdGreaterThanOrderByIdAsc(userId, lastId, pageable);
 
         return createCursorResult(rivalsSlice, limit, false);
     }

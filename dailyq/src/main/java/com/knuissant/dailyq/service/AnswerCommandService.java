@@ -7,20 +7,19 @@ import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
-import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
-import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
-import com.knuissant.dailyq.dto.answers.AnswerCreateResponse;
+import com.knuissant.dailyq.dto.answers.AnswerInfoResponse;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.AnswerRepository;
-import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserRepository;
+import com.knuissant.dailyq.service.handler.AbstractAnswerHandler;
+import com.knuissant.dailyq.service.handler.AnswerHandlerFactory;
 
 @Service
 @RequiredArgsConstructor
@@ -29,23 +28,24 @@ public class AnswerCommandService {
     private final AnswerRepository answerRepository;
     private final UserRepository userRepository;
     private final FeedbackService feedbackService;
-    private final FollowUpQuestionService followUpQuestionService;
-    private final QuestionRepository questionRepository;
+    private final AnswerHandlerFactory answerHandlerFactory;
 
 
     @Transactional
-    public AnswerCreateResponse submitAnswer(Long userId, AnswerCreateRequest request) {
+    public AnswerInfoResponse submitAnswer(Long userId, AnswerCreateRequest request) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
-        Answer savedAnswer = isFollowUpQuestion(request.questionId())
-                ? handleFollowUpQuestionAnswer(request, user)
-                : handleRegularQuestionAnswer(request, user);
+        // 템플릿 메서드 패턴 도입
+        AbstractAnswerHandler handler = answerHandlerFactory.createHandler(
+                            user, request, isFollowUpQuestion(request.questionId()));
+
+        Answer savedAnswer = handler.handle();
 
         Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
 
-        return AnswerCreateResponse.from(savedAnswer, savedFeedback);
+        return AnswerInfoResponse.from(savedAnswer, savedFeedback);
     }
 
     @Transactional
@@ -87,31 +87,4 @@ public class AnswerCommandService {
         return questionId < 0;
     }
 
-    private Answer handleFollowUpQuestionAnswer(AnswerCreateRequest request, User user) {
-        Long followUpQuestionId = Math.abs(request.questionId());
-        FollowUpQuestion followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
-
-        if (!followUpQuestion.getAnswer().getUser().getId().equals(user.getId())) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS, "userId:", user.getId(), "followUpQuestionId:", followUpQuestionId);
-        }
-        Question question = followUpQuestion.getAnswer().getQuestion();
-
-        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, request.answerText());
-        answer.setFollowUpQuestion(followUpQuestion);
-
-        Answer savedAnswer = answerRepository.save(answer);
-        followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestionId);
-
-        return savedAnswer;
-    }
-
-    private Answer handleRegularQuestionAnswer(AnswerCreateRequest request, User user) {
-        Question question = questionRepository.findById(request.questionId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND, request.questionId()));
-
-        // 추후 audioUrl -> answerText로 반환 후 저장 로직 추가
-        Answer answer = Answer.create(user, question, request.answerText());
-        return answerRepository.save(answer);
-    }
 }

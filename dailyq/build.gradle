@@ -45,6 +45,9 @@ dependencies {
     // ai
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
 
+    // ncp
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.792'
+
     // documentation
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1'
 
@@ -82,30 +85,30 @@ jib {
             }
         }
     }
-    
+
     to {
         image = 'dailyq-app'
         tags = ['latest', version]
     }
-    
+
     container {
         ports = ['8080']
         // 비루트 사용자 설정
         user = '1001:1001'
         jvmFlags = [
-            '-Xms512m',
-            '-Xmx1024m',
-            '-XX:+UseG1GC',
-            '-XX:+UseContainerSupport',
-            '-Djava.security.egd=file:/dev/./urandom'
+                '-Xms512m',
+                '-Xmx1024m',
+                '-XX:+UseG1GC',
+                '-XX:+UseContainerSupport',
+                '-Djava.security.egd=file:/dev/./urandom'
         ]
-        
+
         environment = [
-            'SPRING_PROFILES_ACTIVE': 'prod'
+                'SPRING_PROFILES_ACTIVE': 'prod'
         ]
         labels = [
-            'maintainer': 'dailyq-team',
-            'version': version
+                'maintainer': 'dailyq-team',
+                'version'   : version
         ]
         workingDirectory = '/app'
     }

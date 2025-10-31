@@ -48,8 +48,6 @@ echo "📊 정리 전 디스크 사용량:"
 df -h / || true
 docker system df || true
 
-# 사용하지 않는 이미지 정리 (dangling images)
-docker image prune -f || true
 # 사용하지 않는 볼륨 정리
 docker volume prune -f || true
 
