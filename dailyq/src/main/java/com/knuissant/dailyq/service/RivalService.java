@@ -60,19 +60,20 @@ public class RivalService {
     public void unfollowRival(Long senderId, Long receiverId) {
         Rival rivalShip = rivalRepository.findBySenderIdAndReceiverId(senderId, receiverId)
                 .orElseThrow(
-                        () -> new BusinessException(ErrorCode.RIVAL_RELATION_NOT_FOUND, senderId,
-                                receiverId));
+                        () -> new BusinessException(ErrorCode.RIVAL_RELATION_NOT_FOUND,
+                                "senderId:", senderId, "receiverId:", receiverId));
         rivalRepository.delete(rivalShip);
     }
 
     @Transactional(readOnly = true)
-    public RivalProfileResponse getProfile(Long userId) {
-        User user = findUserByIdOrThrow(userId);
+    public RivalProfileResponse getProfile(Long profileUserId, Long loginUserId) {
+        User user = findUserByIdOrThrow(profileUserId);
 
-        long totalAnswerCount = answerRepository.countByUserId(userId);
+        long totalAnswerCount = answerRepository.countByUserId(profileUserId);
 
         LocalDateTime forOneYear = LocalDateTime.now().minusYears(1);
-        List<Answer> answers = answerRepository.findByUserIdAndCreatedAtGreaterThanEqual(userId,
+        List<Answer> answers = answerRepository.findByUserIdAndCreatedAtGreaterThanEqual(
+                profileUserId,
                 forOneYear);
 
         Map<LocalDate, Long> countByDate = answers.stream()
@@ -87,14 +88,16 @@ public class RivalService {
                 .sorted(Comparator.comparing(DailySolveCount::date).reversed())
                 .toList();
 
-        return RivalProfileResponse.from(user, totalAnswerCount, dailySolveCounts);
+        boolean isMe = profileUserId.equals(loginUserId);
+
+        return RivalProfileResponse.from(user, totalAnswerCount, dailySolveCounts, isMe);
     }
 
     @Transactional(readOnly = true)
     public RivalSearchResponse searchRivalByEmail(String email) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, email));
 
         return RivalSearchResponse.from(user.getId(), user.getName(), user.getEmail());
     }

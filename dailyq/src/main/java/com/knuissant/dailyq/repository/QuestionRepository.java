@@ -12,6 +12,8 @@ import com.knuissant.dailyq.domain.questions.QuestionType;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
+    boolean existsByQuestionText(String questionText);
+
     @Query("SELECT MAX(q.id) FROM Question q JOIN q.jobs j " +
         "WHERE q.enabled = true AND q.questionType = com.knuissant.dailyq.domain.questions.QuestionType.TECH AND j.id = :jobId " +
         "AND NOT EXISTS (" +

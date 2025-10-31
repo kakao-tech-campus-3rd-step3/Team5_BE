@@ -37,4 +37,14 @@ public class Occupation {
     @OneToMany(mappedBy = "occupation", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Job> jobs = new ArrayList<>();
+
+    public static Occupation create(String name) {
+        Occupation occupation = new Occupation();
+        occupation.name = name;
+        return occupation;
+    }
+
+    public void updateName(String newName) {
+        this.name = newName;
+    }
 }

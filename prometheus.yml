@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 10s
+
+scrape_configs:
+  - job_name: 'dailyq-app' # 내가 지정하는 이름
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['app:8080'] ## 서비스 이름 app (docker-compose)
