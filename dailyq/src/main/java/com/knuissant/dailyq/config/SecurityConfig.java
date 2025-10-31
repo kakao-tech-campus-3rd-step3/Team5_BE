@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 import com.knuissant.dailyq.jwt.JwtAuthenticationFilter;
 import com.knuissant.dailyq.service.CustomOAuth2UserService;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -39,10 +39,10 @@ public class SecurityConfig {
     private boolean hstsEnabled;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
                 // CORS 설정을 SecurityFilterChain에 적용
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 // CSRF 보호 기능 비활성화 (JWT 사용 시 불필요)
                 .csrf(csrf -> csrf.disable())
                 // 세션을 사용하지 않고, STATELESS 상태로 관리
