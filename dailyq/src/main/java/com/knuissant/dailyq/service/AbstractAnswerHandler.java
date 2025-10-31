@@ -5,6 +5,7 @@ import org.springframework.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.answers.Answer;
+import com.knuissant.dailyq.domain.answers.AnswerType;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
@@ -46,6 +47,13 @@ public abstract class AbstractAnswerHandler {
         postSave(savedAnswer);
 
         return savedAnswer;
+    }
+
+    protected void triggerSttIfNeeded(Answer savedAnswer) {
+        if (savedAnswer.getAnswerType() == AnswerType.VOICE
+                && StringUtils.hasText(answerCreateRequest.audioUrl())) {
+            sttTaskService.createAndRequestSttTask(savedAnswer, answerCreateRequest.audioUrl());
+        }
     }
 
     private Answer createAnswerObject(Question question) {

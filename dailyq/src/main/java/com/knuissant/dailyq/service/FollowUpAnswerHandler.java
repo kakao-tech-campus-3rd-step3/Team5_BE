@@ -50,8 +50,6 @@ public class FollowUpAnswerHandler extends AbstractAnswerHandler {
         followUpQuestionService.markFollowUpQuestionAsAnswered(this.followUpQuestion.getId());
 
         // 음성답변일시 - STT 요청
-        if (savedAnswer.getAnswerType() == AnswerType.VOICE && StringUtils.hasText(answerCreateRequest.audioUrl())) {
-            sttTaskService.createAndRequestSttTask(savedAnswer, answerCreateRequest.audioUrl());
-        }
+        triggerSttIfNeeded(savedAnswer);
     }
 }

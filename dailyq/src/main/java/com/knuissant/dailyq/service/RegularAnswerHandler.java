@@ -35,9 +35,6 @@ public class RegularAnswerHandler extends AbstractAnswerHandler {
     @Override
     protected void postSave(Answer savedAnswer) {
         // 음성 답변인 경우 STT 요청
-        if (savedAnswer.getAnswerType() == AnswerType.VOICE && StringUtils.hasText(
-                answerCreateRequest.audioUrl())) {
-            sttTaskService.createAndRequestSttTask(savedAnswer, answerCreateRequest.audioUrl());
-        }
+        triggerSttIfNeeded(savedAnswer);
     }
 }
