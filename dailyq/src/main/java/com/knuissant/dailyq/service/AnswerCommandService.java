@@ -17,12 +17,9 @@ import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.AnswerRepository;
-import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserRepository;
 import com.knuissant.dailyq.service.handler.AbstractAnswerHandler;
 import com.knuissant.dailyq.service.handler.AnswerHandlerFactory;
-import com.knuissant.dailyq.service.handler.FollowUpAnswerHandler;
-import com.knuissant.dailyq.service.handler.RegularAnswerHandler;
 
 @Service
 @RequiredArgsConstructor
