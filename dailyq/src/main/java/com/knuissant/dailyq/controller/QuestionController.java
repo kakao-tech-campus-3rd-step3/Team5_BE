@@ -31,7 +31,7 @@ public class QuestionController {
 
     @PostMapping("/followUp/{answerId}")
     public FollowUpGenerationResponse generateFollowUpQuestions(
-            @PathVariable Long answerId,
+            @PathVariable(name = "answerId") Long answerId,
             @AuthenticationPrincipal User principal) {
         Long userId = Long.parseLong(principal.getUsername());
         int count = followUpQuestionService.generateFollowUpQuestions(answerId, userId);

@@ -35,20 +35,9 @@ public class FollowUpQuestionService {
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND, answerId));
 
-        // 권한 검증: 본인의 답변인지 확인
-        if (!answer.getUser().getId().equals(requestUserId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
-        }
-
-        // 꼬리질문의 꼬리질문은 생성하지 않음(한번 더 예외처리)
-        if (isAnswerToFollowUpQuestion(answer)) {
-            throw new BusinessException(ErrorCode.FOLLOWUP_GENERATION_NOT_ALLOWED, answer.getId());
-        }
-
-        // 이미 해당 답변에 대한 꼬리질문이 있는지 확인 (원본 답변 기준 중복 방지)
-        if (followUpQuestionRepository.existsByAnswer(answer)) {
-            throw new BusinessException(ErrorCode.FOLLOWUP_QUESTION_ALREADY_EXISTS, answer.getId());
-        }
+        validateOwnership(answer, requestUserId);
+        validateNotFollowUpAnswer(answer);
+        validateNoExistingFollowUp(answer);
 
         try {
             // AI로 꼬리질문 생성
@@ -75,19 +64,11 @@ public class FollowUpQuestionService {
     }
 
     /**
-     * 답변이 꼬리질문에 대한 답변인지 확인
-     */
-    private boolean isAnswerToFollowUpQuestion(Answer answer) {
-        return answer.getFollowUpQuestion() != null;
-    }
-
-    /**
      * 사용자의 미답변 꼬리질문 조회
      */
     @Transactional(readOnly = true)
     public List<FollowUpQuestion> getUnansweredFollowUpQuestions(Long userId) {
-        return followUpQuestionRepository.findByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(userId,
-                org.springframework.data.domain.PageRequest.of(0, 10));
+        return followUpQuestionRepository.findByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(userId);
     }
 
     /**
@@ -108,5 +89,27 @@ public class FollowUpQuestionService {
     public FollowUpQuestion getFollowUpQuestion(Long followUpQuestionId) {
         return followUpQuestionRepository.findById(followUpQuestionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FOLLOWUP_QUESTION_NOT_FOUND, followUpQuestionId));
+    }
+
+    private boolean isAnswerToFollowUpQuestion(Answer answer) {
+        return answer.getFollowUpQuestion() != null;
+    }
+
+    private void validateOwnership(Answer answer, Long requestUserId) {
+        if (!answer.getUser().getId().equals(requestUserId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+    }
+
+    private void validateNotFollowUpAnswer(Answer answer) {
+        if (isAnswerToFollowUpQuestion(answer)) {
+            throw new BusinessException(ErrorCode.FOLLOWUP_GENERATION_NOT_ALLOWED, answer.getId());
+        }
+    }
+
+    private void validateNoExistingFollowUp(Answer answer) {
+        if (followUpQuestionRepository.existsByAnswer(answer)) {
+            throw new BusinessException(ErrorCode.FOLLOWUP_QUESTION_ALREADY_EXISTS, answer.getId());
+        }
     }
 }

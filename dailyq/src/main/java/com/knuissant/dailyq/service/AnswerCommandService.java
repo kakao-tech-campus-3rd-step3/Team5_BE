@@ -41,7 +41,7 @@ public class AnswerCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
-        Answer savedAnswer = isFollowUpQuestion(request.questionId())
+        Answer savedAnswer = request.followUp()
                 ? handleFollowUpQuestionAnswer(request, user)
                 : handleRegularQuestionAnswer(request, user);
 
@@ -85,12 +85,8 @@ public class AnswerCommandService {
         return AnswerArchiveUpdateResponse.from(answer);
     }
 
-    private boolean isFollowUpQuestion(Long questionId) {
-        return questionId < 0;
-    }
-
     private Answer handleFollowUpQuestionAnswer(AnswerCreateRequest request, User user) {
-        Long followUpQuestionId = Math.abs(request.questionId());
+        Long followUpQuestionId = request.questionId();
         FollowUpQuestion followUpQuestion = followUpQuestionService.getFollowUpQuestion(followUpQuestionId);
 
         if (!followUpQuestion.getAnswer().getUser().getId().equals(user.getId())) {
@@ -98,20 +94,8 @@ public class AnswerCommandService {
         }
         Question question = followUpQuestion.getAnswer().getQuestion();
 
-        Answer savedAnswer;
-        if (StringUtils.hasText(request.answerText())) {
-            Answer answer = Answer.createTextAnswer(user, question, request.answerText());
-            answer.setFollowUpQuestion(followUpQuestion);
-            savedAnswer = answerRepository.save(answer);
-        } else if (StringUtils.hasText(request.audioUrl())) {
-            savedAnswer = createSttPendingAnswer(user, question, request.audioUrl());
-            savedAnswer.setFollowUpQuestion(followUpQuestion);
-        } else {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "answerText 또는 audioUrl이 필요합니다.");
-        }
-
+        Answer savedAnswer = saveAnswerWithOptionalFollowUp(user, question, request, followUpQuestion);
         followUpQuestionService.markFollowUpQuestionAsAnswered(followUpQuestionId);
-
         return savedAnswer;
     }
 
@@ -119,11 +103,22 @@ public class AnswerCommandService {
         Question question = questionRepository.findById(request.questionId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND, request.questionId()));
 
+        return saveAnswerWithOptionalFollowUp(user, question, request, null);
+    }
+
+    private Answer saveAnswerWithOptionalFollowUp(User user, Question question, AnswerCreateRequest request, FollowUpQuestion followUpQuestion) {
         if (StringUtils.hasText(request.answerText())) {
             Answer answer = Answer.createTextAnswer(user, question, request.answerText());
+            if (followUpQuestion != null) {
+                answer.setFollowUpQuestion(followUpQuestion);
+            }
             return answerRepository.save(answer);
         } else if (StringUtils.hasText(request.audioUrl())) {
-            return createSttPendingAnswer(user, question, request.audioUrl());
+            Answer savedAnswer = createSttPendingAnswer(user, question, request.audioUrl());
+            if (followUpQuestion != null) {
+                savedAnswer.setFollowUpQuestion(followUpQuestion);
+            }
+            return savedAnswer;
         } else {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "answerText 또는 audioUrl이 필요합니다.");
         }
