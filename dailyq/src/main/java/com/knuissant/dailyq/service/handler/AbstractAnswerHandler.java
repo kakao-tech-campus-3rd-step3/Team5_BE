@@ -1,4 +1,4 @@
-package com.knuissant.dailyq.service;
+package com.knuissant.dailyq.service.handler;
 
 import org.springframework.util.StringUtils;
 
@@ -12,6 +12,7 @@ import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.AnswerRepository;
+import com.knuissant.dailyq.service.SttTaskService;
 
 @RequiredArgsConstructor
 public abstract class AbstractAnswerHandler {

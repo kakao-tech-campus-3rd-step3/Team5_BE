@@ -19,6 +19,10 @@ import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserRepository;
+import com.knuissant.dailyq.service.handler.AbstractAnswerHandler;
+import com.knuissant.dailyq.service.handler.AnswerHandlerFactory;
+import com.knuissant.dailyq.service.handler.FollowUpAnswerHandler;
+import com.knuissant.dailyq.service.handler.RegularAnswerHandler;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +31,7 @@ public class AnswerCommandService {
     private final AnswerRepository answerRepository;
     private final UserRepository userRepository;
     private final FeedbackService feedbackService;
-    private final FollowUpQuestionService followUpQuestionService;
-    private final QuestionRepository questionRepository;
-    private final SttTaskService sttTaskService;
+    private final AnswerHandlerFactory answerHandlerFactory;
 
 
     @Transactional
@@ -39,11 +41,8 @@ public class AnswerCommandService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
         // 템플릿 메서드 패턴 도입
-        AbstractAnswerHandler handler = isFollowUpQuestion(request.questionId())
-                ? new FollowUpAnswerHandler(answerRepository, sttTaskService,
-                followUpQuestionService, user, request)
-                : new RegularAnswerHandler(answerRepository, sttTaskService, questionRepository,
-                        user, request);
+        AbstractAnswerHandler handler = answerHandlerFactory.createHandler(
+                            user, request, isFollowUpQuestion(request.questionId()));
 
         Answer savedAnswer = handler.handle();
 

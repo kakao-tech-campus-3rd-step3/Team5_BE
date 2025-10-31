@@ -1,9 +1,6 @@
-package com.knuissant.dailyq.service;
-
-import org.springframework.util.StringUtils;
+package com.knuissant.dailyq.service.handler;
 
 import com.knuissant.dailyq.domain.answers.Answer;
-import com.knuissant.dailyq.domain.answers.AnswerType;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
@@ -11,6 +8,7 @@ import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
+import com.knuissant.dailyq.service.SttTaskService;
 
 public class RegularAnswerHandler extends AbstractAnswerHandler {
 
