@@ -21,6 +21,7 @@ import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
@@ -46,16 +47,18 @@ public class AnswerCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
+        // 꼬리질문 여부 확인
+        boolean isFollowUp = request.followUp();
+
         // 템플릿 메서드 패턴 도입
         AbstractAnswerHandler handler = answerHandlerFactory.createHandler(
-                            user, request, isFollowUpQuestion(request.questionId()));
+                            user, request, isFollowUp);
 
         Answer savedAnswer = handler.handle();
 
         Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
 
-        // FLOW 질문 답변 완료 시 nextPhase 업데이트 (꼬리질문 제외)
-        updateFlowProgressIfNeeded(userId, savedAnswer);
+        updateFlowProgressIfNeeded(userId, savedAnswer, isFollowUp);
 
         return AnswerInfoResponse.from(savedAnswer, savedFeedback);
     }
@@ -95,27 +98,18 @@ public class AnswerCommandService {
         return AnswerArchiveUpdateResponse.from(answer);
     }
 
-    private boolean isFollowUpQuestion(Long questionId) {
-        return questionId < 0;
-    }
-
     /**
-     * FLOW 모드에서 일반 질문(꼬리질문 제외)에 답변한 경우 nextPhase를 업데이트합니다.
+     * FLOW 모드에서 일반 질문에 답변한 경우 nextPhase를 업데이트합니다.
      * 
      * TECH 모드일 때는 FLOW progress를 무시합니다.
      */
-    private void updateFlowProgressIfNeeded(Long userId, Answer answer) {
-        // 꼬리질문은 제외
-        if (answer.getFollowUpQuestion() != null) {
-            return;
-        }
-
+    private void updateFlowProgressIfNeeded(Long userId, Answer answer, boolean isFollowUp) {
         // 사용자의 현재 모드 확인 - DB에서 조회하여 확인
         UserPreferences preferences = userPreferencesRepository.findById(userId)
-                .orElse(null);
+                .orElseThrow(() -> new InfraException(ErrorCode.USER_PREFERENCES_NOT_FOUND, userId));
 
         // TECH 모드이거나 preferences가 없으면 무시 (FLOW progress를 사용하지 않음)
-        if (preferences == null || preferences.getQuestionMode() != QuestionMode.FLOW) {
+        if (preferences == null || preferences.getQuestionMode() != QuestionMode.FLOW || isFollowUp) {
             return;
         }
 
