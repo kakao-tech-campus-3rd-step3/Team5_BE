@@ -7,7 +7,12 @@ import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
+import com.knuissant.dailyq.domain.questions.Question;
+import com.knuissant.dailyq.domain.questions.QuestionMode;
+import com.knuissant.dailyq.domain.questions.QuestionType;
 import com.knuissant.dailyq.domain.users.User;
+import com.knuissant.dailyq.domain.users.UserFlowProgress;
+import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
@@ -17,6 +22,8 @@ import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.AnswerRepository;
+import com.knuissant.dailyq.repository.UserFlowProgressRepository;
+import com.knuissant.dailyq.repository.UserPreferencesRepository;
 import com.knuissant.dailyq.repository.UserRepository;
 import com.knuissant.dailyq.service.handler.AbstractAnswerHandler;
 import com.knuissant.dailyq.service.handler.AnswerHandlerFactory;
@@ -29,6 +36,8 @@ public class AnswerCommandService {
     private final UserRepository userRepository;
     private final FeedbackService feedbackService;
     private final AnswerHandlerFactory answerHandlerFactory;
+    private final UserPreferencesRepository userPreferencesRepository;
+    private final UserFlowProgressRepository userFlowProgressRepository;
 
 
     @Transactional
@@ -44,6 +53,9 @@ public class AnswerCommandService {
         Answer savedAnswer = handler.handle();
 
         Feedback savedFeedback = feedbackService.createPendingFeedback(savedAnswer);
+
+        // FLOW 질문 답변 완료 시 nextPhase 업데이트 (꼬리질문 제외)
+        updateFlowProgressIfNeeded(userId, savedAnswer);
 
         return AnswerInfoResponse.from(savedAnswer, savedFeedback);
     }
@@ -85,6 +97,42 @@ public class AnswerCommandService {
 
     private boolean isFollowUpQuestion(Long questionId) {
         return questionId < 0;
+    }
+
+    /**
+     * FLOW 모드에서 일반 질문(꼬리질문 제외)에 답변한 경우 nextPhase를 업데이트합니다.
+     * 
+     * TECH 모드일 때는 FLOW progress를 무시합니다.
+     */
+    private void updateFlowProgressIfNeeded(Long userId, Answer answer) {
+        // 꼬리질문은 제외
+        if (answer.getFollowUpQuestion() != null) {
+            return;
+        }
+
+        // 사용자의 현재 모드 확인 - DB에서 조회하여 확인
+        UserPreferences preferences = userPreferencesRepository.findById(userId)
+                .orElse(null);
+
+        // TECH 모드이거나 preferences가 없으면 무시 (FLOW progress를 사용하지 않음)
+        if (preferences == null || preferences.getQuestionMode() != QuestionMode.FLOW) {
+            return;
+        }
+
+        // FLOW 모드일 때만 progress 업데이트
+        // QuestionType이 INTRO, MOTIVATION, PERSONALITY, TECH 중 하나이면 FLOW 질문
+        Question question = answer.getQuestion();
+        QuestionType questionType = question.getQuestionType();
+
+        if (questionType == QuestionType.INTRO || 
+            questionType == QuestionType.MOTIVATION || 
+            questionType == QuestionType.PERSONALITY ||
+            questionType == QuestionType.TECH) {
+            
+            // FLOW 모드에서 받은 질문이므로 UserFlowProgress 업데이트
+            userFlowProgressRepository.findById(userId)
+                    .ifPresent(UserFlowProgress::moveToNextPhase);
+        }
     }
 
 }
