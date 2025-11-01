@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
+import com.knuissant.dailyq.domain.questions.QuestionType;
 import com.knuissant.dailyq.dto.questions.FollowUpQuestionResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
@@ -38,6 +39,7 @@ public class FollowUpQuestionService {
         validateOwnership(answer, requestUserId);
         validateNotFollowUpAnswer(answer);
         validateNoExistingFollowUp(answer);
+        validateFlowQuestion(answer);
 
         try {
             // AI로 꼬리질문 생성
@@ -110,6 +112,22 @@ public class FollowUpQuestionService {
     private void validateNoExistingFollowUp(Answer answer) {
         if (followUpQuestionRepository.existsByAnswer(answer)) {
             throw new BusinessException(ErrorCode.FOLLOWUP_QUESTION_ALREADY_EXISTS, answer.getId());
+        }
+    }
+
+    /**
+     * FLOW 질문에 대해서만 꼬리질문 생성이 가능한지 확인합니다.
+     * QuestionType이 INTRO, MOTIVATION, PERSONALITY인 경우만 허용합니다.
+     */
+    private void validateFlowQuestion(Answer answer) {
+        QuestionType questionType = answer.getQuestion().getQuestionType();
+        
+        // FLOW 질문 타입이 아니면 예외 발생
+        if (questionType != QuestionType.INTRO && 
+            questionType != QuestionType.MOTIVATION && 
+            questionType != QuestionType.PERSONALITY) {
+            throw new BusinessException(ErrorCode.FOLLOWUP_GENERATION_NOT_ALLOWED, 
+                    "꼬리질문은 FLOW 질문(INTRO, MOTIVATION, PERSONALITY)에 대해서만 생성 가능합니다.");
         }
     }
 }
