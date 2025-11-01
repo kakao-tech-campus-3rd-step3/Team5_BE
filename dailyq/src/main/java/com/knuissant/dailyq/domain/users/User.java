@@ -90,8 +90,7 @@ public class User {
             throw new IllegalArgumentException("이름은 " + MAX_NAME_LENGTH + "자를 초과할 수 없습니다.");
         }
     }
-
-    public void updateRole(@NotNull(message = "역할은 필수입니다.") UserRole role) {
+    public void updateRole(UserRole role) {
         this.role = role;
     }
 }
