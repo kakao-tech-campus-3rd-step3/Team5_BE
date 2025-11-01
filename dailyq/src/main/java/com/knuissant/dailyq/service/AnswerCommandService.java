@@ -104,29 +104,40 @@ public class AnswerCommandService {
      * TECH 모드일 때는 FLOW progress를 무시합니다.
      */
     private void updateFlowProgressIfNeeded(Long userId, Answer answer, boolean isFollowUp) {
+        // 꼬리질문이면 제외
+        if (isFollowUp) {
+            return;
+        }
+
         // 사용자의 현재 모드 확인 - DB에서 조회하여 확인
         UserPreferences preferences = userPreferencesRepository.findById(userId)
                 .orElseThrow(() -> new InfraException(ErrorCode.USER_PREFERENCES_NOT_FOUND, userId));
 
-        // TECH 모드이거나 preferences가 없으면 무시 (FLOW progress를 사용하지 않음)
-        if (preferences == null || preferences.getQuestionMode() != QuestionMode.FLOW || isFollowUp) {
+        // TECH 모드이면 무시 (FLOW progress를 사용하지 않음)
+        if (preferences.getQuestionMode() != QuestionMode.FLOW) {
             return;
         }
 
         // FLOW 모드일 때만 progress 업데이트
-        // QuestionType이 INTRO, MOTIVATION, PERSONALITY, TECH 중 하나이면 FLOW 질문
         Question question = answer.getQuestion();
         QuestionType questionType = question.getQuestionType();
 
-        if (questionType == QuestionType.INTRO || 
-            questionType == QuestionType.MOTIVATION || 
-            questionType == QuestionType.PERSONALITY ||
-            questionType == QuestionType.TECH) {
-            
+        if (isFlowProgressibleQuestionType(questionType)) {
             // FLOW 모드에서 받은 질문이므로 UserFlowProgress 업데이트
-            userFlowProgressRepository.findById(userId)
-                    .ifPresent(UserFlowProgress::moveToNextPhase);
+            UserFlowProgress progress = userFlowProgressRepository.findById(userId)
+                    .orElseThrow(() -> new InfraException(ErrorCode.USER_FLOW_PROGRESS_NOT_FOUND, userId));
+            progress.moveToNextPhase();
         }
+    }
+
+    /**
+     * FLOW progress 업데이트 가능한 질문 타입인지 확인합니다.
+     */
+    private boolean isFlowProgressibleQuestionType(QuestionType questionType) {
+        return questionType == QuestionType.INTRO ||
+               questionType == QuestionType.MOTIVATION ||
+               questionType == QuestionType.PERSONALITY ||
+               questionType == QuestionType.TECH;
     }
 
 }
