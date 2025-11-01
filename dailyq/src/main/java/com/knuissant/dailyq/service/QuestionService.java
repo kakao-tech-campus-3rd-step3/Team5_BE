@@ -19,6 +19,7 @@ import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.questions.QuestionType;
+import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.dto.questions.RandomQuestionResponse;
@@ -29,6 +30,7 @@ import com.knuissant.dailyq.repository.AnswerRepository;
 import com.knuissant.dailyq.repository.QuestionRepository;
 import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
+import com.knuissant.dailyq.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -38,9 +40,10 @@ public class QuestionService {
     private final AnswerRepository answerRepository;
     private final UserPreferencesRepository userPreferencesRepository;
     private final UserFlowProgressRepository userFlowProgressRepository;
+    private final UserRepository userRepository;
     private final FollowUpQuestionService followUpQuestionService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public RandomQuestionResponse getRandomQuestion(Long userId) {
         UserPreferences prefs = userPreferencesRepository.findById(userId)
                 .orElseThrow(() -> new InfraException(ErrorCode.USER_PREFERENCES_NOT_FOUND, userId));
@@ -61,14 +64,38 @@ public class QuestionService {
                         "mode:", mode.name(), "phase:", phase.name(), "jobId:", jobId));
     }
 
+    /**
+     * 사용자의 현재 phase를 조회합니다.
+     * 
+     * TECH 모드일 때는 FLOW progress를 무시하고 null을 반환합니다.
+     * FLOW 모드일 때만 DB에서 조회하여 phase를 반환합니다.
+     */
     private FlowPhase resolvePhase(Long userId, QuestionMode mode) {
+        // TECH 모드일 때는 FLOW progress를 사용하지 않음
         if (mode != QuestionMode.FLOW) {
             return null;
         }
 
-        UserFlowProgress progress = userFlowProgressRepository.findById(userId)
-                .orElseThrow(() -> new InfraException(ErrorCode.USER_FLOW_PROGRESS_NOT_FOUND, userId));
-        return progress.getNextPhase();
+        // FLOW 모드일 때만 DB에서 조회 (없으면 생성)
+        return userFlowProgressRepository.findById(userId)
+                .map(UserFlowProgress::getNextPhase)
+                .orElseGet(() -> createDefaultUserFlowProgress(userId).getNextPhase());
+    }
+
+    /**
+     * 사용자의 기본 UserFlowProgress를 생성합니다.
+     */
+    private UserFlowProgress createDefaultUserFlowProgress(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InfraException(ErrorCode.USER_NOT_FOUND, userId));
+
+        UserFlowProgress progress = UserFlowProgress.builder()
+                .user(user)
+                .nextPhase(FlowPhase.INTRO)
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        return userFlowProgressRepository.save(progress);
     }
 
     private Optional<RandomQuestionResponse> selectRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId, int timeLimitSeconds) {

@@ -33,7 +33,7 @@ public class DevController {
     private String devApiPassword;
 
     @GetMapping("/token")
-    public ResponseEntity<Map<String, Object>> getDevToken(@RequestParam String password) {
+    public ResponseEntity<Map<String, Object>> getDevToken(@RequestParam("password") String password) {
         // 비밀번호 검증
         if (password == null || !devApiPassword.equals(password)) {
             log.warn("개발용 토큰 발급 API에 잘못된 비밀번호로 접근 시도");

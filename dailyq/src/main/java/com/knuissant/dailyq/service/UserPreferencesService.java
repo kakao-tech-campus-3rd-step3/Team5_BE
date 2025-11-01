@@ -6,9 +6,13 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
+
 import com.knuissant.dailyq.domain.jobs.Job;
+import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.users.User;
+import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.domain.users.UserPreferences;
 import com.knuissant.dailyq.domain.users.UserResponseType;
 import com.knuissant.dailyq.dto.users.UserJobsUpdateRequest;
@@ -17,6 +21,7 @@ import com.knuissant.dailyq.dto.users.UserPreferencesUpdateRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.JobRepository;
+import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.repository.UserPreferencesRepository;
 import com.knuissant.dailyq.repository.UserRepository;
 
@@ -29,6 +34,7 @@ public class UserPreferencesService {
     private final UserPreferencesRepository userPreferencesRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
+    private final UserFlowProgressRepository userFlowProgressRepository;
 
     /**
      * 기존 사용자(로그인 시 UserPreferences가 생성되지 않은 사용자)를 위한 기본 preferences 생성 이 메서드는 PUT /api/user/preferences에서 preferences가 없을 때 호출됩니다.
@@ -72,6 +78,8 @@ public class UserPreferencesService {
             preferences = findUserPreferencesByUserId(userId);
         }
 
+        QuestionMode previousMode = preferences.getQuestionMode();
+        
         preferences.updatePreferences(
                 request.dailyQuestionLimit(),
                 request.questionMode(),
@@ -80,7 +88,30 @@ public class UserPreferencesService {
                 request.allowPush()
         );
 
+        // FLOW 모드로 변경된 경우 UserFlowProgress 생성
+        if (request.questionMode() == QuestionMode.FLOW && previousMode != QuestionMode.FLOW) {
+            ensureUserFlowProgressExists(userId);
+        }
+
         return UserPreferencesResponse.from(preferences);
+    }
+
+    /**
+     * FLOW 모드를 사용할 때 UserFlowProgress가 존재하는지 확인하고, 없으면 생성합니다.
+     */
+    private void ensureUserFlowProgressExists(Long userId) {
+        if (!userFlowProgressRepository.existsById(userId)) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
+
+            UserFlowProgress progress = UserFlowProgress.builder()
+                    .user(user)
+                    .nextPhase(FlowPhase.INTRO)
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+
+            userFlowProgressRepository.save(progress);
+        }
     }
 
     public void updateUserJob(Long userId, UserJobsUpdateRequest request) {
