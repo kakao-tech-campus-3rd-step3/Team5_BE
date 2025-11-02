@@ -5,8 +5,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackContent;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
@@ -19,7 +17,6 @@ import com.knuissant.dailyq.repository.FeedbackRepository;
 public class FeedbackUpdateService {
 
     private final FeedbackRepository feedbackRepository;
-    private final ObjectMapper objectMapper;
 
     @Transactional
     public void changeStatusToProcessing(Long feedbackId) {

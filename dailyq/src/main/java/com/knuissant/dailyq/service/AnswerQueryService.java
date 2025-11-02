@@ -78,8 +78,8 @@ public class AnswerQueryService {
         answer.checkOwnership(userId);
 
         Feedback feedback = feedbackRepository.findByAnswerId(answerId).orElse(null);
-        return AnswerDetailResponse.of(answer, feedback);
 
+        return AnswerDetailResponse.of(answer, feedback);
     }
 
     @Transactional(readOnly = true)

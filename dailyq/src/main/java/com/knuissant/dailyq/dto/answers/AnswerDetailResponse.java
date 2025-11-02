@@ -2,8 +2,6 @@ package com.knuissant.dailyq.dto.answers;
 
 import java.time.LocalDateTime;
 
-import lombok.extern.slf4j.Slf4j;
-
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackContent;
@@ -11,7 +9,6 @@ import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionType;
 
-@Slf4j
 public record AnswerDetailResponse(
         Long answerId,
         QuestionSummary question,

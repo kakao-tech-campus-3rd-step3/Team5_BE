@@ -50,7 +50,6 @@ public enum ErrorCode {
 
     //5xx System Errors
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부에 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    JSON_PROCESSING_ERROR("JSON_PROCESSING_ERROR", "데이터를 처리하는 중 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     GPT_API_COMMUNICATION_ERROR("GPT_API_COMMUNICATION_ERROR", "GPT API 통신 중 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_IO_ERROR("FILE_IO_ERROR", "파일 처리 중 에러가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_JOB_NOT_SET("USER_JOB_NOT_SET", "사용자 직무 정보가 설정되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
