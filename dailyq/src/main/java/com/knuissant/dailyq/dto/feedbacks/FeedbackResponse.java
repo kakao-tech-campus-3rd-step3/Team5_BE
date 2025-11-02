@@ -9,7 +9,6 @@ import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.exception.InfraException;
 
 public record FeedbackResponse(
-        String overallEvaluation,
         List<String> positivePoints,
         List<String> pointsForImprovement
 ) {
