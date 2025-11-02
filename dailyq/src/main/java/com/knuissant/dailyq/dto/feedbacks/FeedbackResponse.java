@@ -2,23 +2,18 @@ package com.knuissant.dailyq.dto.feedbacks;
 
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.knuissant.dailyq.exception.ErrorCode;
-import com.knuissant.dailyq.exception.InfraException;
+import com.knuissant.dailyq.domain.feedbacks.FeedbackContent;
 
 public record FeedbackResponse(
         List<String> positivePoints,
         List<String> pointsForImprovement
 ) {
 
-    public static FeedbackResponse from(String content, ObjectMapper objectMapper) {
+    public static FeedbackResponse from(FeedbackContent content) {
 
-        try {
-            return objectMapper.readValue(content, FeedbackResponse.class);
-        } catch (JsonProcessingException e) {
-            throw new InfraException(ErrorCode.JSON_PROCESSING_ERROR);
-        }
+        return new FeedbackResponse(
+                content.positivePoints(),
+                content.pointsForImprovement()
+        );
     }
 }

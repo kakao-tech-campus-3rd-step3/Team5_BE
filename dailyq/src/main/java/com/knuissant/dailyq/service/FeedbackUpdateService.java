@@ -5,15 +5,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
+import com.knuissant.dailyq.domain.feedbacks.FeedbackContent;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
-import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
-import com.knuissant.dailyq.exception.InfraException;
 import com.knuissant.dailyq.repository.FeedbackRepository;
 
 @Service
@@ -35,15 +33,10 @@ public class FeedbackUpdateService {
     }
 
     @Transactional
-    public void updateFeedbackSuccess(Long feedbackId, FeedbackResponse feedbackResponse, long latencyMs) {
+    public void updateFeedbackSuccess(Long feedbackId, FeedbackContent feedbackContent, long latencyMs) {
         Feedback feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
-        try {
-            String content = objectMapper.writeValueAsString(feedbackResponse);
-            feedback.updateSuccess(content, latencyMs);
-        } catch (JsonProcessingException e) {
-            throw new InfraException(ErrorCode.JSON_PROCESSING_ERROR);
-        }
+        feedback.updateSuccess(feedbackContent, latencyMs);
     }
 
     @Transactional

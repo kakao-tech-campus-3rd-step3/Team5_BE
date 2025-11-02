@@ -19,8 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.jobs.Job;
@@ -41,7 +39,6 @@ public class AnswerQueryService {
 
     private final AnswerRepository answerRepository;
     private final FeedbackRepository feedbackRepository;
-    private final ObjectMapper objectMapper;
 
 
     // 일회성 Record
@@ -81,7 +78,7 @@ public class AnswerQueryService {
         answer.checkOwnership(userId);
 
         Feedback feedback = feedbackRepository.findByAnswerId(answerId).orElse(null);
-        return AnswerDetailResponse.of(answer, feedback, objectMapper);
+        return AnswerDetailResponse.of(answer, feedback);
 
     }
 

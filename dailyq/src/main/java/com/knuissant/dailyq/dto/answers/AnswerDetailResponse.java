@@ -4,15 +4,12 @@ import java.time.LocalDateTime;
 
 import lombok.extern.slf4j.Slf4j;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
+import com.knuissant.dailyq.domain.feedbacks.FeedbackContent;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionType;
-import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
-import com.knuissant.dailyq.exception.InfraException;
 
 @Slf4j
 public record AnswerDetailResponse(
@@ -38,33 +35,19 @@ public record AnswerDetailResponse(
         }
     }
 
-    public record FeedbackDetail(FeedbackStatus status, FeedbackResponse content, LocalDateTime updatedAt
+    public record FeedbackDetail(FeedbackStatus status, FeedbackContent content, LocalDateTime updatedAt
     ) {
 
-        public static FeedbackDetail from(Feedback feedback, ObjectMapper objectMapper) {
-            try {
-                FeedbackResponse feedbackContent = FeedbackResponse.from(
-                        feedback.getContent(),
-                        objectMapper
-                );
-                return new FeedbackDetail(
-                        feedback.getStatus(),
-                        feedbackContent,
-                        feedback.getUpdatedAt()
-                );
-            } catch (InfraException e) {
-                log.error("Failed to parse feedback content JSON: {}", feedback.getContent(), e);
-                return new FeedbackDetail(
-                        feedback.getStatus(),
-                        null,
-                        feedback.getUpdatedAt()
-                );
-
-            }
+        public static FeedbackDetail from(Feedback feedback) {
+            return new FeedbackDetail(
+                    feedback.getStatus(),
+                    feedback.getContent(),
+                    feedback.getUpdatedAt()
+            );
         }
     }
 
-    public static AnswerDetailResponse of(Answer answer, Feedback feedback, ObjectMapper objectMapper) {
+    public static AnswerDetailResponse of(Answer answer, Feedback feedback) {
         return new AnswerDetailResponse(
                 answer.getId(),
                 QuestionSummary.from(answer.getQuestion()),
@@ -73,7 +56,7 @@ public record AnswerDetailResponse(
                 answer.getLevel(),
                 answer.getStarred(),
                 answer.getCreatedAt(),
-                (feedback != null) ? FeedbackDetail.from(feedback, objectMapper) : null
+                (feedback != null) ? FeedbackDetail.from(feedback) : null
         );
     }
 }
