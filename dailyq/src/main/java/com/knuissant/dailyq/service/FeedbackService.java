@@ -41,7 +41,7 @@ public class FeedbackService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
 
         if (feedback.getStatus() == FeedbackStatus.DONE) {
-            return FeedbackResponse.from(feedback.getContent());
+            return FeedbackResponse.from(feedback);
         }
 
         feedbackUpdateService.changeStatusToProcessing(feedbackId);
@@ -57,9 +57,9 @@ public class FeedbackService {
             FeedbackContent feedbackContent = gptClient.call(systemPrompt, userPrompt);
             long latencyMs = System.currentTimeMillis() - startTime;
 
-            feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackContent, latencyMs);
+            Feedback updatedFeedback = feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackContent, latencyMs);
 
-            return FeedbackResponse.from(feedbackContent);
+            return FeedbackResponse.from(updatedFeedback);
 
         } catch (Exception e) {
             try {

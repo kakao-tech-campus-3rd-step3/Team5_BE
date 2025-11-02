@@ -30,10 +30,12 @@ public class FeedbackUpdateService {
     }
 
     @Transactional
-    public void updateFeedbackSuccess(Long feedbackId, FeedbackContent feedbackContent, long latencyMs) {
+    public Feedback updateFeedbackSuccess(Long feedbackId, FeedbackContent feedbackContent, long latencyMs) {
         Feedback feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
         feedback.updateSuccess(feedbackContent, latencyMs);
+
+        return feedback;
     }
 
     @Transactional

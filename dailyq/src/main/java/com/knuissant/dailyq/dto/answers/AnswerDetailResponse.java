@@ -4,10 +4,9 @@ import java.time.LocalDateTime;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
-import com.knuissant.dailyq.domain.feedbacks.FeedbackContent;
-import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionType;
+import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
 
 public record AnswerDetailResponse(
         Long answerId,
@@ -17,7 +16,7 @@ public record AnswerDetailResponse(
         Integer level,
         Boolean starred,
         LocalDateTime createdAt,
-        FeedbackDetail feedback
+        FeedbackResponse feedback
 ) {
 
     public record QuestionSummary(Long questionId, QuestionType questionType, String questionText
@@ -32,18 +31,6 @@ public record AnswerDetailResponse(
         }
     }
 
-    public record FeedbackDetail(FeedbackStatus status, FeedbackContent content, LocalDateTime updatedAt
-    ) {
-
-        public static FeedbackDetail from(Feedback feedback) {
-            return new FeedbackDetail(
-                    feedback.getStatus(),
-                    feedback.getContent(),
-                    feedback.getUpdatedAt()
-            );
-        }
-    }
-
     public static AnswerDetailResponse of(Answer answer, Feedback feedback) {
         return new AnswerDetailResponse(
                 answer.getId(),
@@ -53,7 +40,7 @@ public record AnswerDetailResponse(
                 answer.getLevel(),
                 answer.getStarred(),
                 answer.getCreatedAt(),
-                (feedback != null) ? FeedbackDetail.from(feedback) : null
+                (feedback != null) ? FeedbackResponse.from(feedback) : null
         );
     }
 }
