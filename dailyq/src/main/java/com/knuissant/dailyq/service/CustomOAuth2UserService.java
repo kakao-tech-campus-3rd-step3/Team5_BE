@@ -68,7 +68,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         // 6. 사용자의 권한과 속성을 포함하는 DefaultOAuth2User 객체를 생성하여 반환.
         //    이 객체는 Spring Security의 SecurityContext에 저장되어 로그인 상태를 유지하는 데 사용됩니다.
         return new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())), // <-- ★★★ 오류 수정 ★★★
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
                 attributes.getAttributes(),
                 attributes.getNameAttributeKey());
     }
