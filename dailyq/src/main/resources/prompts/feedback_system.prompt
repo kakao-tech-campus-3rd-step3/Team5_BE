@@ -9,7 +9,6 @@
 모든 응답은 반드시 아래의 JSON 형식에 맞춰 한국어 존댓말로 작성해야 합니다.
 
 {
-    "overallEvaluation": "한 줄 요약 평가",
     "positivePoints": [
         "칭찬할 점 1",
         "칭찬할 점 2"

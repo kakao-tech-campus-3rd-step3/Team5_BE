@@ -11,7 +11,7 @@ import org.springframework.web.client.ResourceAccessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
+import com.knuissant.dailyq.domain.feedbacks.FeedbackContent;
 import com.knuissant.dailyq.dto.questions.FollowUpQuestionResponse;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.exception.NonRetryableInfraException;
@@ -30,14 +30,14 @@ public class GptClient {
             maxAttempts = 3,
             backoff = @Backoff(delay = 2000, multiplier = 2)
     )
-    public FeedbackResponse call(String systemPrompt, String userPrompt) {
+    public FeedbackContent call(String systemPrompt, String userPrompt) {
 
         try {
             return chatClient.prompt()
                     .system(systemPrompt)
                     .user(userPrompt)
                     .call()
-                    .entity(FeedbackResponse.class);
+                    .entity(FeedbackContent.class);
         } catch (NonTransientAiException e) {
             log.error("[GPT] Non-transient error (handled by Spring AI retry): {}", e.getMessage());
             throw new NonRetryableInfraException(ErrorCode.GPT_API_COMMUNICATION_ERROR);
