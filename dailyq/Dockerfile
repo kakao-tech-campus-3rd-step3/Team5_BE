@@ -12,7 +12,7 @@ COPY gradle/ gradle/
 COPY gradlew gradlew.bat build.gradle settings.gradle ./
 
 # Download dependencies first (this layer will be cached)
-RUN ./gradlew dependencies --no-daemon --stacktrace || true
+RUN ./gradlew dependencies --no-daemon --stacktrace
 
 # Copy source code
 COPY src/ src/
