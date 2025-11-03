@@ -1,5 +1,6 @@
 package com.knuissant.dailyq.service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -17,11 +18,15 @@ import org.springframework.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import com.knuissant.dailyq.domain.questions.FlowPhase;
+import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.dto.oauth.OAuthAttributes;
 import com.knuissant.dailyq.repository.UserRepository;
+import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.exception.InfraException;
 
 /**
  * Spring Security에서 OAuth2 로그인 성공 이후 후속 조치를 진행하는 사용자 정보 서비스 클래스입니다.
@@ -33,6 +38,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private final UserRepository userRepository;
     private final UserPreferencesService userPreferencesService;
+    private final UserFlowProgressRepository userFlowProgressRepository; // <-- 필드 선언
 
     /**
      * 리소스 서버(구글, 카카오)에서 사용자 정보를 가져온 뒤 호출되는 메소드입니다.
@@ -76,10 +82,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         if (!StringUtils.hasText(attributes.getEmail())) {
             throw new BusinessException(ErrorCode.INVALID_SOCIAL_LOGIN, "Email not found from OAuth2 provider.");
         }
-        
+
         // 이메일을 통해 데이터베이스에서 사용자를 찾음.
         Optional<User> existingUser = userRepository.findByEmail(attributes.getEmail());
-        
+
         User user = existingUser
                 // 만약 사용자가 이미 존재한다면, 이름(닉네임) 정보만 업데이트.
                 .map(entity -> {
@@ -88,29 +94,44 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 })
                 // 사용자가 존재하지 않는다면, OAuthAttributes의 toEntity() 메소드를 통해 새로운 사용자 엔티티를 생성.
                 .orElse(attributes.toEntity());
-        
+
         boolean isNewUser = existingUser.isEmpty();
 
         // 사용자 엔티티를 데이터베이스에 저장. (신규 사용자는 insert, 기존 사용자는 update)
         User savedUser = userRepository.save(user);
-        
+
         // 신규 사용자인 경우 기본 UserPreferences 생성
         if (isNewUser) {
+            // 뎁스 축소: 불필요한 try-catch 및 if(exists) 제거.
+            // @Transactional이므로, 하위 로직에서 예외 발생 시 User 생성을 포함한 모든 DB 작업이 롤백됩니다.
+
+            // 1. UserPreferences 생성
             try {
-                // 이미 UserPreferences가 존재하는지 다시 한번 확인
-                if (!userPreferencesService.existsByUserId(savedUser.getId())) {
-                    userPreferencesService.createDefaultUserPreferences(savedUser.getId());
-                    log.info("기본 UserPreferences 생성 완료 - userId: {}", savedUser.getId());
-                } else {
-                    log.info("UserPreferences가 이미 존재함 - userId: {}", savedUser.getId());
-                }
+                userPreferencesService.createDefaultUserPreferences(savedUser.getId());
+                log.info("기본 UserPreferences 생성 완료 - userId: {}", savedUser.getId());
             } catch (Exception e) {
-                // UserPreferences 생성 실패는 로그인을 막지 않도록 로그만 남김
-                log.warn("기본 UserPreferences 생성 실패 - userId: {}, error: {}", savedUser.getId(), e.getMessage(), e);
+                log.error("신규 사용자 UserPreferences 생성 실패 - userId: {}, error: {}",
+                        savedUser.getId(), e.getMessage(), e);
+                throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "신규 사용자 초기화 실패 (Preferences): " + e.getMessage());
+            }
+
+            // 2. UserFlowProgress 생성
+            try {
+                UserFlowProgress defaultProgress = UserFlowProgress.builder()
+                        .user(savedUser)
+                        .nextPhase(FlowPhase.INTRO)
+                        .updatedAt(LocalDateTime.now()) // .build() 시점에 now()
+                        .build();
+                userFlowProgressRepository.save(defaultProgress);
+                log.info("기본 UserFlowProgress 생성 완료 - userId: {}", savedUser.getId());
+            } catch (Exception e) {
+                log.error("신규 사용자 UserFlowProgress 생성 실패 - userId: {}, error: {}",
+                        savedUser.getId(), e.getMessage(), e);
+                throw new InfraException(ErrorCode.INTERNAL_SERVER_ERROR, "신규 사용자 초기화 실패 (FlowProgress): " + e.getMessage());
             }
         }
-        
+
         return savedUser;
     }
-    
+
 }
