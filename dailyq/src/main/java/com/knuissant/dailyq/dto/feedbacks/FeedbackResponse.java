@@ -1,25 +1,22 @@
 package com.knuissant.dailyq.dto.feedbacks;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.knuissant.dailyq.exception.ErrorCode;
-import com.knuissant.dailyq.exception.InfraException;
+import com.knuissant.dailyq.domain.feedbacks.Feedback;
+import com.knuissant.dailyq.domain.feedbacks.FeedbackContent;
+import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 
 public record FeedbackResponse(
-        String overallEvaluation,
-        List<String> positivePoints,
-        List<String> pointsForImprovement
+        FeedbackStatus status,
+        FeedbackContent content,
+        LocalDateTime updatedAt
 ) {
 
-    public static FeedbackResponse from(String content, ObjectMapper objectMapper) {
-
-        try {
-            return objectMapper.readValue(content, FeedbackResponse.class);
-        } catch (JsonProcessingException e) {
-            throw new InfraException(ErrorCode.JSON_PROCESSING_ERROR);
-        }
+    public static FeedbackResponse from(Feedback feedback) {
+        return new FeedbackResponse(
+                feedback.getStatus(),
+                feedback.getContent(),
+                feedback.getUpdatedAt()
+        );
     }
 }
