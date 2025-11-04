@@ -1,7 +1,5 @@
 package com.knuissant.dailyq.domain.feedbacks;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import com.knuissant.dailyq.domain.answers.Answer;
+import com.knuissant.dailyq.domain.common.BaseTimeEntity;
 
 @Getter
 @Builder
@@ -31,7 +30,7 @@ import com.knuissant.dailyq.domain.answers.Answer;
 @Table(name = "feedbacks", indexes = {
         @Index(name = "idx_feedback_answer_status", columnList = "answer_id, status")
 })
-public class Feedback {
+public class Feedback extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,12 +50,6 @@ public class Feedback {
 
     @Column(name = "latency_ms")
     private Long latencyMs;
-
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false, insertable = false)
-    private LocalDateTime updatedAt;
 
     public static Feedback create(Answer answer, FeedbackStatus status) {
         return Feedback.builder()

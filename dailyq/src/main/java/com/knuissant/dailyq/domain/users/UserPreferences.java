@@ -21,6 +21,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.knuissant.dailyq.domain.common.BaseTimeEntity;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 
@@ -30,7 +31,7 @@ import com.knuissant.dailyq.domain.questions.QuestionMode;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "user_preferences")
-public class UserPreferences {
+public class UserPreferences extends BaseTimeEntity {
 
     @Id
     @Column(name = "user_id")

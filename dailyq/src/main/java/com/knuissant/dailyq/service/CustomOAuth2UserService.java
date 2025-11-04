@@ -1,6 +1,5 @@
 package com.knuissant.dailyq.service;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -19,14 +18,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.domain.questions.FlowPhase;
-import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.domain.users.User;
+import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.dto.oauth.OAuthAttributes;
-import com.knuissant.dailyq.repository.UserRepository;
-import com.knuissant.dailyq.repository.UserFlowProgressRepository;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.exception.InfraException;
+import com.knuissant.dailyq.repository.UserFlowProgressRepository;
+import com.knuissant.dailyq.repository.UserRepository;
 
 /**
  * Spring Security에서 OAuth2 로그인 성공 이후 후속 조치를 진행하는 사용자 정보 서비스 클래스입니다.
@@ -42,6 +41,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     /**
      * 리소스 서버(구글, 카카오)에서 사용자 정보를 가져온 뒤 호출되는 메소드입니다.
+     *
      * @param userRequest 리소스 서버에서 넘어온 로그인 사용자 정보가 담긴 요청
      * @return 처리된 사용자 정보(OAuth2User) 객체. Spring Security의 인증 객체 생성에 사용됩니다.
      * @throws OAuth2AuthenticationException
@@ -75,6 +75,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     /**
      * OAuth 서비스로부터 얻은 정보로 신규 사용자를 저장하거나 기존 사용자의 정보를 업데이트하는 메소드입니다.
+     *
      * @param attributes 소셜 플랫폼에서 받아와 정리된 사용자 정보
      * @return 저장되거나 업데이트된 사용자 엔티티
      */
@@ -120,7 +121,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 UserFlowProgress defaultProgress = UserFlowProgress.builder()
                         .user(savedUser)
                         .nextPhase(FlowPhase.INTRO)
-                        .updatedAt(LocalDateTime.now()) // .build() 시점에 now()
                         .build();
                 userFlowProgressRepository.save(defaultProgress);
                 log.info("기본 UserFlowProgress 생성 완료 - userId: {}", savedUser.getId());

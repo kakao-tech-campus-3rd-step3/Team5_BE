@@ -1,7 +1,5 @@
 package com.knuissant.dailyq.domain.answers;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,6 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.knuissant.dailyq.domain.common.BaseTimeEntity;
 import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.users.User;
@@ -37,7 +36,7 @@ import com.knuissant.dailyq.exception.ErrorCode;
         @Index(name = "idx_answers_q_time", columnList = "question_id, created_at DESC"),
         @Index(name = "idx_answers_followup", columnList = "follow_up_question_id")
 })
-public class Answer {
+public class Answer extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -68,12 +67,6 @@ public class Answer {
 
     @Column(nullable = false, insertable = false)
     private Boolean starred;
-
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false, insertable = false)
-    private LocalDateTime updatedAt;
 
     @Column(name = "memo", columnDefinition = "MEDIUMTEXT")
     private String memo;

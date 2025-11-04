@@ -35,7 +35,9 @@ CREATE TABLE users (
    ========================= */
 CREATE TABLE occupations (
                             occupation_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                            occupation_name VARCHAR(100) NOT NULL UNIQUE
+                            occupation_name VARCHAR(100) NOT NULL UNIQUE,
+                            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* =========================
@@ -45,6 +47,8 @@ CREATE TABLE jobs (
                      job_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                      job_name VARCHAR(100) NOT NULL UNIQUE,
                      occupation_id BIGINT NOT NULL,
+                     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                      CONSTRAINT fk_jobs_parent
                          FOREIGN KEY (occupation_id) REFERENCES occupations(occupation_id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -62,6 +66,8 @@ CREATE TABLE user_preferences (
                              notify_time TIME NULL,
                              allow_push TINYINT NOT NULL DEFAULT 0,
                              user_job BIGINT NOT NULL,
+                             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                             updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                              CONSTRAINT fk_user_prefs_user
                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
                              CONSTRAINT fk_user_prefs_job
@@ -88,8 +94,9 @@ CREATE TABLE questions (
    ========================= */
 CREATE TABLE question_jobs (
                                question_jobs_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                                question_id BIGINT NOT NULL,
+                               question_id BIGINT NOT NULL,
                                job_id BIGINT NOT NULL,
+                               created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                CONSTRAINT fk_qjobs_question
                                    FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE CASCADE,
                                CONSTRAINT fk_qjobs_job
@@ -102,6 +109,7 @@ CREATE TABLE question_jobs (
 CREATE TABLE user_flow_progress (
                                     user_id BIGINT PRIMARY KEY,
                                     next_phase VARCHAR(20) NOT NULL DEFAULT 'INTRO',
+                                    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                     CONSTRAINT fk_flow_progress_user
                                         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -160,7 +168,7 @@ CREATE TABLE feedbacks (
                            status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
                            content MEDIUMTEXT NULL, -- entity 생성 후
                            latency_ms BIGINT NULL, -- entity 생성 후, 지연 시간 측정 필요
-                               created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                           created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                            CONSTRAINT fk_feedback_answer
                                FOREIGN KEY (answer_id) REFERENCES answers(answer_id) ON DELETE CASCADE,
@@ -176,7 +184,7 @@ CREATE TABLE rivals (
                         rival_id BIGINT AUTO_INCREMENT PRIMARY KEY,
                         sender_id BIGINT NOT NULL,
                         receiver_id BIGINT NOT NULL,
-
+                        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         CONSTRAINT fk_rival_sender FOREIGN KEY (sender_id)
                             REFERENCES users(user_id) ON DELETE CASCADE,
                         CONSTRAINT fk_rival_receiver FOREIGN KEY (receiver_id)
@@ -196,6 +204,7 @@ CREATE TABLE follow_up_questions (
     question_text MEDIUMTEXT NOT NULL,
     is_answered TINYINT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     CONSTRAINT fk_followup_user 
         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,

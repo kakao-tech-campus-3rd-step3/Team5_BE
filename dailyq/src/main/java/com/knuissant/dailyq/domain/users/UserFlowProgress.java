@@ -1,7 +1,5 @@
 package com.knuissant.dailyq.domain.users;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -20,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.knuissant.dailyq.domain.common.BaseTimeEntity;
 import com.knuissant.dailyq.domain.questions.FlowPhase;
 
 @Getter
@@ -28,7 +27,7 @@ import com.knuissant.dailyq.domain.questions.FlowPhase;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "user_flow_progress")
-public class UserFlowProgress {
+public class UserFlowProgress extends BaseTimeEntity {
 
     @Id
     @Column(name = "user_id")
@@ -43,9 +42,6 @@ public class UserFlowProgress {
     @Column(name = "next_phase", nullable = false, columnDefinition = "VARCHAR(20)")
     private FlowPhase nextPhase;
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
     /**
      * 다음 phase로 진행합니다.
      */
@@ -53,7 +49,6 @@ public class UserFlowProgress {
         FlowPhase nextPhase = this.nextPhase.next();
         if (nextPhase != null) {
             this.nextPhase = nextPhase;
-            this.updatedAt = LocalDateTime.now();
         }
     }
 }

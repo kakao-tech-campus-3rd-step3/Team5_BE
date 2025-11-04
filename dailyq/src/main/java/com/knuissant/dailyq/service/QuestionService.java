@@ -66,9 +66,8 @@ public class QuestionService {
 
     /**
      * 사용자의 현재 phase를 조회합니다.
-     * 
-     * TECH 모드일 때는 FLOW progress를 무시하고 null을 반환합니다.
-     * FLOW 모드일 때만 DB에서 조회하여 phase를 반환합니다.
+     * <p>
+     * TECH 모드일 때는 FLOW progress를 무시하고 null을 반환합니다. FLOW 모드일 때만 DB에서 조회하여 phase를 반환합니다.
      */
     private FlowPhase resolvePhase(Long userId, QuestionMode mode) {
         // TECH 모드일 때는 FLOW progress를 사용하지 않음
@@ -92,7 +91,6 @@ public class QuestionService {
         UserFlowProgress progress = UserFlowProgress.builder()
                 .user(user)
                 .nextPhase(FlowPhase.INTRO)
-                .updatedAt(LocalDateTime.now())
                 .build();
 
         return userFlowProgressRepository.save(progress);

@@ -6,8 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDateTime;
-
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
@@ -79,7 +77,7 @@ public class UserPreferencesService {
         }
 
         QuestionMode previousMode = preferences.getQuestionMode();
-        
+
         preferences.updatePreferences(
                 request.dailyQuestionLimit(),
                 request.questionMode(),
@@ -107,7 +105,6 @@ public class UserPreferencesService {
             UserFlowProgress progress = UserFlowProgress.builder()
                     .user(user)
                     .nextPhase(FlowPhase.INTRO)
-                    .updatedAt(LocalDateTime.now())
                     .build();
 
             userFlowProgressRepository.save(progress);
