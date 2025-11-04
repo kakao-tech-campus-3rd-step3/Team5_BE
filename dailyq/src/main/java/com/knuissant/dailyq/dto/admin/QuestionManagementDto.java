@@ -53,7 +53,9 @@ public class QuestionManagementDto {
             @NotNull(message = "질문 타입은 필수입니다.")
             QuestionType questionType,
             @NotEmpty(message = "하나 이상의 직업 ID가 필요합니다.")
-            List<Long> jobIds
+            List<Long> jobIds,
+            @NotNull(message = "활성화 여부는 필수입니다.")
+            Boolean enabled
     ) {
     }
 

@@ -180,6 +180,10 @@ public class AdminService {
     }
 
     public QuestionManagementDto.QuestionDetailResponse createQuestion(QuestionManagementDto.QuestionCreateRequest request) {
+        if (questionRepository.existsByQuestionText(request.questionText())) {
+            throw new BusinessException(ErrorCode.QUESTION_ALREADY_EXISTS);
+        }
+
         Set<Long> jobIds = new HashSet<>(request.jobIds()); // 중복 ID 제거
         List<Job> jobs = jobRepository.findAllById(jobIds);
         if (jobs.size() != jobIds.size()) {
@@ -187,7 +191,7 @@ public class AdminService {
         }
 
         try {
-            Question savedQuestion = questionRepository.save(Question.create(request.questionText(), request.questionType(), new HashSet<>(jobs)));
+            Question savedQuestion = questionRepository.save(Question.create(request.questionText(), request.questionType(), new HashSet<>(jobs), request.enabled()));
             return QuestionManagementDto.QuestionDetailResponse.from(savedQuestion);
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException(ErrorCode.QUESTION_ALREADY_EXISTS, request.questionText());
@@ -198,6 +202,10 @@ public class AdminService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
 
+        if (!question.getQuestionText().equals(request.questionText()) && questionRepository.existsByQuestionText(request.questionText())) {
+            throw new BusinessException(ErrorCode.QUESTION_ALREADY_EXISTS);
+        }
+
         Set<Long> jobIds = new HashSet<>(request.jobIds()); // 중복 ID 제거
         List<Job> jobs = jobRepository.findAllById(jobIds);
         if (jobs.size() != jobIds.size()) {
@@ -205,11 +213,13 @@ public class AdminService {
         }
 
         question.update(request.questionText(), request.questionType(), request.enabled(), new HashSet<>(jobs));
+
         try {
             questionRepository.flush(); // 변경 사항 즉시 반영
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException(ErrorCode.QUESTION_ALREADY_EXISTS, request.questionText());
         }
+
         return QuestionManagementDto.QuestionDetailResponse.from(question);
     }
 

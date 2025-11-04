@@ -63,12 +63,12 @@ public class Question {
     @Builder.Default
     private Set<Job> jobs = new LinkedHashSet<>();
 
-    public static Question create(String text, QuestionType type, Set<Job> jobs) {
+    public static Question create(String text, QuestionType type, Set<Job> jobs, Boolean enabled) {
         Question question = new Question();
         question.questionText = text;
         question.questionType = type;
         question.jobs = jobs;
-        question.enabled = true; // 생성 시 기본값
+        question.enabled = enabled; // 생성 시 기본값
         return question;
     }
 
