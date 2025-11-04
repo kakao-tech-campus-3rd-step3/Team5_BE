@@ -2,8 +2,10 @@ package com.knuissant.dailyq.service;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +42,7 @@ public class AdminService {
     public List<UserManagementDto.UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(UserManagementDto.UserResponse::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -61,32 +63,43 @@ public class AdminService {
     }
 
     public void deleteUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        try {
+            userRepository.deleteById(userId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, userId);
         }
-        userRepository.deleteById(userId);
     }
 
     /* =========================
        Occupation Management
        ========================= */
 
+    @Transactional(readOnly = true)
+    public List<OccupationManagementDto.OccupationResponse> getAllOccupations() {
+        return occupationRepository.findAll().stream()
+                .map(OccupationManagementDto.OccupationResponse::from)
+                .toList();
+    }
+
     public OccupationManagementDto.OccupationResponse createOccupation(OccupationManagementDto.OccupationCreateRequest request) {
-        if (occupationRepository.existsByName(request.occupationName())) {
-            throw new BusinessException(ErrorCode.OCCUPATION_ALREADY_EXISTS);
+        try {
+            Occupation savedOccupation = occupationRepository.save(Occupation.create(request.occupationName()));
+            return OccupationManagementDto.OccupationResponse.from(savedOccupation);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.OCCUPATION_ALREADY_EXISTS, request.occupationName());
         }
-        Occupation savedOccupation = occupationRepository.save(Occupation.create(request.occupationName()));
-        return OccupationManagementDto.OccupationResponse.from(savedOccupation);
     }
 
     public OccupationManagementDto.OccupationResponse updateOccupation(Long occupationId, OccupationManagementDto.OccupationUpdateRequest request) {
         Occupation occupation = occupationRepository.findById(occupationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND));
 
-        if (!occupation.getName().equals(request.occupationName()) && occupationRepository.existsByName(request.occupationName())) {
-            throw new BusinessException(ErrorCode.OCCUPATION_ALREADY_EXISTS);
-        }
         occupation.updateName(request.occupationName());
+        try {
+            occupationRepository.flush(); // 변경 사항을 DB에 즉시 반영하여 제약 조건 위반 검사
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.OCCUPATION_ALREADY_EXISTS, request.occupationName());
+        }
         return OccupationManagementDto.OccupationResponse.from(occupation);
     }
 
@@ -96,7 +109,7 @@ public class AdminService {
         if (jobRepository.existsByOccupation(occupation)) {
             throw new BusinessException(ErrorCode.CANNOT_DELETE_OCCUPATION_WITH_JOBS);
         }
-        occupationRepository.deleteById(occupationId);
+        occupationRepository.delete(occupation);
     }
 
 
@@ -104,28 +117,38 @@ public class AdminService {
        Job Management
        ========================= */
 
+    @Transactional(readOnly = true)
+    public List<JobManagementDto.JobResponse> getAllJobs() {
+        return jobRepository.findAll().stream()
+                .map(JobManagementDto.JobResponse::from)
+                .toList();
+    }
+
     public JobManagementDto.JobResponse createJob(JobManagementDto.JobCreateRequest request) {
-        if (jobRepository.existsByName(request.jobName())) {
-            throw new BusinessException(ErrorCode.JOB_ALREADY_EXISTS);
-        }
         Occupation occupation = occupationRepository.findById(request.occupationId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND));
 
-        Job savedJob = jobRepository.save(Job.create(request.jobName(), occupation));
-        return JobManagementDto.JobResponse.from(savedJob);
+        try {
+            Job savedJob = jobRepository.save(Job.create(request.jobName(), occupation));
+            return JobManagementDto.JobResponse.from(savedJob);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.JOB_ALREADY_EXISTS, request.jobName());
+        }
     }
 
     public JobManagementDto.JobResponse updateJob(Long jobId, JobManagementDto.JobUpdateRequest request) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
 
-        if (!job.getName().equals(request.jobName()) && jobRepository.existsByName(request.jobName())) {
-            throw new BusinessException(ErrorCode.JOB_ALREADY_EXISTS);
-        }
         Occupation occupation = occupationRepository.findById(request.occupationId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.OCCUPATION_NOT_FOUND));
 
         job.update(request.jobName(), occupation);
+        try {
+            jobRepository.flush(); // 변경 사항 즉시 반영
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.JOB_ALREADY_EXISTS, request.jobName());
+        }
         return JobManagementDto.JobResponse.from(job);
     }
 
@@ -135,7 +158,7 @@ public class AdminService {
         if (userPreferencesRepository.existsByUserJob(job)) {
             throw new BusinessException(ErrorCode.CANNOT_DELETE_JOB_IN_USE);
         }
-        jobRepository.deleteById(jobId);
+        jobRepository.delete(job);
     }
 
     /* =========================
@@ -146,35 +169,47 @@ public class AdminService {
     public List<QuestionManagementDto.QuestionResponse> getAllQuestions() {
         return questionRepository.findAll().stream()
                 .map(QuestionManagementDto.QuestionResponse::from)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public QuestionManagementDto.QuestionDetailResponse getQuestionById(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND, questionId));
+        return QuestionManagementDto.QuestionDetailResponse.from(question);
     }
 
     public QuestionManagementDto.QuestionDetailResponse createQuestion(QuestionManagementDto.QuestionCreateRequest request) {
-        if (questionRepository.existsByQuestionText(request.questionText())) {
-            throw new BusinessException(ErrorCode.QUESTION_ALREADY_EXISTS);
-        }
-        List<Job> jobs = jobRepository.findAllById(request.jobIds());
-        if (jobs.size() != request.jobIds().size()) {
+        Set<Long> jobIds = new HashSet<>(request.jobIds()); // 중복 ID 제거
+        List<Job> jobs = jobRepository.findAllById(jobIds);
+        if (jobs.size() != jobIds.size()) {
             throw new BusinessException(ErrorCode.JOB_NOT_FOUND, "일부 직업을 찾을 수 없습니다.");
         }
 
-        Question savedQuestion = questionRepository.save(Question.create(request.questionText(), request.questionType(), new HashSet<>(jobs)));
-        return QuestionManagementDto.QuestionDetailResponse.from(savedQuestion);
+        try {
+            Question savedQuestion = questionRepository.save(Question.create(request.questionText(), request.questionType(), new HashSet<>(jobs)));
+            return QuestionManagementDto.QuestionDetailResponse.from(savedQuestion);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.QUESTION_ALREADY_EXISTS, request.questionText());
+        }
     }
 
     public QuestionManagementDto.QuestionDetailResponse updateQuestion(Long questionId, QuestionManagementDto.QuestionUpdateRequest request) {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
 
-        if (!question.getQuestionText().equals(request.questionText()) && questionRepository.existsByQuestionText(request.questionText())) {
-            throw new BusinessException(ErrorCode.QUESTION_ALREADY_EXISTS);
-        }
-        List<Job> jobs = jobRepository.findAllById(request.jobIds());
-        if (jobs.size() != request.jobIds().size()) {
+        Set<Long> jobIds = new HashSet<>(request.jobIds()); // 중복 ID 제거
+        List<Job> jobs = jobRepository.findAllById(jobIds);
+        if (jobs.size() != jobIds.size()) {
             throw new BusinessException(ErrorCode.JOB_NOT_FOUND, "일부 직업을 찾을 수 없습니다.");
         }
 
         question.update(request.questionText(), request.questionType(), request.enabled(), new HashSet<>(jobs));
+        try {
+            questionRepository.flush(); // 변경 사항 즉시 반영
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.QUESTION_ALREADY_EXISTS, request.questionText());
+        }
         return QuestionManagementDto.QuestionDetailResponse.from(question);
     }
 
@@ -184,6 +219,6 @@ public class AdminService {
         if (answerRepository.existsByQuestion(question)) {
             throw new BusinessException(ErrorCode.CANNOT_DELETE_QUESTION_WITH_ANSWERS);
         }
-        questionRepository.deleteById(questionId);
+        questionRepository.delete(question);
     }
 }
