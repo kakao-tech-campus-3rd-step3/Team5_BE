@@ -49,10 +49,6 @@ public class UserPreferences extends BaseTimeEntity {
     @Column(name = "question_mode", nullable = false, columnDefinition = "VARCHAR(20)")
     private QuestionMode questionMode;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "user_response_type", nullable = false, columnDefinition = "VARCHAR(20)")
-    private UserResponseType userResponseType;
-
     @Column(name = "time_limit_seconds")
     private Integer timeLimitSeconds;
 
@@ -67,10 +63,9 @@ public class UserPreferences extends BaseTimeEntity {
     private Job userJob;
 
 
-    public void updatePreferences(Integer dailyQuestionLimit, QuestionMode questionMode, UserResponseType answerType, Integer timeLimitSeconds, Boolean allowPush) {
+    public void updatePreferences(Integer dailyQuestionLimit, QuestionMode questionMode, Integer timeLimitSeconds, Boolean allowPush) {
         this.dailyQuestionLimit = dailyQuestionLimit;
         this.questionMode = questionMode;
-        this.userResponseType = answerType;
         this.timeLimitSeconds = timeLimitSeconds;
         this.allowPush = allowPush;
     }

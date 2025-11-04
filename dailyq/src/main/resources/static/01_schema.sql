@@ -61,7 +61,6 @@ CREATE TABLE user_preferences (
                              user_id BIGINT PRIMARY KEY,
                              daily_question_limit INT NOT NULL DEFAULT 1,
                              question_mode VARCHAR(20) NOT NULL DEFAULT 'TECH',
-                             user_response_type VARCHAR(20) NOT NULL DEFAULT 'TEXT',
                              time_limit_seconds INT DEFAULT 180,
                              notify_time TIME NULL,
                              allow_push TINYINT NOT NULL DEFAULT 0,

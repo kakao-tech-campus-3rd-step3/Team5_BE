@@ -12,7 +12,6 @@ import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.domain.users.UserPreferences;
-import com.knuissant.dailyq.domain.users.UserResponseType;
 import com.knuissant.dailyq.dto.users.UserJobsUpdateRequest;
 import com.knuissant.dailyq.dto.users.UserPreferencesResponse;
 import com.knuissant.dailyq.dto.users.UserPreferencesUpdateRequest;
@@ -55,7 +54,6 @@ public class UserPreferencesService {
                 .user(user)
                 .dailyQuestionLimit(1)
                 .questionMode(QuestionMode.TECH)
-                .userResponseType(UserResponseType.TEXT)
                 .timeLimitSeconds(180)
                 .allowPush(false)
                 .userJob(defaultJob)
@@ -81,7 +79,6 @@ public class UserPreferencesService {
         preferences.updatePreferences(
                 request.dailyQuestionLimit(),
                 request.questionMode(),
-                request.answerType(),
                 request.timeLimitSeconds(),
                 request.allowPush()
         );
