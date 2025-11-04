@@ -88,12 +88,7 @@ public class QuestionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new InfraException(ErrorCode.USER_NOT_FOUND, userId));
 
-        UserFlowProgress progress = UserFlowProgress.builder()
-                .user(user)
-                .nextPhase(FlowPhase.INTRO)
-                .build();
-
-        return userFlowProgressRepository.save(progress);
+        return userFlowProgressRepository.save(UserFlowProgress.create(user));
     }
 
     private Optional<RandomQuestionResponse> selectRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId, int timeLimitSeconds) {

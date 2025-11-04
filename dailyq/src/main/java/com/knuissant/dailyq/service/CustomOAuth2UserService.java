@@ -17,7 +17,6 @@ import org.springframework.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.dto.oauth.OAuthAttributes;
@@ -37,7 +36,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private final UserRepository userRepository;
     private final UserPreferencesService userPreferencesService;
-    private final UserFlowProgressRepository userFlowProgressRepository; // <-- 필드 선언
+    private final UserFlowProgressRepository userFlowProgressRepository;
 
     /**
      * 리소스 서버(구글, 카카오)에서 사용자 정보를 가져온 뒤 호출되는 메소드입니다.
@@ -118,11 +117,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
             // 2. UserFlowProgress 생성
             try {
-                UserFlowProgress defaultProgress = UserFlowProgress.builder()
-                        .user(savedUser)
-                        .nextPhase(FlowPhase.INTRO)
-                        .build();
-                userFlowProgressRepository.save(defaultProgress);
+                userFlowProgressRepository.save(UserFlowProgress.create(savedUser));
                 log.info("기본 UserFlowProgress 생성 완료 - userId: {}", savedUser.getId());
             } catch (Exception e) {
                 log.error("신규 사용자 UserFlowProgress 생성 실패 - userId: {}, error: {}",

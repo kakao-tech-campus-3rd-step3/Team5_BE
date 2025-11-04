@@ -42,6 +42,13 @@ public class UserFlowProgress extends BaseTimeEntity {
     @Column(name = "next_phase", nullable = false, columnDefinition = "VARCHAR(20)")
     private FlowPhase nextPhase;
 
+    public static UserFlowProgress create(User user) {
+        return UserFlowProgress.builder()
+                .user(user)
+                .nextPhase(FlowPhase.INTRO) // 기본값
+                .build();
+    }
+
     /**
      * 다음 phase로 진행합니다.
      */

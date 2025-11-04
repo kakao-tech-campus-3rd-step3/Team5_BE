@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.domain.jobs.Job;
-import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserFlowProgress;
@@ -99,12 +98,7 @@ public class UserPreferencesService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
-            UserFlowProgress progress = UserFlowProgress.builder()
-                    .user(user)
-                    .nextPhase(FlowPhase.INTRO)
-                    .build();
-
-            userFlowProgressRepository.save(progress);
+            userFlowProgressRepository.save(UserFlowProgress.create(user));
         }
     }
 
@@ -121,8 +115,4 @@ public class UserPreferencesService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_PREFERENCES_NOT_FOUND, userId));
     }
 
-    @Transactional(readOnly = true)
-    public boolean existsByUserId(Long userId) {
-        return userPreferencesRepository.existsById(userId);
-    }
 }
