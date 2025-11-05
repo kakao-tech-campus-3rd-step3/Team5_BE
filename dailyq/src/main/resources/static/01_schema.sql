@@ -165,8 +165,8 @@ CREATE TABLE feedbacks (
                            feedback_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                            answer_id BIGINT NOT NULL,
                            status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-                           content MEDIUMTEXT NULL, -- entity 생성 후
-                           latency_ms BIGINT NULL, -- entity 생성 후, 지연 시간 측정 필요
+                           content JSON NULL,
+                           latency_ms BIGINT NULL,
                            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                            CONSTRAINT fk_feedback_answer
