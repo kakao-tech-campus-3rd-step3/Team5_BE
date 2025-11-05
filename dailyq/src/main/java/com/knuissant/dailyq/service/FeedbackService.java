@@ -6,10 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
+import com.knuissant.dailyq.domain.feedbacks.FeedbackContent;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.dto.feedbacks.FeedbackResponse;
 import com.knuissant.dailyq.exception.BusinessException;
@@ -28,7 +27,6 @@ public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final PromptManager promptManager;
     private final FeedbackUpdateService feedbackUpdateService;
-    private final ObjectMapper objectMapper;
 
     @Transactional
     public Feedback createPendingFeedback(Answer answer) {
@@ -43,7 +41,7 @@ public class FeedbackService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
 
         if (feedback.getStatus() == FeedbackStatus.DONE) {
-            return FeedbackResponse.from(feedback.getContent(), objectMapper);
+            return FeedbackResponse.from(feedback);
         }
 
         feedbackUpdateService.changeStatusToProcessing(feedbackId);
@@ -56,12 +54,12 @@ public class FeedbackService {
 
         long startTime = System.currentTimeMillis();
         try {
-            FeedbackResponse feedbackResponse = gptClient.call(systemPrompt, userPrompt);
+            FeedbackContent feedbackContent = gptClient.call(systemPrompt, userPrompt);
             long latencyMs = System.currentTimeMillis() - startTime;
 
-            feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackResponse, latencyMs);
-            
-            return feedbackResponse;
+            Feedback updatedFeedback = feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackContent, latencyMs);
+
+            return FeedbackResponse.from(updatedFeedback);
 
         } catch (Exception e) {
             try {

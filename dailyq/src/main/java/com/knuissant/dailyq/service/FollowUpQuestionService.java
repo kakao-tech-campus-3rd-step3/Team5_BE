@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.knuissant.dailyq.domain.answers.Answer;
 import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
+import com.knuissant.dailyq.domain.questions.QuestionType;
 import com.knuissant.dailyq.dto.questions.FollowUpQuestionResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
@@ -38,6 +39,7 @@ public class FollowUpQuestionService {
         validateOwnership(answer, requestUserId);
         validateNotFollowUpAnswer(answer);
         validateNoExistingFollowUp(answer);
+        validateTechQuestion(answer);
 
         try {
             // AI로 꼬리질문 생성
@@ -110,6 +112,20 @@ public class FollowUpQuestionService {
     private void validateNoExistingFollowUp(Answer answer) {
         if (followUpQuestionRepository.existsByAnswer(answer)) {
             throw new BusinessException(ErrorCode.FOLLOWUP_QUESTION_ALREADY_EXISTS, answer.getId());
+        }
+    }
+
+    /**
+     * TECH 질문에 대해서만 꼬리질문 생성이 가능한지 확인합니다.
+     * QuestionType이 TECH인 경우만 허용합니다.
+     */
+    private void validateTechQuestion(Answer answer) {
+        QuestionType questionType = answer.getQuestion().getQuestionType();
+        
+        // TECH 질문 타입이 아니면 예외 발생
+        if (questionType != QuestionType.TECH) {
+            throw new BusinessException(ErrorCode.FOLLOWUP_GENERATION_NOT_ALLOWED, 
+                    "꼬리질문은 TECH 질문에 대해서만 생성 가능합니다.");
         }
     }
 }
