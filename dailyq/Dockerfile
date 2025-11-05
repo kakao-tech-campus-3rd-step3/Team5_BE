@@ -4,19 +4,21 @@ FROM gradle:8.11-jdk21 AS build
 # Set working directory
 WORKDIR /app
 
+# Gradle Cache
+ENV GRADLE_USER_HOME=/app/.gradle
+
 # Copy gradle wrapper and build files
 COPY gradle/ gradle/
 COPY gradlew gradlew.bat build.gradle settings.gradle ./
 
 # Download dependencies first (this layer will be cached)
-RUN ./gradlew dependencies --no-daemon || true
+RUN ./gradlew dependencies --no-daemon --stacktrace
 
 # Copy source code
 COPY src/ src/
 
 # Build the application with optimized settings
-ENV GRADLE_OPTS="-Xmx1024m -Xms512m -XX:+UseG1GC -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false"
-RUN ./gradlew assemble -x test --no-daemon --stacktrace
+RUN ./gradlew bootJar --no-daemon --stacktrace
 
 # Runtime stage
 FROM openjdk:21-jdk-slim
