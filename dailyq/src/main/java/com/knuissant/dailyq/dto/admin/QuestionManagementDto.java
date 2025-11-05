@@ -8,15 +8,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import lombok.Builder;
-
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionType;
 
 public class QuestionManagementDto {
-
-    @Builder
     public record QuestionResponse(
             Long questionId,
             String questionText,
@@ -28,7 +24,6 @@ public class QuestionManagementDto {
         }
     }
 
-    @Builder
     public record QuestionDetailResponse(
             Long questionId,
             String questionText,
