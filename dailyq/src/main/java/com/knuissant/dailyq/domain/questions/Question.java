@@ -61,7 +61,7 @@ public class Question extends BaseTimeEntity {
         return Question.builder()
                 .questionText(text)
                 .questionType(type)
-                .jobs(jobs)
+                .jobs(jobs == null ? new LinkedHashSet<>() : new LinkedHashSet<>(jobs))
                 .enabled(true)  // 생성 시 기본값
                 .build();
     }
@@ -70,7 +70,11 @@ public class Question extends BaseTimeEntity {
         this.questionText = text;
         this.questionType = type;
         this.enabled = enabled;
-        this.jobs = jobs;
+
+        this.jobs.clear();
+        if (jobs != null) {
+            this.jobs.addAll(jobs);
+        }
     }
 }
 
