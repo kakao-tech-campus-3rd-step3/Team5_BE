@@ -45,6 +45,17 @@ public class UserFlowProgress {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    /**
+     * 다음 phase로 진행합니다.
+     */
+    public void moveToNextPhase() {
+        FlowPhase nextPhase = this.nextPhase.next();
+        if (nextPhase != null) {
+            this.nextPhase = nextPhase;
+            this.updatedAt = LocalDateTime.now();
+        }
+    }
 }
 
 
