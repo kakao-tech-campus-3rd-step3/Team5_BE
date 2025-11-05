@@ -18,13 +18,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.knuissant.dailyq.domain.common.BaseTimeEntity;
+
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "occupations")
-public class Occupation {
+public class Occupation extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,9 +41,9 @@ public class Occupation {
     private List<Job> jobs = new ArrayList<>();
 
     public static Occupation create(String name) {
-        Occupation occupation = new Occupation();
-        occupation.name = name;
-        return occupation;
+        return Occupation.builder()
+                .name(name)
+                .build();
     }
 
     public void updateName(String newName) {

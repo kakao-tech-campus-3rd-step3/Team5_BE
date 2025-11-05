@@ -21,6 +21,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.knuissant.dailyq.domain.common.BaseTimeEntity;
 import com.knuissant.dailyq.domain.jobs.Job;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 
@@ -30,7 +31,7 @@ import com.knuissant.dailyq.domain.questions.QuestionMode;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "user_preferences")
-public class UserPreferences {
+public class UserPreferences extends BaseTimeEntity {
 
     @Id
     @Column(name = "user_id")
@@ -48,10 +49,6 @@ public class UserPreferences {
     @Column(name = "question_mode", nullable = false, columnDefinition = "VARCHAR(20)")
     private QuestionMode questionMode;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "user_response_type", nullable = false, columnDefinition = "VARCHAR(20)")
-    private UserResponseType userResponseType;
-
     @Column(name = "time_limit_seconds")
     private Integer timeLimitSeconds;
 
@@ -66,10 +63,9 @@ public class UserPreferences {
     private Job userJob;
 
 
-    public void updatePreferences(Integer dailyQuestionLimit, QuestionMode questionMode, UserResponseType answerType, Integer timeLimitSeconds, Boolean allowPush) {
+    public void updatePreferences(Integer dailyQuestionLimit, QuestionMode questionMode, Integer timeLimitSeconds, Boolean allowPush) {
         this.dailyQuestionLimit = dailyQuestionLimit;
         this.questionMode = questionMode;
-        this.userResponseType = answerType;
         this.timeLimitSeconds = timeLimitSeconds;
         this.allowPush = allowPush;
     }

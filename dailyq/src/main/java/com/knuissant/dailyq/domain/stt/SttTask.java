@@ -1,7 +1,5 @@
 package com.knuissant.dailyq.domain.stt;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import com.knuissant.dailyq.domain.answers.Answer;
+import com.knuissant.dailyq.domain.common.BaseTimeEntity;
 
 @Getter
 @Builder
@@ -28,7 +27,7 @@ import com.knuissant.dailyq.domain.answers.Answer;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "stt_tasks")
-public class SttTask {
+public class SttTask extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,12 +50,6 @@ public class SttTask {
 
     @Column(unique = true, length = 36)
     private String token;
-
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false, insertable = false)
-    private LocalDateTime updatedAt;
 
     public static SttTask create(Answer answer, String audioUrl) {
         return SttTask.builder()

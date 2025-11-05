@@ -36,7 +36,6 @@ public class UserService {
         UserProfileResponse.PreferencesDto preferencesDto = new UserProfileResponse.PreferencesDto(
                 preferences.getDailyQuestionLimit(),
                 preferences.getQuestionMode(),
-                preferences.getUserResponseType(),
                 preferences.getTimeLimitSeconds(),
                 preferences.getAllowPush()
         );
