@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.questions.FlowPhase;
-import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.questions.QuestionType;
@@ -100,7 +99,8 @@ public class QuestionService {
 
     private Optional<RandomQuestionResponse> selectRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId, int timeLimitSeconds) {
         // 1. 먼저 미답변 꼬리질문 확인
-        Optional<RandomQuestionResponse> followUpQuestion = findUnansweredFollowUpQuestion(userId, jobId, timeLimitSeconds);
+        Optional<RandomQuestionResponse> followUpQuestion = followUpQuestionService.getUnansweredFollowUpQuestion(userId)
+                .map(fq -> RandomQuestionResponse.fromFollowUp(fq, jobId, timeLimitSeconds));
         if (followUpQuestion.isPresent()) {
             return followUpQuestion;
         }
@@ -176,20 +176,6 @@ public class QuestionService {
             case TECH1, TECH2 -> QuestionType.TECH;
             case PERSONALITY -> QuestionType.PERSONALITY;
         };
-    }
-
-    /**
-     * 사용자의 미답변 꼬리질문 조회 및 DTO 변환
-     */
-    private Optional<RandomQuestionResponse> findUnansweredFollowUpQuestion(Long userId, Long jobId, int timeLimitSeconds) {
-        List<FollowUpQuestion> unansweredFollowUps = followUpQuestionService.getUnansweredFollowUpQuestions(userId);
-
-        if (unansweredFollowUps.isEmpty()) {
-            return Optional.empty();
-        }
-
-        FollowUpQuestion fq = unansweredFollowUps.get(0);
-        return Optional.of(RandomQuestionResponse.fromFollowUp(fq, jobId, timeLimitSeconds));
     }
 }
 
