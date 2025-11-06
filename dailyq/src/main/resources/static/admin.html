@@ -594,7 +594,7 @@
 
     // 페이지 로드 시 직업 목록을 미리 불러옵니다. (질문 모달에서 사용하기 위함)
     document.addEventListener('DOMContentLoaded', () => {
-        const token = document.getElementById('token').value;
+        const token = document.getElementById('jwt-token').value;
         if (!token) {
             console.log("페이지 로드 시 직군/직업 목록 조회를 생략합니다 (토큰이 아직 없습니다)");
             return ;
