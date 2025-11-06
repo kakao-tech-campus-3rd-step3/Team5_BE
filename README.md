@@ -267,6 +267,10 @@ dailyq/
 
 ```
 
+### E-R 다이어그램
+<img width="866" height="817" alt="스크린샷 2025-11-07 오전 1 09 00" src="https://github.com/user-attachments/assets/43dc83a2-78bf-47e2-8de2-7ec40a68cd09" />
+
+
 ---
 
 ## 8. 개발 환경 설정
