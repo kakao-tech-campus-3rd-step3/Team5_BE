@@ -108,7 +108,8 @@ public class QuestionService {
     private void validateDailyQuestionLimit(Long userId, UserPreferences userPreferences) {
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
-        long answeredToday = answerRepository.countByUserIdAndCreatedAtBetween(userId, startOfDay, endOfDay);
+        // 꼬리질문은 일일 제한에서 제외
+        long answeredToday = answerRepository.countByUserIdAndFollowUpQuestionIsNullAndCreatedAtBetween(userId, startOfDay, endOfDay);
         int remain = userPreferences.getDailyQuestionLimit() - (int) answeredToday;
 
         Optional.of(remain)
