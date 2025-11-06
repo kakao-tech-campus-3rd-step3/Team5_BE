@@ -1,6 +1,7 @@
 package com.knuissant.dailyq.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,11 +67,11 @@ public class FollowUpQuestionService {
     }
 
     /**
-     * 사용자의 미답변 꼬리질문 조회
+     * 사용자의 미답변 꼬리질문 조회 (가장 오래된 것 하나만)
      */
     @Transactional(readOnly = true)
-    public List<FollowUpQuestion> getUnansweredFollowUpQuestions(Long userId) {
-        return followUpQuestionRepository.findByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(userId);
+    public Optional<FollowUpQuestion> getUnansweredFollowUpQuestion(Long userId) {
+        return followUpQuestionRepository.findFirstByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(userId);
     }
 
     /**
