@@ -215,7 +215,7 @@
 | Java v21 | MySQL v8.0 | Spring v3.5.5 | Docker v27.3.1 | H2 v2.2.224 | nGrinder v3.5.9 |
 |:---------:|:----------:|:-------------:|:---------------:|:------------:|:----------------:|
 
-<img width="466" height="601" alt="KakaoTalk_Photo_2025-11-06-19-13-00" src="https://github.com/user-attachments/assets/47deca90-9005-4200-80e1-a1ad254e88ba" />
+<img width="466" height="601" alt="KakaoTalk_Photo_2025-11-06-19-13-00" src="https://github.com/user-attachments/assets/47deca90-9005-4200-80e1-a1ad254e88ba" style="width:400px" />
 
 - **프레임워크**: Spring Boot 3.5.5
 - **언어**: Java 21
