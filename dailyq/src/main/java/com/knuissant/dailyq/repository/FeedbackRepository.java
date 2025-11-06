@@ -18,7 +18,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     Optional<Feedback> findByAnswerId(Long answerId);
 
-    @EntityGraph(attributePaths = {"answer", "answer.question"})
+    @EntityGraph(attributePaths = {"answer", "answer.question", "answer.followUpQuestion"})
     Optional<Feedback> findWithDetailsById(Long id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

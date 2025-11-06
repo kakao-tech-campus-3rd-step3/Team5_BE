@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.knuissant.dailyq.domain.answers.Answer;
-import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.QuestionType;
 
 public record AnswerListResponse(List<Summary> summaries) {
