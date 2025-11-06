@@ -61,6 +61,10 @@ spring:
         multiplier: 2
       on-http-codes: [ 429, 500, 503 ]
 
+  threads:
+    virtual:
+      enabled: true
+
 ncp:
   # Object Storage
   storage:
