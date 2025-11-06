@@ -3,25 +3,29 @@ package com.knuissant.dailyq.jwt;
 import java.security.Key;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
-import io.jsonwebtoken.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
-import lombok.extern.slf4j.Slf4j;
-
-import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.config.JwtProperties;
+import com.knuissant.dailyq.domain.users.User;
 
 /**
- * JWT 토큰 생성, 검증 및 관련 작업을 처리하는 서비스
- * Access Token과 Refresh Token의 생성 및 검증을 담당
+ * JWT 토큰 생성, 검증 및 관련 작업을 처리하는 서비스 Access Token과 Refresh Token의 생성 및 검증을 담당
  */
 @Slf4j
 @Service
@@ -31,6 +35,8 @@ public class TokenProvider {
     private final long accessTokenExpirationMillis;     // 액세스 토큰 만료 시간
     private final long refreshTokenExpirationMillis;    // 리프레시 토큰 만료 시간
     private final JwtParser jwtParser;                  // 재사용할 JwtParser 필드
+
+    private static final long SSE_TOKEN_EXPIRATION_MILLIS = 1000 * 60;
 
     /**
      * TokenProvider 생성자
@@ -44,48 +50,41 @@ public class TokenProvider {
     }
 
     /**
-     * 사용자 정보를 기반으로 액세스 토큰을 생성
-     * 토큰에는 사용자 ID, 이메일, 역할 정보가 포함됨
+     * 사용자 정보를 기반으로 액세스 토큰을 생성 토큰에는 사용자 ID, 이메일, 역할 정보가 포함됨
      *
      * @param user 토큰을 발급할 사용자 정보
      * @return 생성된 JWT 액세스 토큰
      */
     public String generateAccessToken(User user) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + accessTokenExpirationMillis);
+        Map<String, Object> claims = Map.of(
+                "email", user.getEmail(),
+                "role", "ROLE_" + user.getRole().name()
+        );
 
-        return Jwts.builder()
-                .setSubject(user.getId().toString())
-                .claim("email", user.getEmail())
-                .claim("role", "ROLE_" + user.getRole().name())
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+        return createToken(user.getId().toString(), claims, accessTokenExpirationMillis);
     }
 
     /**
-     * 사용자 정보를 기반으로 리프레시 토큰을 생성
-     * 보안을 위해 최소한의 정보만 포함 (사용자 ID만 포함)
+     * 사용자 정보를 기반으로 리프레시 토큰을 생성 보안을 위해 최소한의 정보만 포함 (사용자 ID만 포함)
      *
      * @param user 토큰을 발급할 사용자 정보
      * @return 생성된 JWT 리프레시 토큰
      */
     public String generateRefreshToken(User user) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + refreshTokenExpirationMillis);
 
-        return Jwts.builder()
-                .setSubject(user.getId().toString())
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+        return createToken(user.getId().toString(), Collections.emptyMap(), refreshTokenExpirationMillis);
+    }
+
+    public String generateSseToken(User user) {
+        Map<String, Object> claims = Map.of(
+                "email", user.getEmail(),
+                "role", "ROLE_" + user.getRole().name()
+        );
+        return createToken(user.getId().toString(), claims, SSE_TOKEN_EXPIRATION_MILLIS);
     }
 
     /**
-     * 액세스 토큰으로부터 Authentication 객체를 생성
-     * Spring Security에서 인증 정보로 사용됨
+     * 액세스 토큰으로부터 Authentication 객체를 생성 Spring Security에서 인증 정보로 사용됨
      *
      * @param accessToken 유효한 액세스 토큰
      * @return 인증 정보가 담긴 Authentication 객체
@@ -112,8 +111,7 @@ public class TokenProvider {
     }
 
     /**
-     * 토큰의 유효성을 검사
-     * 만료 여부, 서명 검증 등을 수행
+     * 토큰의 유효성을 검사 만료 여부, 서명 검증 등을 수행
      *
      * @param token 검증할 JWT 토큰
      * @return 토큰이 유효하면 true, 그렇지 않으면 false
@@ -126,6 +124,19 @@ public class TokenProvider {
             log.error("Invalid JWT token: {}", e.getMessage());
             return false;
         }
+    }
+
+    private String createToken(String subject, Map<String, Object> claims, long expirationMillis) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expirationMillis);
+
+        return Jwts.builder()
+                .setSubject(subject)
+                .addClaims(claims) // Map 전체를 클레임으로 추가
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
     }
 
     // 토큰에서 클레임 정보를 추출

@@ -53,5 +53,14 @@ public class TokenService {
         // --- 모든 검증 통과: 새로운 Access Token 생성 ---
         return tokenProvider.generateAccessToken(user);
     }
+
+    @Transactional(readOnly = true)
+    public String generateSseToken(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
+        
+        return tokenProvider.generateSseToken(user);
+    }
+
 }
 
