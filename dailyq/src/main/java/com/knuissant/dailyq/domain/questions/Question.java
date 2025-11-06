@@ -64,12 +64,12 @@ public class Question {
     private Set<Job> jobs = new LinkedHashSet<>();
 
     public static Question create(String text, QuestionType type, Set<Job> jobs, Boolean enabled) {
-        Question question = new Question();
-        question.questionText = text;
-        question.questionType = type;
-        question.jobs = jobs;
-        question.enabled = enabled; // 생성 시 기본값
-        return question;
+        return Question.builder()
+                .questionText(text)
+                .questionType(type)
+                .jobs(jobs == null ? new LinkedHashSet<>() : new LinkedHashSet<>(jobs))
+                .enabled(enabled)
+                .build();
     }
 
     public void update(String text, QuestionType type, boolean enabled, Set<Job> jobs) {
