@@ -35,10 +35,12 @@ public class FeedbackService {
         return feedbackRepository.save(feedback);
     }
 
-    public FeedbackResponse generateFeedback(Long feedbackId) {
+    public FeedbackResponse generateFeedback(Long userId, Long feedbackId) {
 
         Feedback feedback = feedbackRepository.findWithDetailsById(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
+
+        feedback.getAnswer().checkOwnership(userId);
 
         boolean followUp = (feedback.getAnswer() != null && feedback.getAnswer().getFollowUpQuestion() != null);
 
