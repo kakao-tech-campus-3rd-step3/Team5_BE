@@ -40,7 +40,7 @@ public record AnswerDetailResponse(
                 answer.getLevel(),
                 answer.getStarred(),
                 answer.getCreatedAt(),
-                (feedback != null) ? FeedbackResponse.from(feedback) : null
+                (feedback != null) ? FeedbackResponse.of(feedback, answer.getFollowUpQuestion() != null) : null
         );
     }
 }

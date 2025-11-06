@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.knuissant.dailyq.domain.answers.Answer;
-import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.QuestionType;
 
 public record AnswerListResponse(List<Summary> summaries) {
@@ -14,23 +13,38 @@ public record AnswerListResponse(List<Summary> summaries) {
             Long questionId,
             String questionText,
             QuestionType questionType,
-            FlowPhase flowPhase,
             Integer level,
             Boolean starred,
-            LocalDateTime createdAt
+            LocalDateTime createdAt,
+            Boolean isFollowup
     ) {
 
         public static Summary from(Answer answer) {
-            return new Summary(
-                    answer.getId(),
-                    answer.getQuestion().getId(),
-                    answer.getQuestion().getQuestionText(),
-                    answer.getQuestion().getQuestionType(),
-                    null, // flow_phase는 FE와 협의 필요
-                    answer.getLevel(),
-                    answer.getStarred(),
-                    answer.getCreatedAt()
-            );
+            boolean isFollowUp = answer.getFollowUpQuestion() != null;
+
+            if (isFollowUp) {
+                return new Summary(
+                        answer.getId(),
+                        answer.getFollowUpQuestion().getId(),
+                        answer.getFollowUpQuestion().getQuestionText(),
+                        QuestionType.TECH,
+                        answer.getLevel(),
+                        answer.getStarred(),
+                        answer.getCreatedAt(),
+                        true
+                );
+            } else {
+                return new Summary(
+                        answer.getId(),
+                        answer.getQuestion().getId(),
+                        answer.getQuestion().getQuestionText(),
+                        answer.getQuestion().getQuestionType(),
+                        answer.getLevel(),
+                        answer.getStarred(),
+                        answer.getCreatedAt(),
+                        false
+                );
+            }
         }
     }
 
