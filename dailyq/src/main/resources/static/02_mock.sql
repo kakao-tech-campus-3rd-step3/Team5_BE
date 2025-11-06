@@ -36,14 +36,14 @@ VALUES
 -- 
 
 /* USER PREFERENCES */
-INSERT INTO user_preferences (user_id, daily_question_limit, question_mode, user_response_type,
+INSERT INTO user_preferences (user_id, daily_question_limit, question_mode,
                               time_limit_seconds, notify_time, allow_push, user_job)
 VALUES
-    (1, 1, 'TECH', 'TEXT', 180, '09:00:00', 1, 1),
-    (2, 10, 'FLOW', 'VOICE', 120, '08:30:00', 1, 2),
-    (3, 1, 'TECH', 'TEXT', 180, NULL, 1, 3),
-    (4, 1, 'FLOW', 'VOICE', 90, '20:00:00', 0, 4),
-    (5, 10, 'TECH', 'TEXT', 180, '07:30:00', 0, 6);
+    (1, 1, 'TECH', 180, '09:00:00', 1, 1),
+    (2, 10, 'FLOW', 120, '08:30:00', 1, 2),
+    (3, 1, 'TECH', 180, NULL, 1, 3),
+    (4, 1, 'FLOW', 90, '20:00:00', 0, 4),
+    (5, 10, 'TECH', 180, '07:30:00', 0, 6);
 
 -- 
 

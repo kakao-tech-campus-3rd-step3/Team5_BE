@@ -1,7 +1,5 @@
 package com.knuissant.dailyq.domain.users;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,8 +8,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import jakarta.validation.constraints.NotNull;
+
 import org.springframework.util.StringUtils;
 
 import lombok.AccessLevel;
@@ -20,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.knuissant.dailyq.domain.common.BaseTimeEntity;
 import com.knuissant.dailyq.dto.users.UserCreateRequest;
 
 @Getter
@@ -28,7 +27,7 @@ import com.knuissant.dailyq.dto.users.UserCreateRequest;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "users")
-public class User {
+public class User extends BaseTimeEntity {
 
     private static final int MAX_NAME_LENGTH = 100;
 
@@ -57,12 +56,6 @@ public class User {
     @Column(name = "refresh_token", length = 512)
     private String refreshToken;
 
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false, insertable = false)
-    private LocalDateTime updatedAt;
-
     public static User create(UserCreateRequest request) {
         return User.builder()
                 .email(request.email())
@@ -90,6 +83,7 @@ public class User {
             throw new IllegalArgumentException("이름은 " + MAX_NAME_LENGTH + "자를 초과할 수 없습니다.");
         }
     }
+
     public void updateRole(UserRole role) {
         this.role = role;
     }
