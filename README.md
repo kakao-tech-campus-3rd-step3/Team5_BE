@@ -379,7 +379,32 @@ Pre-signed URL (임시 허가증)
 문제: .html, .exe 같은 악성 파일 업로드 시도
 해결: Clova가 지원하는 오디오 형식(.mp3, .m4a 등)의 '허용 목록'과 비교 검증합니다. 목록에 없으면 400 Bad Request를 반환하여 업로드를 원천 차단합니다.
 </details>
-    
+
+<details>
+    <summary>CORS정책 및 Preflight 해결</summary>
+
+### 문제점
+- CORS 정책 위반: 브라우저와 서버의 Origin이 달라, 브라우저의 동일 출처 정책(SOP)에 의해 API 요청이 기본적으로 차단됨.
+- Preflight (OPTIONS) 요청 발생: 본 요청(POST, PUT 등)에 Authorization 헤더(JWT 토큰)를 포함시킴.
+- Authorization 헤더는 Simple Request 조건에 해당하지 않으므로, 브라우저는 본 요청 전 서버의 허용 여부를 묻는 OPTIONS 메서드(Preflight) 요청을 먼저 전송함.
+- 브라우저가 보낸 OPTIONS 요청에는 인증 토큰(Authorization 헤더)이 없음.
+    - 따라서 JwtAuthenticationFilter 이전에 Spring Security의 인증 체인이 먼저 동작하여, 이 OPTIONS 요청을 401 Unauthorized 또는 403 Forbidden으로 차단함.
+- 브라우저는 Preflight 요청이 실패(200 OK가 아님)했으므로, 본 요청(POST 등)을 보내지 않고 CORS 에러를 발생시킴.
+### 해결책
+- OPTIONS 요청에 대한 Spring Security 인증 해제
+    - filterChain 메서드 내에서 authorizeHttpRequests 설정을 통해 모든 OPTIONS 메서드 요청은 인증 절차 없이 통과(permit)시킴.
+- 구체적인 CORS 정책 정의 및 적용
+    - 허용 출처 (Origins): application.yml에 정의된 프론트엔드 도메인 목록을 허용 
+    - 허용 메서드 (Methods): OPTIONS를 포함한 GET, POST, PUT, DELETE 등 모든 메서드 허용 
+    - 허용 헤더 (Headers): Authorization 헤더를 포함한 모든 헤더 허용 (setAllowedHeaders(List.of("*"))).
+    - 자격 증명 (Credentials): 쿠키(예: OAuth refresh_token)를 주고받을 수 있도록 허용 (setAllowCredentials(true)).
+    - filterChain 내에서 .cors(cors -> cors.configurationSource(corsConfigurationSource))를 호출하여, Spring Security가 이 CORS 규칙을 사용하도록 설정함.
+### 기대효과
+- Preflight 요청 처리: 브라우저가 OPTIONS 요청을 보내면, Spring Security의 permitAll 규칙 덕분에 인증 없이 통과됨.
+- 본 요청 처리: 브라우저가 Preflight 성공을 확인하고 Authorization 헤더가 포함된 실제 POST 요청을 전송함.
+- 이 요청은 OPTIONS가 아니므로 permitAll 규칙에 걸리지 않고, anyRequest().authenticated() 규칙에 따라 인증이 필요하게 됨.
+- JwtAuthenticationFilter가 토큰을 성공적으로 검증하여 인증을 완료시키고, 컨트롤러까지 요청이 정상적으로 도달함.
+</details>
   
 ## 7. 기술 스택
 
