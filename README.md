@@ -198,7 +198,8 @@
 
 ### 6.0 전체 아키텍처
 
-<img width="5775" height="2075" alt="아키텍쳐_배경" src="https://github.com/user-attachments/assets/6fdeedfb-350d-46b6-a58e-dc0ae28eca81" />
+<img width="6513" height="2075" alt="배굥" src="https://github.com/user-attachments/assets/77097b0c-b8a7-4465-b3ea-97ad55bbb62d" />
+
 
 
 **주요 컴포넌트:**
