@@ -32,9 +32,19 @@ public record AnswerDetailResponse(
     }
 
     public static AnswerDetailResponse of(Answer answer, Feedback feedback) {
+        boolean isFollowUp = answer.getFollowUpQuestion() != null;
+
+        QuestionSummary questionSummary = isFollowUp
+                ? new QuestionSummary(
+                answer.getFollowUpQuestion().getId(),
+                QuestionType.TECH,
+                answer.getFollowUpQuestion().getQuestionText()
+        )
+                : QuestionSummary.from(answer.getQuestion());
+
         return new AnswerDetailResponse(
                 answer.getId(),
-                QuestionSummary.from(answer.getQuestion()),
+                questionSummary,
                 answer.getAnswerText(),
                 answer.getMemo(),
                 answer.getLevel(),
