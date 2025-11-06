@@ -40,7 +40,7 @@ public class FeedbackService {
         Feedback feedback = feedbackRepository.findWithDetailsById(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
 
-        if (feedback.getStatus() == FeedbackStatus.DONE) {
+        if (feedback.isDone()) {
             return FeedbackResponse.from(feedback);
         }
 

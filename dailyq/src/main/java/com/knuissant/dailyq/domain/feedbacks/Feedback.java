@@ -62,6 +62,14 @@ public class Feedback extends BaseTimeEntity {
                 .build();
     }
 
+    public boolean isDone() {
+        return status == FeedbackStatus.DONE;
+    }
+
+    public boolean isUpdatable() {
+        return status == FeedbackStatus.PENDING || status == FeedbackStatus.FAILED;
+    }
+
     public void startProcessing() {
         this.status = FeedbackStatus.PROCESSING;
     }

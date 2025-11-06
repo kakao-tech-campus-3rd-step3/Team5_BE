@@ -53,13 +53,17 @@ spring:
       api-key: ${OPENAI_API_KEY}
       chat:
         options:
-          model: gpt-4.1-nano
+          model: gpt-4o-mini
     retry:
       max-attempts: 3
       backoff:
         initial-interval: 2000ms
         multiplier: 2
       on-http-codes: [ 429, 500, 503 ]
+
+  threads:
+    virtual:
+      enabled: true
 
 ncp:
   # Object Storage
