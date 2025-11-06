@@ -57,7 +57,7 @@ public class Question extends BaseTimeEntity {
     @Builder.Default
     private Set<Job> jobs = new LinkedHashSet<>();
 
-    public static Question create(String text, QuestionType type, Set<Job> jobs, Boolean enabled) {
+    public static Question create(String text, QuestionType type, Set<Job> jobs, boolean enabled) {
         return Question.builder()
                 .questionText(text)
                 .questionType(type)
