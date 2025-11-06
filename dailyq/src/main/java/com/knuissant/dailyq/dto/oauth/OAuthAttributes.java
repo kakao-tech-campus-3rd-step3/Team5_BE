@@ -3,10 +3,10 @@ package com.knuissant.dailyq.dto.oauth;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.knuissant.dailyq.dto.users.UserCreateRequest;
 import lombok.Getter;
 
 import com.knuissant.dailyq.domain.users.User;
+import com.knuissant.dailyq.dto.users.UserCreateRequest;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 

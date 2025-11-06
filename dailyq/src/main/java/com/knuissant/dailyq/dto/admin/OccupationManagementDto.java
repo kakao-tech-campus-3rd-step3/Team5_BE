@@ -2,14 +2,9 @@ package com.knuissant.dailyq.dto.admin;
 
 import jakarta.validation.constraints.NotBlank;
 
-import lombok.Builder;
-
 import com.knuissant.dailyq.domain.jobs.Occupation;
 
-
 public class OccupationManagementDto {
-
-    @Builder
     public record OccupationResponse(
             Long occupationId,
             String occupationName
