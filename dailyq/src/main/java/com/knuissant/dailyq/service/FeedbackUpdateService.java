@@ -19,7 +19,7 @@ public class FeedbackUpdateService {
 
     @Transactional
     public void changeStatusToProcessing(Long feedbackId) {
-        Feedback feedback = feedbackRepository.findById(feedbackId)
+        Feedback feedback = feedbackRepository.findByIdForUpdate(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
 
         if (!feedback.isUpdatable()) {
