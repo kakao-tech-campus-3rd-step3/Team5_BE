@@ -197,6 +197,9 @@
 
 ### 6.0 전체 아키텍처
 
+<img width="5775" height="2075" alt="아키텍쳐_배경" src="https://github.com/user-attachments/assets/6fdeedfb-350d-46b6-a58e-dc0ae28eca81" />
+
+
 **주요 컴포넌트:**
 - **클라이언트**: Vite React 기반 웹앱 또는 Chrome Extension
 - **Spring Boot 서버**: 비즈니스 로직 처리 및 API 제공
@@ -208,6 +211,12 @@
 ---
 
 ### 6.1 백엔드
+
+| Java v21 | MySQL v8.0 | Spring v3.5.5 | Docker v27.3.1 | H2 v2.2.224 | nGrinder v3.5.9 |
+|:---------:|:----------:|:-------------:|:---------------:|:------------:|:----------------:|
+
+<img width="466" height="601" alt="KakaoTalk_Photo_2025-11-06-19-13-00" src="https://github.com/user-attachments/assets/47deca90-9005-4200-80e1-a1ad254e88ba" />
+
 - **프레임워크**: Spring Boot 3.5.5
 - **언어**: Java 21
 - **빌드 도구**: Gradle 8.11
@@ -218,7 +227,7 @@
   - OpenAI GPT (Spring AI 1.0.0)
   - NCP CLOVA STT (음성→텍스트 변환)
 - **스토리지**: NCP Object Storage (AWS S3 호환 API)
-- **모니터링**: Spring Actuator, Prometheus
+- **모니터링**: Spring Actuator, nGrinder 3.5.9
 - **문서화**: SpringDoc OpenAPI 2.8.1
 - **비동기 통신**: Server-Sent Events (SSE)
 
