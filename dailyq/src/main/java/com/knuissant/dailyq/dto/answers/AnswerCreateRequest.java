@@ -15,10 +15,13 @@ public record AnswerCreateRequest(
         boolean followUp
 ) {
 
-    @AssertTrue(message = "answerText 또는 audioUrl 중 하나는 반드시 존재해야 합니다.")
+    @AssertTrue(message = "answerText 또는 audioUrl 중 정확히 하나만 존재해야 합니다.")
     @JsonIgnore
     public boolean isContentPresent() {
-        return StringUtils.hasText(answerText) || StringUtils.hasText(audioUrl);
+        boolean isTextPresent = StringUtils.hasText(answerText);
+        boolean isAudioPresent = StringUtils.hasText(audioUrl);
+
+        return (isTextPresent && !isAudioPresent) || (!isTextPresent && isAudioPresent);
     }
 
 }
