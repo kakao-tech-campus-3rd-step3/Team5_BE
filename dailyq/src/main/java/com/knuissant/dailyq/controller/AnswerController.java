@@ -29,16 +29,19 @@ import lombok.RequiredArgsConstructor;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerArchiveUpdateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerCreateRequest;
-import com.knuissant.dailyq.dto.answers.AnswerCreateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerDetailResponse;
+import com.knuissant.dailyq.dto.answers.AnswerInfoResponse;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateRequest;
 import com.knuissant.dailyq.dto.answers.AnswerLevelUpdateResponse;
 import com.knuissant.dailyq.dto.answers.AnswerListResponse;
 import com.knuissant.dailyq.dto.answers.AnswerSearchConditionRequest;
+import com.knuissant.dailyq.dto.answers.UploadUrlResponse;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
+import com.knuissant.dailyq.external.ncp.storage.ObjectStorageService;
 import com.knuissant.dailyq.service.AnswerCommandService;
 import com.knuissant.dailyq.service.AnswerQueryService;
+import com.knuissant.dailyq.service.SttTaskService;
 
 @Validated
 @RestController
@@ -48,6 +51,8 @@ public class AnswerController {
 
     private final AnswerCommandService answerCommandService;
     private final AnswerQueryService answerQueryService;
+    private final ObjectStorageService objectStorageService;
+    private final SttTaskService sttTaskService;
 
     @GetMapping
     public ResponseEntity<AnswerListResponse.CursorResult<AnswerListResponse.Summary>> getAnswers(
@@ -108,8 +113,18 @@ public class AnswerController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @GetMapping("/upload-url")
+    public ResponseEntity<UploadUrlResponse> getUploadUrl(
+            @AuthenticationPrincipal User principal,
+            @RequestParam String fileName) {
+
+        Long userId = getUserId(principal);
+
+        return ResponseEntity.ok(objectStorageService.generateUploadUrl(userId, fileName));
+    }
+
     @PostMapping
-    public ResponseEntity<AnswerCreateResponse> submitAnswer(
+    public ResponseEntity<AnswerInfoResponse> submitAnswer(
             @AuthenticationPrincipal User principal,
             @Valid @RequestBody AnswerCreateRequest request) {
 
@@ -117,6 +132,28 @@ public class AnswerController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(answerCommandService.submitAnswer(userId, request));
+    }
+
+    @GetMapping("/{answerId}/status")
+    public ResponseEntity<AnswerInfoResponse> getAnswerStatus(
+            @AuthenticationPrincipal User principal,
+            @PathVariable Long answerId) {
+
+        Long userId = getUserId(principal);
+
+        return ResponseEntity.ok(answerQueryService.getAnswerStatus(userId, answerId));
+    }
+
+    @PostMapping("/{answerId}/retry-stt")
+    public ResponseEntity<Void> retrySttForAnswer(
+            @AuthenticationPrincipal User principal,
+            @PathVariable Long answerId) {
+
+        Long userId = getUserId(principal);
+
+        sttTaskService.retrySttForAnswer(userId, answerId);
+
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{answerId}/level")
