@@ -6,15 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDateTime;
-
 import com.knuissant.dailyq.domain.jobs.Job;
-import com.knuissant.dailyq.domain.questions.FlowPhase;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserFlowProgress;
 import com.knuissant.dailyq.domain.users.UserPreferences;
-import com.knuissant.dailyq.domain.users.UserResponseType;
 import com.knuissant.dailyq.dto.users.UserJobsUpdateRequest;
 import com.knuissant.dailyq.dto.users.UserPreferencesResponse;
 import com.knuissant.dailyq.dto.users.UserPreferencesUpdateRequest;
@@ -57,7 +53,6 @@ public class UserPreferencesService {
                 .user(user)
                 .dailyQuestionLimit(1)
                 .questionMode(QuestionMode.TECH)
-                .userResponseType(UserResponseType.TEXT)
                 .timeLimitSeconds(180)
                 .allowPush(false)
                 .userJob(defaultJob)
@@ -79,11 +74,10 @@ public class UserPreferencesService {
         }
 
         QuestionMode previousMode = preferences.getQuestionMode();
-        
+
         preferences.updatePreferences(
                 request.dailyQuestionLimit(),
                 request.questionMode(),
-                request.answerType(),
                 request.timeLimitSeconds(),
                 request.allowPush()
         );
@@ -104,13 +98,7 @@ public class UserPreferencesService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
 
-            UserFlowProgress progress = UserFlowProgress.builder()
-                    .user(user)
-                    .nextPhase(FlowPhase.INTRO)
-                    .updatedAt(LocalDateTime.now())
-                    .build();
-
-            userFlowProgressRepository.save(progress);
+            userFlowProgressRepository.save(UserFlowProgress.create(user));
         }
     }
 
@@ -127,8 +115,4 @@ public class UserPreferencesService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_PREFERENCES_NOT_FOUND, userId));
     }
 
-    @Transactional(readOnly = true)
-    public boolean existsByUserId(Long userId) {
-        return userPreferencesRepository.existsById(userId);
-    }
 }

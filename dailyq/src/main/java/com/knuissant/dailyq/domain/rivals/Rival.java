@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.knuissant.dailyq.domain.common.BaseCreatedAtEntity;
 import com.knuissant.dailyq.domain.users.User;
 
 @Getter
@@ -36,7 +37,7 @@ import com.knuissant.dailyq.domain.users.User;
                 @Index(name = "idx_rivals_receiver", columnList = "receiver_id, sender_id")
         }
 )
-public class Rival {
+public class Rival extends BaseCreatedAtEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

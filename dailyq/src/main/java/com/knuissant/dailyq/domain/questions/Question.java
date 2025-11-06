@@ -1,6 +1,5 @@
 package com.knuissant.dailyq.domain.questions;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -23,6 +22,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.knuissant.dailyq.domain.common.BaseTimeEntity;
 import com.knuissant.dailyq.domain.jobs.Job;
 
 @Getter
@@ -31,7 +31,7 @@ import com.knuissant.dailyq.domain.jobs.Job;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "questions")
-public class Question {
+public class Question extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,12 +47,6 @@ public class Question {
 
     @Column(nullable = false)
     private Boolean enabled;
-
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false, insertable = false)
-    private LocalDateTime updatedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -76,7 +70,11 @@ public class Question {
         this.questionText = text;
         this.questionType = type;
         this.enabled = enabled;
-        this.jobs = jobs;
+
+        this.jobs.clear();
+        if (jobs != null) {
+            this.jobs.addAll(jobs);
+        }
     }
 }
 
