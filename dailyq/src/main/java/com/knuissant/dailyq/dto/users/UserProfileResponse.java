@@ -15,7 +15,8 @@ public record UserProfileResponse(
         Integer streak,
         Boolean solvedToday,
         PreferencesDto preferences,
-        List<JobDto> jobs
+        List<JobDto> jobs,
+        Long unansweredFollowUpQuestionCount
 ) {
 
     public record PreferencesDto(
@@ -34,7 +35,7 @@ public record UserProfileResponse(
 
     }
 
-    public static UserProfileResponse from(User user, UserPreferences preferences) {
+    public static UserProfileResponse from(User user, UserPreferences preferences, Long unansweredFollowUpQuestionCount) {
         List<JobDto> jobDtos = (preferences.getUserJob() != null)
                 ? List.of(new JobDto(preferences.getUserJob().getId(), preferences.getUserJob().getName()))
                 : Collections.emptyList();
@@ -53,7 +54,8 @@ public record UserProfileResponse(
                 user.getStreak(),
                 user.getSolvedToday(),
                 preferencesDto,
-                jobDtos
+                jobDtos,
+                unansweredFollowUpQuestionCount
         );
     }
 }

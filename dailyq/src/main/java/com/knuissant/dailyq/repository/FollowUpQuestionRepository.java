@@ -18,6 +18,11 @@ public interface FollowUpQuestionRepository extends JpaRepository<FollowUpQuesti
     Optional<FollowUpQuestion> findFirstByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(Long userId);
 
     /**
+     * 사용자의 미답변 꼬리질문 개수 조회
+     */
+    long countByUserIdAndIsAnsweredFalse(Long userId);
+
+    /**
      * 특정 답변에 대한 꼬리질문이 존재하는지 확인
      */
     boolean existsByAnswer(Answer answer);
