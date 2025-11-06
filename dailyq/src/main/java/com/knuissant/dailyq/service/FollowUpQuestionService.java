@@ -75,6 +75,14 @@ public class FollowUpQuestionService {
     }
 
     /**
+     * 사용자의 미답변 꼬리질문 개수 조회
+     */
+    @Transactional(readOnly = true)
+    public long countUnansweredFollowUpQuestions(Long userId) {
+        return followUpQuestionRepository.countByUserIdAndIsAnsweredFalse(userId);
+    }
+
+    /**
      * 꼬리질문을 답변 완료로 표시
      */
     @Transactional
