@@ -40,8 +40,10 @@ public class FeedbackService {
         Feedback feedback = feedbackRepository.findWithDetailsById(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
 
+        boolean followUp = (feedback.getAnswer() != null && feedback.getAnswer().getFollowUpQuestion() != null);
+
         if (feedback.isDone()) {
-            return FeedbackResponse.from(feedback);
+            return FeedbackResponse.of(feedback, followUp);
         }
 
         feedbackUpdateService.changeStatusToProcessing(feedbackId);
@@ -59,7 +61,7 @@ public class FeedbackService {
 
             Feedback updatedFeedback = feedbackUpdateService.updateFeedbackSuccess(feedbackId, feedbackContent, latencyMs);
 
-            return FeedbackResponse.from(updatedFeedback);
+            return FeedbackResponse.of(updatedFeedback, followUp);
 
         } catch (Exception e) {
             try {
