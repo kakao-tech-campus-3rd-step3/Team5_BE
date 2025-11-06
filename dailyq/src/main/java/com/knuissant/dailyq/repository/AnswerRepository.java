@@ -18,6 +18,10 @@ public interface AnswerRepository extends JpaRepository<Answer, Long>,
     long countByUserIdAndCreatedAtBetween(Long userId, LocalDateTime startOfDay,
             LocalDateTime endOfDay);
 
+    // 꼬리질문이 아닌 일반 질문에 대한 답변만 카운트 (일일 제한에 사용)
+    long countByUserIdAndFollowUpQuestionIsNullAndCreatedAtBetween(Long userId, LocalDateTime startOfDay,
+            LocalDateTime endOfDay);
+
     long countByUserId(Long userId);
 
     List<Answer> findByUserIdAndCreatedAtGreaterThanEqual(Long userId, LocalDateTime startOfDay);

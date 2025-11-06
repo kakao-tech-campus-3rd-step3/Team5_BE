@@ -2,11 +2,6 @@ package com.knuissant.dailyq.jwt;
 
 import java.io.IOException;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.security.SignatureException;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,10 +15,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 
 import com.knuissant.dailyq.exception.ErrorCode;
 
@@ -31,13 +31,15 @@ import com.knuissant.dailyq.exception.ErrorCode;
 @RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     private final TokenProvider tokenProvider;
-    // JSON 응답을 만들기 위해 ObjectMapper를 주입받습니다.
     private final ObjectMapper objectMapper;
 
+    private static final String SSE_CONNECT_PATH = "/api/sse/connect";
+    private static final String TOKEN_PARAM = "token";
+
     /**
-     * 모든 요청이 컨트롤러에 도달하기 전에 이 필터를 거칩니다.
-     * JWT 토큰의 유효성을 검사하고, 예외 발생 시 표준화된 에러 응답을 생성합니다.
+     * 모든 요청이 컨트롤러에 도달하기 전에 이 필터를 거칩니다. JWT 토큰의 유효성을 검사하고, 예외 발생 시 표준화된 에러 응답을 생성합니다.
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -70,23 +72,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * 요청에서 토큰 정보를 추출하는 메소드입니다.
+     *
      * @param request 들어온 HttpServletRequest
      * @return 추출된 토큰 문자열 (없으면 null)
      */
     private String resolveToken(HttpServletRequest request) {
-        // HTTP Authorization 헤더에서 'Bearer' 토큰을 찾습니다.
+
+        String requestURI = request.getRequestURI();
+        if (SSE_CONNECT_PATH.equals(requestURI)) {
+            String tokenFromParam = request.getParameter(TOKEN_PARAM);
+            if (StringUtils.hasText(tokenFromParam)) {
+                return tokenFromParam;
+            }
+        }
+
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            // "Bearer " 접두사를 제거한 순수 토큰 값을 반환합니다.
             return bearerToken.substring(7);
         }
-        // 헤더에 유효한 Bearer 토큰이 없으면 null을 반환합니다.
         return null;
     }
 
     /**
      * 표준화된 에러 응답(ProblemDetail)을 생성하여 클라이언트에게 전송하는 헬퍼 메소드입니다.
-     * @param response HttpServletResponse 객체
+     *
+     * @param response  HttpServletResponse 객체
      * @param errorCode 사용할 ErrorCode
      * @throws IOException
      */

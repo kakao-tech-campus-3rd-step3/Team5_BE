@@ -1,8 +1,5 @@
 package com.knuissant.dailyq.service;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,32 +20,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserPreferencesService userPreferencesService;
+    private final FollowUpQuestionService followUpQuestionService;
 
     @Transactional(readOnly = true)
     public UserProfileResponse getUserProfile(Long userId) {
         User user = findUserById(userId);
         UserPreferences preferences = userPreferencesService.findUserPreferencesByUserId(userId);
+        long unansweredFollowUpQuestionCount = followUpQuestionService.countUnansweredFollowUpQuestions(userId);
 
-        List<UserProfileResponse.JobDto> jobDtos = (preferences.getUserJob() != null)
-                ? List.of(new UserProfileResponse.JobDto(preferences.getUserJob().getId(), preferences.getUserJob().getName()))
-                : Collections.emptyList();
-
-        UserProfileResponse.PreferencesDto preferencesDto = new UserProfileResponse.PreferencesDto(
-                preferences.getDailyQuestionLimit(),
-                preferences.getQuestionMode(),
-                preferences.getTimeLimitSeconds(),
-                preferences.getAllowPush()
-        );
-
-        return new UserProfileResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getStreak(),
-                user.getSolvedToday(),
-                preferencesDto,
-                jobDtos
-        );
+        return UserProfileResponse.from(user, preferences, unansweredFollowUpQuestionCount);
     }
 
     public void updateUserName(Long userId, String newName) {

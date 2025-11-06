@@ -1,6 +1,7 @@
 package com.knuissant.dailyq.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,10 +13,14 @@ import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 public interface FollowUpQuestionRepository extends JpaRepository<FollowUpQuestion, Long> {
 
     /**
-     * 사용자의 미답변 꼬리질문을 생성일 기준 오름차순으로 조회
+     * 사용자의 미답변 꼬리질문을 생성일 기준 오름차순으로 첫 번째만 조회
      */
-    @Query("SELECT fq FROM FollowUpQuestion fq WHERE fq.user.id = :userId AND fq.isAnswered = false ORDER BY fq.createdAt ASC")
-    List<FollowUpQuestion> findByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(@Param("userId") Long userId);
+    Optional<FollowUpQuestion> findFirstByUserIdAndIsAnsweredFalseOrderByCreatedAtAsc(Long userId);
+
+    /**
+     * 사용자의 미답변 꼬리질문 개수 조회
+     */
+    long countByUserIdAndIsAnsweredFalse(Long userId);
 
     /**
      * 특정 답변에 대한 꼬리질문이 존재하는지 확인

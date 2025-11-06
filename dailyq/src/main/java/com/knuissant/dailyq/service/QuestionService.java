@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.questions.FlowPhase;
-import com.knuissant.dailyq.domain.questions.FollowUpQuestion;
 import com.knuissant.dailyq.domain.questions.Question;
 import com.knuissant.dailyq.domain.questions.QuestionMode;
 import com.knuissant.dailyq.domain.questions.QuestionType;
@@ -48,8 +47,6 @@ public class QuestionService {
         UserPreferences prefs = userPreferencesRepository.findById(userId)
                 .orElseThrow(() -> new InfraException(ErrorCode.USER_PREFERENCES_NOT_FOUND, userId));
 
-        validateDailyQuestionLimit(userId, prefs);
-
         // Use user preferences
         QuestionMode mode = prefs.getQuestionMode();
         Long jobId = Optional.ofNullable(prefs.getUserJob())
@@ -58,6 +55,16 @@ public class QuestionService {
 
         // Resolve phase when FLOW
         final FlowPhase phase = resolvePhase(userId, mode);
+
+        // 미답변 꼬리질문이 있으면 일일 제한과 무관하게 제공
+        Optional<RandomQuestionResponse> followUpQuestion = followUpQuestionService.getUnansweredFollowUpQuestion(userId)
+                .map(fq -> RandomQuestionResponse.fromFollowUp(fq, jobId, prefs.getTimeLimitSeconds()));
+        if (followUpQuestion.isPresent()) {
+            return followUpQuestion.get();
+        }
+
+        // 일반 질문을 요청할 때만 일일 제한 검사
+        validateDailyQuestionLimit(userId, prefs);
 
         return selectRandomQuestion(mode, phase, jobId, userId, prefs.getTimeLimitSeconds())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE,
@@ -92,13 +99,7 @@ public class QuestionService {
     }
 
     private Optional<RandomQuestionResponse> selectRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId, int timeLimitSeconds) {
-        // 1. 먼저 미답변 꼬리질문 확인
-        Optional<RandomQuestionResponse> followUpQuestion = findUnansweredFollowUpQuestion(userId, jobId, timeLimitSeconds);
-        if (followUpQuestion.isPresent()) {
-            return followUpQuestion;
-        }
-
-        // 2. 일반 질문 제공
+        // 일반 질문 제공 (미답변 꼬리질문은 이미 getRandomQuestion에서 처리됨)
         return switch (mode) {
             case TECH -> findRandomTechQuestion(jobId, userId, mode, phase, timeLimitSeconds);
             case FLOW -> findRandomFlowQuestion(phase, userId, jobId, mode, timeLimitSeconds);
@@ -108,7 +109,8 @@ public class QuestionService {
     private void validateDailyQuestionLimit(Long userId, UserPreferences userPreferences) {
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
-        long answeredToday = answerRepository.countByUserIdAndCreatedAtBetween(userId, startOfDay, endOfDay);
+        // 꼬리질문은 일일 제한에서 제외
+        long answeredToday = answerRepository.countByUserIdAndFollowUpQuestionIsNullAndCreatedAtBetween(userId, startOfDay, endOfDay);
         int remain = userPreferences.getDailyQuestionLimit() - (int) answeredToday;
 
         Optional.of(remain)
@@ -169,20 +171,6 @@ public class QuestionService {
             case TECH1, TECH2 -> QuestionType.TECH;
             case PERSONALITY -> QuestionType.PERSONALITY;
         };
-    }
-
-    /**
-     * 사용자의 미답변 꼬리질문 조회 및 DTO 변환
-     */
-    private Optional<RandomQuestionResponse> findUnansweredFollowUpQuestion(Long userId, Long jobId, int timeLimitSeconds) {
-        List<FollowUpQuestion> unansweredFollowUps = followUpQuestionService.getUnansweredFollowUpQuestions(userId);
-
-        if (unansweredFollowUps.isEmpty()) {
-            return Optional.empty();
-        }
-
-        FollowUpQuestion fq = unansweredFollowUps.get(0);
-        return Optional.of(RandomQuestionResponse.fromFollowUp(fq, jobId, timeLimitSeconds));
     }
 }
 
