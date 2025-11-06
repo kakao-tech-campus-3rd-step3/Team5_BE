@@ -47,8 +47,6 @@ public class QuestionService {
         UserPreferences prefs = userPreferencesRepository.findById(userId)
                 .orElseThrow(() -> new InfraException(ErrorCode.USER_PREFERENCES_NOT_FOUND, userId));
 
-        validateDailyQuestionLimit(userId, prefs);
-
         // Use user preferences
         QuestionMode mode = prefs.getQuestionMode();
         Long jobId = Optional.ofNullable(prefs.getUserJob())
@@ -57,6 +55,16 @@ public class QuestionService {
 
         // Resolve phase when FLOW
         final FlowPhase phase = resolvePhase(userId, mode);
+
+        // 미답변 꼬리질문이 있으면 일일 제한과 무관하게 제공
+        Optional<RandomQuestionResponse> followUpQuestion = followUpQuestionService.getUnansweredFollowUpQuestion(userId)
+                .map(fq -> RandomQuestionResponse.fromFollowUp(fq, jobId, prefs.getTimeLimitSeconds()));
+        if (followUpQuestion.isPresent()) {
+            return followUpQuestion.get();
+        }
+
+        // 일반 질문을 요청할 때만 일일 제한 검사
+        validateDailyQuestionLimit(userId, prefs);
 
         return selectRandomQuestion(mode, phase, jobId, userId, prefs.getTimeLimitSeconds())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NO_QUESTION_AVAILABLE,
@@ -91,14 +99,7 @@ public class QuestionService {
     }
 
     private Optional<RandomQuestionResponse> selectRandomQuestion(QuestionMode mode, FlowPhase phase, Long jobId, Long userId, int timeLimitSeconds) {
-        // 1. 먼저 미답변 꼬리질문 확인
-        Optional<RandomQuestionResponse> followUpQuestion = followUpQuestionService.getUnansweredFollowUpQuestion(userId)
-                .map(fq -> RandomQuestionResponse.fromFollowUp(fq, jobId, timeLimitSeconds));
-        if (followUpQuestion.isPresent()) {
-            return followUpQuestion;
-        }
-
-        // 2. 일반 질문 제공
+        // 일반 질문 제공 (미답변 꼬리질문은 이미 getRandomQuestion에서 처리됨)
         return switch (mode) {
             case TECH -> findRandomTechQuestion(jobId, userId, mode, phase, timeLimitSeconds);
             case FLOW -> findRandomFlowQuestion(phase, userId, jobId, mode, timeLimitSeconds);
