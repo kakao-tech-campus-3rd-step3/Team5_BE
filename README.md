@@ -243,14 +243,14 @@
 
 ### 해결책
 - 로그인 성공 시 서버가 비밀키를 사용해 JWT를 발급하고, 클라이언트는 해당 토큰을 저장 후 요청 시 헤더`(Authorization: Bearer <token>)`에 포함.
-- 서버는 토큰 검증만 수행하며, 별도의 세션 상태를 유지하지 않음 **(Stateless 인증 구조)**
-- 토큰에 사용자 권한(Role) 및 만료 시간(Expiration Time)을 포함하여 **인가(Authorization)** 를 간편하게 처리
-- Refresh Token을 활용해 Access Token 재발급 프로세스 구현으로 보안성과 편의성 강화
+- 서버는 토큰 검증만 수행하며, 별도의 세션 상태를 유지하지 않음. **(Stateless 인증 구조)**
+- 토큰에 사용자 권한(Role) 및 만료 시간(Expiration Time)을 포함하여 **인가(Authorization)** 를 간편하게 처리.
+- Refresh Token을 활용해 Access Token 재발급 프로세스 구현으로 보안성과 편의성 강화.
 
 ### 기대효과
-- 서버에 세션 저장이 불필요하므로 **확장성과 성능 향상**
-- REST API, 모바일, 프론트엔드 등 다양한 클라이언트 환경에서 **일관된 인증 체계** 유지
-- 토큰 기반 검증으로 **보안성 강화**(만료 시간, 서명 검증, HTTPS 연동 등)
+- 서버에 세션 저장이 불필요하므로 **확장성과 성능 향상**.
+- REST API, 모바일, 프론트엔드 등 다양한 클라이언트 환경에서 **일관된 인증 체계** 유지.
+- 토큰 기반 검증으로 **보안성 강화**(만료 시간, 서명 검증, HTTPS 연동 등).
   
 </details>
 
@@ -258,41 +258,41 @@
     <summary>관리자 페이지 구현</summary>
 
 ### 도입 계기
-- 시스템 운영 중 직접 DB 접근이나 개발자 의존적 절차로 수행해야 하는 비효율 존재
+- 시스템 운영 중 직접 DB 접근이나 개발자 의존적 절차로 수행해야 하는 비효율 존재.
 - 보안·정책·콘텐츠 관리 등 운영자가 직접 제어할 수 있는 인터페이스 부재.
 
 ### 해결책
-- **JWT 기반 인증/인가** 연동으로 접근 제어 강화
-- 회원 조회 및 수정/삭제
-  - 이름 및 역할(Role)별 접근 권한 관리 기능 제공 (관리자/구독자/일반사용자)
-- 직군/직업 조회 및 추가/삭제
-- 질문 조회 및 추가/수정/삭제
-  - 질문 내용, 질문 타입(TECH/INTRO/MOTIVATION/PERSONALITY), 연결된 직업 종류, 활성화 여부(활성/비활성) 관리 제공
+- **JWT 기반 인증/인가** 연동으로 접근 제어 강화.
+- 회원 조회 및 수정/삭제.
+  - 이름 및 역할(Role)별 접근 권한 관리 기능 제공. (관리자/구독자/일반사용자)
+- 직군/직업 조회 및 추가/삭제.
+- 질문 조회 및 추가/수정/삭제.
+  - 질문 내용, 질문 타입(TECH/INTRO/MOTIVATION/PERSONALITY), 연결된 직업 종류, 활성화 여부(활성/비활성) 관리 제공.
  
 ### 기대효과
-- 운영자가 직접 관리 가능한 인터페이스 제공으로 **운영 효율성 향상**
-- 관리자 권한 분리 및 인증 강화로 **보안 강화**
-- 데이터 및 사용자 관리 자동화로 **개발자 의존도 감소**
-- 장애 대응 및 정책 변경 속도 향상으로 **운영 민첩성 확보**
+- 운영자가 직접 관리 가능한 인터페이스 제공으로 **운영 효율성 향상**.
+- 관리자 권한 분리 및 인증 강화로 **보안 강화**.
+- 데이터 및 사용자 관리 자동화로 **개발자 의존도 감소**.
+- 장애 대응 및 정책 변경 속도 향상으로 **운영 민첩성 확보**.
 </details>
 
 <details>
     <summary>전역 에러 핸들러</summary>
 
 ### 도입 계기
-- 보일러 플레이트 코드 발생 : API 컨트롤러마다 ``try-catch``문이 반복
-- 일관성 없는 에러 응답 
-- 디버깅에 도움이 되지 않는 로그 : log.error("유저를 찾지 못함")은 도움이 되지 않음
+- 보일러 플레이트 코드 발생 : API 컨트롤러마다 ``try-catch``문이 반복.
+- 일관성 없는 에러 응답.
+- 디버깅에 도움이 되지 않는 로그 : log.error("유저를 찾지 못함")은 도움이 되지 않음.
 ### 해결책
-- ExceptionHandlerAdvice를 통해 에러 핸들링
-- BusinissException과 InfraException 패턴을 통한 에러 처리
+- ExceptionHandlerAdvice를 통해 에러 핸들링.
+- BusinissException과 InfraException 패턴을 통한 에러 처리.
 
 ### 기대효과
-- 코드 중복 제거: 컨트롤러에서 예외 처리 코드 제거
-- 일관된 응답 형식: 클라이언트가 동일한 형식으로 처리 가능
-- 유지보수성 향상: 예외 처리 로직 변경 시 한 곳만 수정
-- 디버깅 용이: 모든 예외가 구조화된 로그로 기록
-- 보안: 예상치 못한 예외의 상세 정보 노출 방지
+- 코드 중복 제거: 컨트롤러에서 예외 처리 코드 제거.
+- 일관된 응답 형식: 클라이언트가 동일한 형식으로 처리 가능.
+- 유지보수성 향상: 예외 처리 로직 변경 시 한 곳만 수정.
+- 디버깅 용이: 모든 예외가 구조화된 로그로 기록.
+- 보안: 예상치 못한 예외의 상세 정보 노출 방지.
 
 
 </details>
@@ -301,22 +301,21 @@
     <summary>템플릿 메서드 패턴</summary>
 
 ### 문제점
-`AnswerCommandService`의 `submitAnswer` 메서드에서 일반 질문과 꼬리 질문 처리가 하나의 메서드에 혼재되어 있었습니다.
-- 코드 중복: 공통 로직(답변 객체 생성, 저장, STT 처리)이 반복됨
-- 복잡한 분기: if-else로 일반/꼬리 질문을 구분하며 가독성 저하
-- 확장성 부족: 새로운 답변 타입 추가 시 메서드 수정 필요
-- 단일 책임(SRP) 위반: 하나의 메서드가 여러 타입의 답변 처리 로직을 포함
-- 
+`AnswerCommandService`의 `submitAnswer` 메서드에서 일반 질문과 꼬리 질문 처리가 하나의 메서드에 혼재.
+- 코드 중복: 공통 로직(답변 객체 생성, 저장, STT 처리)이 반복됨.
+- 복잡한 분기: if-else로 일반/꼬리 질문을 구분하며 가독성 저하.
+- 확장성 부족: 새로운 답변 타입 추가 시 메서드 수정 필요.
+- 단일 책임(SRP) 위반: 하나의 메서드가 여러 타입의 답변 처리 로직을 포함.
 ### 해결책
-- 템플릿 메서드 패턴을 적용해 공통 흐름은 추상 클래스에서 정의하고, 차이점은 하위 클래스에서 구현하도록 분리했습니다:
+- 템플릿 메서드 패턴을 적용해 공통 흐름은 추상 클래스에서 정의하고, 차이점은 하위 클래스에서 구현하도록 분리.
 
 ### 기대효과
-- 코드 재사용성 향상: 공통 로직을 한 곳에서 관리
-- 가독성 개선: 각 핸들러가 자신의 책임만 담당
-- 확장성: 새로운 답변 타입 추가 시 핸들러만 추가하면 됨
-- 유지보수성: 변경 영향 범위가 명확해짐
-- 테스트 용이성: 각 핸들러를 독립적으로 테스트 가능
-- 현재 `AnswerCommandService`는 팩토리에서 핸들러를 받아 `handle()`만 호출하면 됩니다.
+- 코드 재사용성 향상: 공통 로직을 한 곳에서 관리.
+- 가독성 개선: 각 핸들러가 자신의 책임만 담당.
+- 확장성: 새로운 답변 타입 추가 시 핸들러만 추가.
+- 유지보수성: 변경 영향 범위가 명확.
+- 테스트 용이성: 각 핸들러를 독립적으로 테스트 가능.
+- 현재 `AnswerCommandService`는 팩토리에서 핸들러를 받아 `handle()`만 호출.
 
 </details>
 
@@ -324,20 +323,20 @@
     <summary>cursor 기반 랜덤 질문 </summary>
 
 ### 도입 계기
-기존 방식(전체 질문 조회 후 랜덤 선택)은 질문 수가 증가할수록 O(n) 메모리 사용과 느린 쿼리 성능 문제가 발생합니다.
-특히 사용자가 이미 답변한 질문을 제외하는 조건을 포함할 경우 쿼리 비용이 비약적으로 증가합니다.
+- 기존 방식(전체 질문 조회 후 랜덤 선택)은 질문 수가 증가할수록 O(n) 메모리 사용과 느린 쿼리 성능 문제가 발생.
+- 특히 사용자가 이미 답변한 질문을 제외하는 조건을 포함할 경우 쿼리 비용이 비약적으로 증가.
 
 ### 해결책
-MAX ID를 먼저 조회하여 사용 가능한 질문의 ID 범위를 파악
-1부터 MAX ID 사이의 랜덤 ID 생성
-Cursor 기반 조회(id >= randomId)로 해당 범위에서 첫 번째 질문 선택
-인덱스를 활용한 효율적인 쿼리 (ORDER BY id, LIMIT 1)
+- MAX ID를 먼저 조회하여 사용 가능한 질문의 ID 범위를 파악.
+- 1부터 MAX ID 사이의 랜덤 ID 생성.
+- Cursor 기반 조회(id >= randomId)로 해당 범위에서 첫 번째 질문 선택.
+- 인덱스를 활용한 효율적인 쿼리. (ORDER BY id, LIMIT 1)
 
 ### 기대효과
-O(1) 메모리 사용: 전체 질문을 메모리에 로드하지 않음
-빠른 쿼리 성능: 인덱스 기반 범위 스캔으로 O(log n) 시간 복잡도
-확장성 향상: 질문 수가 수만 개로 증가해도 일정한 성능 유지
-랜덤성 보장: 각 질문이 동일한 확률로 선택됨
+- O(1) 메모리 사용: 전체 질문을 메모리에 로드하지 않음.
+- 빠른 쿼리 성능: 인덱스 기반 범위 스캔으로 O(log n) 시간 복잡도.
+- 확장성 향상: 질문 수가 수만 개로 증가해도 일정한 성능 유지.
+- 랜덤성 보장: 각 질문이 동일한 확률로 선택됨.
 </details>
 
 <details>
@@ -345,13 +344,13 @@ O(1) 메모리 사용: 전체 질문을 메모리에 로드하지 않음
 
 ### 도입 계기
 - 전통적 Pagination(Offset)의 한계: '아카이브' 기능은 사용자의 모든 답변을 조회해야 함.
-    - 페이지 번호가 늘어날 수록 OFFSET N개 만큼의 데이터 스캔이 발생하여 조회 성능 저하
-    - UX 관점에서 안티패턴이 발생
-- 동적 필터 요구 : FE에서 날짜, 직무, 질문 타입, 즐겨찾기, 난이도 등 다양한 조건으로 동적 검색 요구
+    - 페이지 번호가 늘어날 수록 OFFSET N개 만큼의 데이터 스캔이 발생하여 조회 성능 저하.
+    - UX 관점에서 안티패턴이 발생.
+- 동적 필터 요구 : FE에서 날짜, 직무, 질문 타입, 즐겨찾기, 난이도 등 다양한 조건으로 동적 검색 요구.
 
 ### 해결책
-- JPA Specification : JPA 표준 기능으로 의존성, 빌드, 학습 비용 최소화
-    - ``DTO``를 구성하여 ``Predicate``를 조합하는 ``createSpecification`` 메서드를 통해 유지보수 확보
+- JPA Specification : JPA 표준 기능으로 의존성, 빌드, 학습 비용 최소화.
+    - ``DTO``를 구성하여 ``Predicate``를 조합하는 ``createSpecification`` 메서드를 통해 유지보수 확보.
 - 무한 스크롤 : Cursor + Slice
     - OFFSET 대신 lastId와 lastCreatedAt을 조합하여 마지막으로 본 데이터 다음 10개를 조회하는 방식 채택
     - Page는 불필요한 COUNT(*) 쿼리를 추가로 실행하여 성능 저하 -> Slice를 통해 COUNT쿼리를 제거하고 hasNext를 FE에게 전달
@@ -367,32 +366,33 @@ O(1) 메모리 사용: 전체 질문을 메모리에 로드하지 않음
     <summary>NCP Object Storage 보안 : Pre-Signed URL 도입</summary>
 
 ### 문제점
-CLOVA STT API는 파일 경로(dataKey)를 인자로 받기 때문에, 음성 파일이 Object Storage에 먼저 업로드되어야 합니다.
-⦁   서버 부하: FE → BE → Storage로 파일을 중계하면 백엔드 부하가 심각합니다.
-⦁   보안 취약: FE → Storage로 직접 업로드하려면, FE에 Secret Key가 노출되어 치명적입니다.
+- CLOVA STT API는 파일 경로(dataKey)를 인자로 받기 때문에, 음성 파일이 Object Storage에 먼저 업로드되어야 함.
+- 서버 부하: FE → BE → Storage로 파일을 중계하면 백엔드 부하가 심각.
+- 보안 취약: FE → Storage로 직접 업로드하려면, FE에 Secret Key가 노출되어 치명적.
 
 ### 해결책
 Pre-signed URL (임시 허가증)
-백엔드가 Secret Key를 안전하게 보관하면서, FE에게 "10분 동안, 특정 경로에, PUT 요청만 허용하는" 임시 업로드 URL을 발급합니다.
-⦁   FE → BE: 업로드 요청 (/api/answers/upload-url)
-⦁   BE → FE: Pre-signed URL 생성 및 반환
-⦁   FE → NCP Storage: FE가 이 임시 URL을 사용해 스토리지로 파일을 직접 PUT (업로드)
-⦁   (이후) FE → BE: "업로드 완료" 신호와 함께 STT 요청 (이때 BE가 Clova API 호출)
+백엔드가 Secret Key를 안전하게 보관하면서, FE에게 "10분 동안, 특정 경로에, PUT 요청만 허용하는" 임시 업로드 URL을 발급.
+- FE → BE: 업로드 요청. (/api/answers/upload-url)
+- BE → FE: Pre-signed URL 생성 및 반환.
+- FE → NCP Storage: FE가 이 임시 URL을 사용해 스토리지로 파일을 직접 PUT. (업로드)
+- (이후) FE → BE: "업로드 완료" 신호와 함께 STT 요청. (이때 BE가 Clova API 호출)
 
 핵심 보안 강화 조치
-⦁   사용자별 경로 격리 (User Scoping)
-문제: 모든 사용자가 같은 곳에 업로드하면 파일이 덮어써지거나 경로 조작 공격이 가능합니다.
-해결: 파일 경로(objectKey)를 **uploads/{userId}/{UUID}.[확장자]**로 강제하여 논리적으로 격리시켰습니다.
+- 사용자별 경로 격리 (User Scoping)
+문제: 모든 사용자가 같은 곳에 업로드하면 파일이 덮어써지거나 경로 조작 공격이 가능.
+해결: 파일 경로(objectKey)를 **uploads/{userId}/{UUID}.[확장자]**로 강제하여 논리적으로 격리.
 
-⦁   파일 확장자 검증 (Allow-list)
-문제: .html, .exe 같은 악성 파일 업로드 시도
-해결: Clova가 지원하는 오디오 형식(.mp3, .m4a 등)의 '허용 목록'과 비교 검증합니다. 목록에 없으면 400 Bad Request를 반환하여 업로드를 원천 차단합니다.
-</details>
+- 파일 확장자 검증 (Allow-list)
+문제: .html, .exe 같은 악성 파일 업로드 시도.
+해결: Clova가 지원하는 오디오 형식(.mp3, .m4a 등)의 '허용 목록'과 비교 검증합니다. 목록에 없으면 400 Bad Request를 반환하여 업로드를 원천 차단.
+    </details>
 
 <details>
     <summary>CORS정책 및 Preflight 해결</summary>
 
 ### 문제점
+
 - CORS 정책 위반: 브라우저와 서버의 Origin이 달라, 브라우저의 동일 출처 정책(SOP)에 의해 API 요청이 기본적으로 차단됨.
 - Preflight (OPTIONS) 요청 발생: 본 요청(POST, PUT 등)에 Authorization 헤더(JWT 토큰)를 포함시킴.
 - Authorization 헤더는 Simple Request 조건에 해당하지 않으므로, 브라우저는 본 요청 전 서버의 허용 여부를 묻는 OPTIONS 메서드(Preflight) 요청을 먼저 전송함.
@@ -403,16 +403,17 @@ Pre-signed URL (임시 허가증)
 - OPTIONS 요청에 대한 Spring Security 인증 해제
     - filterChain 메서드 내에서 authorizeHttpRequests 설정을 통해 모든 OPTIONS 메서드 요청은 인증 절차 없이 통과(permit)시킴.
 - 구체적인 CORS 정책 정의 및 적용
-    - 허용 출처 (Origins): application.yml에 정의된 프론트엔드 도메인 목록을 허용 
-    - 허용 메서드 (Methods): OPTIONS를 포함한 GET, POST, PUT, DELETE 등 모든 메서드 허용 
-    - 허용 헤더 (Headers): Authorization 헤더를 포함한 모든 헤더 허용 (setAllowedHeaders(List.of("*"))).
-    - 자격 증명 (Credentials): 쿠키(예: OAuth refresh_token)를 주고받을 수 있도록 허용 (setAllowCredentials(true)).
-    - filterChain 내에서 .cors(cors -> cors.configurationSource(corsConfigurationSource))를 호출하여, Spring Security가 이 CORS 규칙을 사용하도록 설정함.
+    - 허용 출처 (Origins): application.yml에 정의된 프론트엔드 도메인 목록을 허용.
+    - 허용 메서드 (Methods): OPTIONS를 포함한 GET, POST, PUT, DELETE 등 모든 메서드 허용. 
+    - 허용 헤더 (Headers): Authorization 헤더를 포함한 모든 헤더 허용. (setAllowedHeaders(List.of("*")))
+    - 자격 증명 (Credentials): 쿠키(예: OAuth refresh_token)를 주고받을 수 있도록 허용. (setAllowCredentials(true))
+    - filterChain 내에서 .cors(cors -> cors.configurationSource(corsConfigurationSource))를 호출하여, Spring Security가 이 CORS 규칙을 사용하도록 설정.
 ### 기대효과
-- Preflight 요청 처리: 브라우저가 OPTIONS 요청을 보내면, Spring Security의 permitAll 규칙 덕분에 인증 없이 통과됨.
-- 본 요청 처리: 브라우저가 Preflight 성공을 확인하고 Authorization 헤더가 포함된 실제 POST 요청을 전송함.
-- 이 요청은 OPTIONS가 아니므로 permitAll 규칙에 걸리지 않고, anyRequest().authenticated() 규칙에 따라 인증이 필요하게 됨.
-- JwtAuthenticationFilter가 토큰을 성공적으로 검증하여 인증을 완료시키고, 컨트롤러까지 요청이 정상적으로 도달함.
+
+- Preflight 요청 처리: 브라우저가 OPTIONS 요청을 보내면, Spring Security의 permitAll 규칙 덕분에 인증 없이 통과.
+- 본 요청 처리: 브라우저가 Preflight 성공을 확인하고 Authorization 헤더가 포함된 실제 POST 요청을 전송.
+- 이 요청은 OPTIONS가 아니므로 permitAll 규칙에 걸리지 않고, anyRequest().authenticated() 규칙에 따라 인증이 필요.
+- JwtAuthenticationFilter가 토큰을 성공적으로 검증하여 인증을 완료시키고, 컨트롤러까지 요청이 정상적으로 도달.
 </details>
   
 ## 7. 기술 스택
@@ -519,3 +520,35 @@ dailyq/
     - 음성 데이터를 기반으로 **태도·목소리 안정성**까지 분석
 - **자소서 기반 맞춤 질문 생성**
     - 사용자 자소서 업로드 → N개 핵심 문장 추출 → 직군/기업 컨텍스트로 질문 생성
+---
+
+## 12. 팀 컬쳐
+
+<div align="center">
+
+### 팀원 소개
+
+### BE
+  
+|김도현|김진현|박준희|박소현|
+|:-----:|:---:|:-----:|:---:|
+|[<img src="https://github.com/dozzzang.png" width="100px">](https://github.com/dozzzang)|[<img src="https://github.com/kimjhyun0627.png" width="100px">](https://github.com/kimjhyun0627)|[<img src="https://github.com/jjunii.png" width="100px">](https://github.com/jjunii)|[<img src="https://github.com/dev-sohyeon.png" width="100px">](https://github.com/dev-sohyeon)|
+|메이커|테크리더|팀 리더|플래너|
+
+### FE
+
+|이창목|윤자빈|진동현|
+|:-----:|:---:|:-----:|
+|[<img src="https://github.com/eelkom.png" width="100px">](https://github.com/eelkom)|[<img src="https://github.com/jabin00123.png" width="100px">](https://github.com/jabin00123)|[<img src="https://github.com/JinVibe.png" width="100px">](https://github.com/JinVibe)
+|플래너|메이커|테크리더|
+
+### 대면미팅
+<img width="1858" height="777" alt="image" src="https://github.com/user-attachments/assets/62e20c61-c15f-4af3-8f23-ce2ec6258962" />
+
+### [커밋 컨벤션](https://www.notion.so/teamsparta/2442dc3ef51481989c1bdfb6cff267f0?source=copy_link)
+
+### [코딩 컨벤션](https://www.notion.so/teamsparta/2442dc3ef51481fcb2efe19b2ea52f99?source=copy_link)
+
+### [팀 그라운드 룰](https://www.notion.so/teamsparta/2442dc3ef51481e1be98c45c3b128b79?source=copy_link)
+
+
