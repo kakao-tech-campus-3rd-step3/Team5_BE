@@ -5,15 +5,12 @@ import java.time.LocalDateTime;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import lombok.Builder;
-
 import com.knuissant.dailyq.domain.users.User;
 import com.knuissant.dailyq.domain.users.UserRole;
 
 public class UserManagementDto {
 
     // 회원 목록 조회 시 사용
-    @Builder
     public record UserResponse(
             Long userId,
             String email,
@@ -26,7 +23,6 @@ public class UserManagementDto {
     }
 
     // 회원 상세 정보 조회 시 사용
-    @Builder
     public record UserDetailResponse(
             Long userId,
             String email,

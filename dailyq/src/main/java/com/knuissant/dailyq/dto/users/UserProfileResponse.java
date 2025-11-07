@@ -15,7 +15,8 @@ public record UserProfileResponse(
         Integer streak,
         Boolean solvedToday,
         PreferencesDto preferences,
-        List<JobDto> jobs
+        List<JobDto> jobs,
+        Long unansweredFollowUpQuestionCount
 ) {
 
     public record PreferencesDto(
@@ -34,13 +35,13 @@ public record UserProfileResponse(
 
     }
 
-    public static UserProfileResponse from(User user, UserPreferences preferences) {
+    public static UserProfileResponse from(User user, UserPreferences preferences, Long unansweredFollowUpQuestionCount, Integer remainingQuestionCount) {
         List<JobDto> jobDtos = (preferences.getUserJob() != null)
                 ? List.of(new JobDto(preferences.getUserJob().getId(), preferences.getUserJob().getName()))
                 : Collections.emptyList();
 
         PreferencesDto preferencesDto = new PreferencesDto(
-                preferences.getDailyQuestionLimit(),
+                remainingQuestionCount, // 남은 질문 개수
                 preferences.getQuestionMode(),
                 preferences.getTimeLimitSeconds(),
                 preferences.getAllowPush()
@@ -53,7 +54,8 @@ public record UserProfileResponse(
                 user.getStreak(),
                 user.getSolvedToday(),
                 preferencesDto,
-                jobDtos
+                jobDtos,
+                unansweredFollowUpQuestionCount
         );
     }
 }

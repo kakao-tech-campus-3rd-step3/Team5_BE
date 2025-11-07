@@ -3,8 +3,6 @@ package com.knuissant.dailyq.service;
 import java.net.URI;
 import java.net.URL;
 
-import jakarta.persistence.EntityManager;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +24,6 @@ public class SttTaskService {
     private final SttTaskRepository sttTaskRepository;
     private final ClovaSpeechClient clovaSpeechClient;
     private final NcpConfig ncpConfig;
-    private final EntityManager entityManager;
 
     /**
      * SttTask를 생성하고 Clova API에 STT 변환 요청
@@ -38,9 +35,6 @@ public class SttTaskService {
     public void createAndRequestSttTask(Answer savedAnswer, String finalAudioUrl) {
         SttTask sttTask = SttTask.create(savedAnswer, finalAudioUrl);
         SttTask savedSttTask = sttTaskRepository.save(sttTask);
-
-        // 업데이트 전, DB가 채운 updated_at(not null)을 반영하기 위해 refresh 수행
-        entityManager.refresh(savedSttTask);
 
         String token = requestStt(savedSttTask);
         savedSttTask.setToken(token);

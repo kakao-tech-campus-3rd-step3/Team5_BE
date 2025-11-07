@@ -1,11 +1,12 @@
 package com.knuissant.dailyq.controller;
 
+import java.net.URI;
 import java.util.List;
 import jakarta.validation.Valid;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import lombok.RequiredArgsConstructor;
 
@@ -54,10 +55,20 @@ public class AdminController {
        Occupation Management
        ========================= */
 
+    @GetMapping("/occupations")
+    public ResponseEntity<List<OccupationManagementDto.OccupationResponse>> getAllOccupations() {
+        List<OccupationManagementDto.OccupationResponse> occupations = adminService.getAllOccupations();
+        return ResponseEntity.ok(occupations);
+    }
+
     @PostMapping("/occupations")
     public ResponseEntity<OccupationManagementDto.OccupationResponse> createOccupation(@Valid @RequestBody OccupationManagementDto.OccupationCreateRequest request) {
         OccupationManagementDto.OccupationResponse newOccupation = adminService.createOccupation(request);
-        return new ResponseEntity<>(newOccupation, HttpStatus.CREATED);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(newOccupation.occupationId())
+                .toUri();
+        return ResponseEntity.created(location).body(newOccupation);
     }
 
     @PutMapping("/occupations/{occupationId}")
@@ -76,10 +87,20 @@ public class AdminController {
        Job Management
        ========================= */
 
+    @GetMapping("/jobs")
+    public ResponseEntity<List<JobManagementDto.JobResponse>> getAllJobs() {
+        List<JobManagementDto.JobResponse> jobs = adminService.getAllJobs();
+        return ResponseEntity.ok(jobs);
+    }
+
     @PostMapping("/jobs")
     public ResponseEntity<JobManagementDto.JobResponse> createJob(@Valid @RequestBody JobManagementDto.JobCreateRequest request) {
         JobManagementDto.JobResponse newJob = adminService.createJob(request);
-        return new ResponseEntity<>(newJob, HttpStatus.CREATED);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(newJob.jobId())
+                .toUri();
+        return ResponseEntity.created(location).body(newJob);
     }
 
     @PutMapping("/jobs/{jobId}")
@@ -104,10 +125,20 @@ public class AdminController {
         return ResponseEntity.ok(questions);
     }
 
+    @GetMapping("/questions/{questionId}")
+    public ResponseEntity<QuestionManagementDto.QuestionDetailResponse> getQuestionById(@PathVariable Long questionId) {
+        QuestionManagementDto.QuestionDetailResponse question = adminService.getQuestionById(questionId);
+        return ResponseEntity.ok(question);
+    }
+
     @PostMapping("/questions")
     public ResponseEntity<QuestionManagementDto.QuestionDetailResponse> createQuestion(@Valid @RequestBody QuestionManagementDto.QuestionCreateRequest request) {
         QuestionManagementDto.QuestionDetailResponse newQuestion = adminService.createQuestion(request);
-        return new ResponseEntity<>(newQuestion, HttpStatus.CREATED);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(newQuestion.questionId())
+                .toUri();
+        return ResponseEntity.created(location).body(newQuestion);
     }
 
     @PutMapping("/questions/{questionId}")

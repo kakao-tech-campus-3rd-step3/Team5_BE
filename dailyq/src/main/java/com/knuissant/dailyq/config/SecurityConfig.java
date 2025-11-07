@@ -3,6 +3,8 @@ package com.knuissant.dailyq.config;
 import java.util.Arrays;
 import java.util.List;
 
+import jakarta.servlet.DispatcherType;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -50,6 +52,10 @@ public class SecurityConfig {
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // HTTP 요청에 대한 접근 권한 설정
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(request ->
+                                request.getDispatcherType() == DispatcherType.ASYNC &&
+                                        request.getRequestURI().equals("/api/sse/connect")
+                        ).permitAll()
                         //preflight 처리를 위해 OPTIONS Method 허용
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()

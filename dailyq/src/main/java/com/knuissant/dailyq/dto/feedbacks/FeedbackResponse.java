@@ -9,14 +9,16 @@ import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 public record FeedbackResponse(
         FeedbackStatus status,
         FeedbackContent content,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        boolean followUp
 ) {
 
-    public static FeedbackResponse from(Feedback feedback) {
+    public static FeedbackResponse of(Feedback feedback, boolean followUp) {
         return new FeedbackResponse(
                 feedback.getStatus(),
                 feedback.getContent(),
-                feedback.getUpdatedAt()
+                feedback.getUpdatedAt(),
+                followUp
         );
     }
 }

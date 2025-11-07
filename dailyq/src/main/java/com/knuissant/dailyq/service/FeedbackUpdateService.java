@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 
 import com.knuissant.dailyq.domain.feedbacks.Feedback;
 import com.knuissant.dailyq.domain.feedbacks.FeedbackContent;
-import com.knuissant.dailyq.domain.feedbacks.FeedbackStatus;
 import com.knuissant.dailyq.exception.BusinessException;
 import com.knuissant.dailyq.exception.ErrorCode;
 import com.knuissant.dailyq.repository.FeedbackRepository;
@@ -20,10 +19,10 @@ public class FeedbackUpdateService {
 
     @Transactional
     public void changeStatusToProcessing(Long feedbackId) {
-        Feedback feedback = feedbackRepository.findById(feedbackId)
+        Feedback feedback = feedbackRepository.findByIdForUpdate(feedbackId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND, feedbackId));
 
-        if (feedback.getStatus() != FeedbackStatus.PENDING) {
+        if (!feedback.isUpdatable()) {
             throw new BusinessException(ErrorCode.FEEDBACK_ALREADY_PROCESSED, feedbackId);
         }
         feedback.startProcessing();

@@ -3,13 +3,10 @@ package com.knuissant.dailyq.dto.admin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import lombok.Builder;
-
 import com.knuissant.dailyq.domain.jobs.Job;
 
 public class JobManagementDto {
 
-    @Builder
     public record JobResponse(
             Long jobId,
             String jobName,

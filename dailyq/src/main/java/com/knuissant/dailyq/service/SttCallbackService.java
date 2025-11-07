@@ -62,8 +62,6 @@ public class SttCallbackService {
             // stt 변환 성공 이벤트 발행
             publisher.publishEvent(new SttCompletedEvent(user.getId(), answer.getId(), transcribedText));
 
-            // 피드백 생성 이벤트 발행 예정
-
         } else {
             String errorMessage = (payload.message() != null) ? payload.message() : "Unknown CLOVA error";
             sttTask.fail(errorMessage);
