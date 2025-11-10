@@ -9,9 +9,7 @@ VALUES
     (2, 'kimjhyun@example.com', '김진현', 'PAID', 10, 1),
     (3, 'reallllvibe@example.com', '진동현', 'FREE', 1, 0),
     (4, 'changmok@example.com', '이창목', 'PAID', 7, 1),
-    (5, 'yoonjabiin@example.com', '윤자빈', 'ADMIN', 0, 0),
-    (6, 'sohyeon@example.com', '박소현', 'PAID', 10, 1),
-    (7, 'donhyun@example.com', '김도현', 'PAID', 10, 1);
+    (5, 'donhyun@example.com', '김도현', 'PAID', 10, 1);
 -- 
 
 /* OCCUPATIONS */
