@@ -19,12 +19,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import com.knuissant.dailyq.domain.common.BaseTimeEntity;
 import com.knuissant.dailyq.dto.users.UserCreateRequest;
 
-@Setter
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -99,18 +97,25 @@ public class User extends BaseTimeEntity {
         LocalDate today = LocalDate.now();
 
         if (this.lastSolvedDate == null) {
+            this.lastSolvedDate = today;
+            this.streak = 0;
+            this.solvedToday = false;
             return;
         }
 
-        if (this.lastSolvedDate.equals(today) || this.lastSolvedDate.equals(today.minusDays(1))) {
-            if (Boolean.TRUE.equals(this.solvedToday) && !this.lastSolvedDate.equals(today)) {
-                this.solvedToday = false;
-            }
+        if (this.lastSolvedDate.equals(today)) {
+            return;
+        }
+
+        if (this.lastSolvedDate.equals(today.minusDays(1))) {
+            this.solvedToday = false;
+            this.lastSolvedDate = today;
             return;
         }
 
         this.streak = 0;
         this.solvedToday = false;
+        this.lastSolvedDate = today;
     }
 
 
@@ -119,6 +124,13 @@ public class User extends BaseTimeEntity {
 
         if (Boolean.TRUE.equals(this.solvedToday) && today.equals(this.lastSolvedDate)) {
             return;
+        }
+
+        if (this.lastSolvedDate != null && this.lastSolvedDate.equals(today.minusDays(1))) {
+            this.streak++;
+        } else if (this.lastSolvedDate == null || this.lastSolvedDate.isBefore(
+                today.minusDays(1))) {
+            this.streak = 1;
         }
 
         this.solvedToday = true;
