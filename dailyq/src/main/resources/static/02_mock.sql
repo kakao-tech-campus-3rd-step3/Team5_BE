@@ -5,11 +5,13 @@
 /* USERS */
 INSERT INTO users (user_id, email, name, role, streak, solved_today)
 VALUES
-    (1, 'admin@dailyq.dev', 'FrontEnd', 'ADMIN', 0, 0),
-    (2, 'bob@example.com', 'Bob', 'PAID', 10, 1),
-    (3, 'carol@example.com', 'Carol', 'FREE', 1, 0),
-    (4, 'dave@example.com', 'Dave', 'PAID', 7, 1),
-    (5, 'erin@example.com', 'Erin', 'ADMIN', 0, 0);
+    (1, 'wnslii@dailyq.dev', '박준희', 'ADMIN', 0, 0),
+    (2, 'kimjhyun@example.com', '김진현', 'PAID', 10, 1),
+    (3, 'reallllvibe@example.com', '진동현', 'FREE', 1, 0),
+    (4, 'changmok@example.com', '이창목', 'PAID', 7, 1),
+    (5, 'yoonjabiin@example.com', '윤자빈', 'ADMIN', 0, 0),
+    (6, 'sohyeon@example.com', '박소현', 'PAID', 10, 1),
+    (7, 'donhyun@example.com', '김도현', 'PAID', 10, 1);
 -- 
 
 /* OCCUPATIONS */
