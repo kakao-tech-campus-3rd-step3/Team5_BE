@@ -44,6 +44,11 @@ public class QuestionService {
 
     @Transactional
     public RandomQuestionResponse getRandomQuestion(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InfraException(ErrorCode.USER_NOT_FOUND,userId));
+        user.updateStreakOnActivity();
+
         UserPreferences prefs = userPreferencesRepository.findById(userId)
                 .orElseThrow(() -> new InfraException(ErrorCode.USER_PREFERENCES_NOT_FOUND, userId));
 
