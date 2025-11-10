@@ -97,27 +97,16 @@ public class User extends BaseTimeEntity {
         LocalDate today = LocalDate.now();
 
         if (this.lastSolvedDate == null) {
-            this.lastSolvedDate = today;
-            this.streak = 0;
-            this.solvedToday = false;
             return;
         }
 
-        if (this.lastSolvedDate.equals(today)) {
-            return;
-        }
-
-        if (this.lastSolvedDate.equals(today.minusDays(1))) {
-            this.solvedToday = false;
-            this.lastSolvedDate = today;
+        if (this.lastSolvedDate.equals(today) || this.lastSolvedDate.equals(today.minusDays(1))) {
             return;
         }
 
         this.streak = 0;
         this.solvedToday = false;
-        this.lastSolvedDate = today;
     }
-
 
     public void markAsSolvedToday() {
         LocalDate today = LocalDate.now();
@@ -128,8 +117,8 @@ public class User extends BaseTimeEntity {
 
         if (this.lastSolvedDate != null && this.lastSolvedDate.equals(today.minusDays(1))) {
             this.streak++;
-        } else if (this.lastSolvedDate == null || this.lastSolvedDate.isBefore(
-                today.minusDays(1))) {
+        }
+        else {
             this.streak = 1;
         }
 
