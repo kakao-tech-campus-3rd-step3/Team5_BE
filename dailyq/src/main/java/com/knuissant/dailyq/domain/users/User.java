@@ -1,5 +1,7 @@
 package com.knuissant.dailyq.domain.users;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,10 +19,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import com.knuissant.dailyq.domain.common.BaseTimeEntity;
 import com.knuissant.dailyq.dto.users.UserCreateRequest;
 
+@Setter
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -52,6 +56,9 @@ public class User extends BaseTimeEntity {
 
     @Column(name = "solved_today", nullable = false)
     private Boolean solvedToday;
+
+    @Column(name = "last_solved_date")
+    private LocalDate lastSolvedDate;
 
     @Column(name = "refresh_token", length = 512)
     private String refreshToken;
