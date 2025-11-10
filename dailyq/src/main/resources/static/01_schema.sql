@@ -25,6 +25,7 @@ CREATE TABLE users (
                        role VARCHAR(20) NOT NULL DEFAULT 'FREE',
                        streak INT NOT NULL DEFAULT 0,
                        solved_today TINYINT NOT NULL DEFAULT 0,
+                       last_solved_date DATE NULL DEFAULT NULL,
                        refresh_token VARCHAR(512) NULL,
                        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

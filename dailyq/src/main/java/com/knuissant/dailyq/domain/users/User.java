@@ -1,5 +1,7 @@
 package com.knuissant.dailyq.domain.users;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -53,6 +55,9 @@ public class User extends BaseTimeEntity {
     @Column(name = "solved_today", nullable = false)
     private Boolean solvedToday;
 
+    @Column(name = "last_solved_date")
+    private LocalDate lastSolvedDate;
+
     @Column(name = "refresh_token", length = 512)
     private String refreshToken;
 
@@ -86,5 +91,49 @@ public class User extends BaseTimeEntity {
 
     public void updateRole(UserRole role) {
         this.role = role;
+    }
+
+    public void updateStreakOnActivity() {
+        LocalDate today = LocalDate.now();
+
+        if (this.lastSolvedDate == null) {
+            this.lastSolvedDate = today;
+            this.streak = 0;
+            this.solvedToday = false;
+            return;
+        }
+
+        if (this.lastSolvedDate.equals(today)) {
+            return;
+        }
+
+        if (this.lastSolvedDate.equals(today.minusDays(1))) {
+            this.solvedToday = false;
+            this.lastSolvedDate = today;
+            return;
+        }
+
+        this.streak = 0;
+        this.solvedToday = false;
+        this.lastSolvedDate = today;
+    }
+
+
+    public void markAsSolvedToday() {
+        LocalDate today = LocalDate.now();
+
+        if (Boolean.TRUE.equals(this.solvedToday) && today.equals(this.lastSolvedDate)) {
+            return;
+        }
+
+        if (this.lastSolvedDate != null && this.lastSolvedDate.equals(today.minusDays(1))) {
+            this.streak++;
+        } else if (this.lastSolvedDate == null || this.lastSolvedDate.isBefore(
+                today.minusDays(1))) {
+            this.streak = 1;
+        }
+
+        this.solvedToday = true;
+        this.lastSolvedDate = today;
     }
 }

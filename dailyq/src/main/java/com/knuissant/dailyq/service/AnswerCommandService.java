@@ -50,6 +50,8 @@ public class AnswerCommandService {
         // 꼬리질문 여부 확인
         boolean isFollowUp = request.followUp();
 
+        user.markAsSolvedToday();
+
         // 템플릿 메서드 패턴 도입
         AbstractAnswerHandler handler = answerHandlerFactory.createHandler(
                             user, request, isFollowUp);
