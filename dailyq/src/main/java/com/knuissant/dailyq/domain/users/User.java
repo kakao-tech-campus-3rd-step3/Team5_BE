@@ -94,4 +94,34 @@ public class User extends BaseTimeEntity {
     public void updateRole(UserRole role) {
         this.role = role;
     }
+
+    public void updateStreakOnActivity() {
+        LocalDate today = LocalDate.now();
+
+        if (this.lastSolvedDate == null) {
+            return;
+        }
+
+        if (this.lastSolvedDate.equals(today) || this.lastSolvedDate.equals(today.minusDays(1))) {
+            if (Boolean.TRUE.equals(this.solvedToday) && !this.lastSolvedDate.equals(today)) {
+                this.solvedToday = false;
+            }
+            return;
+        }
+
+        this.streak = 0;
+        this.solvedToday = false;
+    }
+
+
+    public void markAsSolvedToday() {
+        LocalDate today = LocalDate.now();
+
+        if (Boolean.TRUE.equals(this.solvedToday) && today.equals(this.lastSolvedDate)) {
+            return;
+        }
+
+        this.solvedToday = true;
+        this.lastSolvedDate = today;
+    }
 }
